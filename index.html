@@ -20,6 +20,7 @@
         .btn-gold { background: var(--gold); color: #000; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-blue { background: #3b82f6; color: white; }
+        .btn-outline { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
         .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; }
         .table-container { overflow-x: auto; border-radius: 15px; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
@@ -49,10 +50,13 @@
     <div id="employeePanel" style="display:none;" class="glass-card">
         <h3 id="empPanelHeader" style="text-align:center;"><i class="fas fa-video"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--gold)"></span></h3>
         <video id="camera" autoplay muted playsinline></video>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">حضور</span></button>
-            <button class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">انصراف</span></button>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">إثبات حضور</span></button>
+            <button class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">تسجيل انصراف</span></button>
         </div>
+        <button class="btn btn-outline" style="width:100%" onclick="location.reload()">
+            <i class="fas fa-undo"></i> <span>خروج وعودة للشاشة الرئيسية</span>
+        </button>
     </div>
 
     <div id="adminPanel" style="display:none;">
@@ -102,13 +106,11 @@
 
     async function smartLogin() {
         const idInput = document.getElementById("empID").value.trim();
+        if(!idInput) return;
         const q = await db.collection("users").where("empID", "==", idInput).get();
-        
         if (q.empty) return alert("الرقم الوظيفي غير موجود");
-
         q.forEach(doc => { currentUser = doc.data(); currentUser.id = doc.id; });
         document.getElementById("loginSection").style.display = "none";
-        
         if(currentUser.role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
             loadAdminData();
@@ -129,9 +131,8 @@
         const canvas = document.createElement("canvas");
         canvas.width = 280; canvas.height = 210; 
         canvas.getContext("2d").drawImage(video, 0, 0, 280, 210);
-        const base64 = canvas.toDataURL("image/jpeg", 0.25); // ضغط عالي جداً لسرعة استثنائية
+        const base64 = canvas.toDataURL("image/jpeg", 0.25); 
 
-        alert("جاري التحقق السريع...");
         const fd = new FormData();
         fd.append("file", base64);
         fd.append("upload_preset", "zahrani_private");
@@ -139,62 +140,49 @@
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/dzukfybwr/image/upload`, { method: "POST", body: fd });
             const data = await res.json();
-
             await db.collection("attendance").add({
                 name: currentUser.name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
                 img: data.secure_url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
-            alert(type === 'in' ? "تم تسجيل حضورك بنجاح" : "تم تسجيل انصرافك.. نراك غداً");
-            if(type === 'out') location.reload(); // لا تغلق الصفحة إلا عند الانصراف
+            alert(type === 'in' ? "تم تسجيل الحضور" : "تم تسجيل الانصراف");
+            if(type === 'out') location.reload();
         } catch (e) { alert("خطأ في الاتصال"); }
     }
 
-    // --- إدارة الموظفين (إضافة ومسح) ---
     async function addEmployee() {
         const id = document.getElementById("newID").value.trim();
         const name = document.getElementById("newName").value.trim();
-        if(!id || !name) return alert("بيانات ناقصة");
+        if(!id || !name) return;
         await db.collection("users").add({ empID: id, name: name, role: "employee" });
-        alert("تمت الإضافة");
         loadAdminData();
     }
 
     async function deleteEmployee(id) {
-        if(confirm("هل تريد حذف الموظف نهائياً؟")) {
-            await db.collection("users").doc(id).delete();
-            loadAdminData();
-        }
+        if(confirm("مسح الموظف؟")) { await db.collection("users").doc(id).delete(); loadAdminData(); }
     }
 
     function loadAdminData() {
-        // تحميل قائمة الموظفين للمسح
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let h = "";
             snap.forEach(doc => {
-                h += `<div class="btn-blue" style="padding:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                h += `<div class="btn-outline" style="padding:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:white;">
                     <span>${doc.data().name} (${doc.data().empID})</span>
-                    <i class="fas fa-user-minus" onclick="deleteEmployee('${doc.id}')" style="cursor:pointer; color:var(--danger)"></i>
+                    <i class="fas fa-trash-alt" onclick="deleteEmployee('${doc.id}')" style="cursor:pointer; color:var(--danger)"></i>
                 </div>`;
             });
             document.getElementById("staffList").innerHTML = h;
         });
 
-        // تحميل سجلات الحضور مع تفعيل زر المسح
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
             let html = "";
             snap.forEach(doc => {
                 const d = doc.data();
                 const t = d.time ? d.time.toDate().toLocaleString('ar-SA') : "...";
-                html += `<tr>
-                    <td><b>${d.name}</b></td>
-                    <td>${d.status}</td>
-                    <td style="direction:ltr;">${t}</td>
-                    <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
-                    <td><i class="fas fa-trash" onclick="deleteLog('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></td>
-                </tr>`;
+                html += `<tr><td><b>${d.name}</b></td><td>${d.status}</td><td style="direction:ltr;">${t}</td>
+                <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
+                <td><i class="fas fa-trash" onclick="deleteLog('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></td></tr>`;
             });
             document.getElementById("logsTable").innerHTML = html;
         });
@@ -208,12 +196,11 @@
         const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Logs");
-        XLSX.writeFile(wb, `Zahrani_Report.xlsx`);
+        XLSX.writeFile(wb, `Zahrani_Logs.xlsx`);
     }
 
     function toggleLanguage() {
-        alert("English Version Loading...");
-        // منطق تبديل اللغة كما في السابق
+        // منطق تبديل اللغة
     }
 </script>
 </body>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zahrani Attendance System</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; transition: all 0.3s ease; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; position: relative; }
+        
+        /* زر تغيير اللغة العلوي */
+        .lang-switcher { position: absolute; top: 10px; left: 10px; z-index: 1000; }
+        html[dir="ltr"] .lang-switcher { left: auto; right: 10px; }
+        
+        .glass-card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .header-vid { width: 100%; height: 160px; border-radius: 15px; object-fit: cover; margin-bottom: 20px; background: #000; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+        button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 5px 2px; display: inline-block; }
+        .btn-gold { background: var(--gold); color: #0f172a; }
+        .btn-red { background: #ef4444; color: white; }
+        .btn-green { background: #10b981; color: white; }
+        
+        .filter-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 20px; padding: 15px; background: rgba(15, 23, 42, 0.5); border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border-bottom: 1px solid #334155; text-align: center; font-size: 0.9rem; }
+        th { color: var(--gold); background: #0f172a; }
+        #camera { width: 100%; border-radius: 15px; background: #000; transform: scaleX(-1); margin-bottom: 15px; }
+        .img-preview { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="lang-switcher">
+        <button class="btn-gold" onclick="toggleLanguage()" id="langBtn">🌐 English</button>
+    </div>
+
+    <video class="header-vid" autoplay muted loop playsinline>
+        <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
+    </video>
+
+    <div id="loginSection" class="glass-card">
+        <h2 id="txt_login_title" style="text-align:center;">🏢 نظام الحضور والتقارير</h2>
+        <input type="text" id="empID" placeholder="الرقم الوظيفي">
+        <input type="password" id="loginPass" placeholder="كلمة المرور">
+        <button class="btn-gold" style="width:100%" onclick="smartLogin()" id="txt_login_btn">🚀 دخول</button>
+    </div>
+
+    <div id="employeePanel" style="display:none;" class="glass-card">
+        <h3 id="txt_emp_title">📸 تسجيل البصمة</h3>
+        <video id="camera" autoplay muted playsinline></video>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-gold" style="flex:1" onclick="takeAction('in')" id="txt_btn_in">تسجيل حضور</button>
+            <button class="btn-red" style="flex:1" onclick="takeAction('out')" id="txt_btn_out">تسجيل انصراف</button>
+        </div>
+        <button style="background:none; color:#94a3b8; width:100%" onclick="location.reload()" id="txt_logout">خروج</button>
+    </div>
+
+    <div id="adminPanel" style="display:none;" class="glass-card">
+        <h3 id="txt_admin_title">📊 لوحة تحكم المدير (2026)</h3>
+        
+        <div class="filter-group">
+            <input type="date" id="dateFrom">
+            <input type="date" id="dateTo">
+            <button class="btn-gold" onclick="loadLogs()" id="txt_filter">🔍 تصفية</button>
+            <button class="btn-green" onclick="exportToExcel()" id="txt_export">📥 تصدير Excel</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th id="th_emp">الموظف</th>
+                        <th id="th_status">الحالة</th>
+                        <th id="th_time">التاريخ والوقت</th>
+                        <th id="th_photo">الصورة</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTable"></tbody>
+            </table>
+        </div>
+        <button class="btn-red" style="width:100%; margin-top:20px;" onclick="location.reload()" id="txt_logout_admin">خروج المدير</button>
+    </div>
+</div>
+
+<script>
+    // --- قاموس الترجمة ---
+    const translations = {
+        ar: {
+            dir: "rtl", btn_lang: "🌐 English",
+            login_title: "🏢 نظام الحضور والتقارير", login_btn: "🚀 دخول",
+            emp_id: "الرقم الوظيفي", pass: "كلمة المرور",
+            emp_title: "📸 تسجيل البصمة", btn_in: "تسجيل حضور", btn_out: "تسجيل انصراف",
+            logout: "خروج", admin_title: "📊 لوحة تحكم المدير (2026)",
+            filter: "🔍 تصفية", export: "📥 تصدير Excel",
+            th_emp: "الموظف", th_status: "الحالة", th_time: "التاريخ والوقت", th_photo: "الصورة",
+            status_in: "حضور ✅", status_out: "انصراف 🚪", alert_process: "جاري المعالجة...",
+            alert_success: "تم التسجيل بنجاح!", alert_error: "بيانات الدخول غير صحيحة"
+        },
+        en: {
+            dir: "ltr", btn_lang: "🌐 العربية",
+            login_title: "🏢 Attendance System", login_btn: "🚀 Login",
+            emp_id: "Employee ID", pass: "Password",
+            emp_title: "📸 Face Recognition", btn_in: "Clock In", btn_out: "Clock Out",
+            logout: "Logout", admin_title: "📊 Admin Dashboard (2026)",
+            filter: "🔍 Filter", export: "📥 Export Excel",
+            th_emp: "Employee", th_status: "Status", th_time: "Date & Time", th_photo: "Photo",
+            status_in: "Clock In ✅", status_out: "Clock Out 🚪", alert_process: "Processing...",
+            alert_success: "Recorded successfully!", alert_error: "Invalid login credentials"
+        }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'ar';
+
+    function applyLanguage() {
+        const t = translations[currentLang];
+        document.documentElement.dir = t.dir;
+        document.documentElement.lang = currentLang;
+        document.getElementById("langBtn").innerText = t.btn_lang;
+        document.getElementById("txt_login_title").innerText = t.login_title;
+        document.getElementById("txt_login_btn").innerText = t.login_btn;
+        document.getElementById("empID").placeholder = t.emp_id;
+        document.getElementById("loginPass").placeholder = t.pass;
+        document.getElementById("txt_emp_title").innerText = t.emp_title;
+        document.getElementById("txt_btn_in").innerText = t.btn_in;
+        document.getElementById("txt_btn_out").innerText = t.btn_out;
+        document.getElementById("txt_logout").innerText = t.logout;
+        document.getElementById("txt_admin_title").innerText = t.admin_title;
+        document.getElementById("txt_filter").innerText = t.filter;
+        document.getElementById("txt_export").innerText = t.export;
+        document.getElementById("th_emp").innerText = t.th_emp;
+        document.getElementById("th_status").innerText = t.th_status;
+        document.getElementById("th_time").innerText = t.th_time;
+        document.getElementById("th_photo").innerText = t.th_photo;
+        document.getElementById("txt_logout_admin").innerText = t.logout;
+    }
+
+    function toggleLanguage() {
+        currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+        localStorage.setItem('lang', currentLang);
+        applyLanguage();
+    }
+
+    applyLanguage(); // تنفيذ اللغة عند التحميل
+
+    // --- إعدادات Firebase (استبدلها بإعداداتك الحقيقية) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
+        authDomain: "zahrani-attendance.firebaseapp.com",
+        projectId: "zahrani-attendance",
+        storageBucket: "zahrani-attendance.appspot.com",
+        messagingSenderId: "861962206748",
+        appId: "1:861962206748:web:43500609b0d84d2b25e9d9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // --- المنطق البرمجي (Login & Roles) ---
+    async function smartLogin() {
+        const id = document.getElementById("empID").value.trim();
+        const pass = document.getElementById("loginPass").value;
+        const email = `${id}@alzahrani.com`;
+
+        try {
+            await auth.signInWithEmailAndPassword(email, pass);
+            checkUser(id);
+        } catch (error) {
+            if (error.code === 'auth/user-not-found' && id !== "2026") {
+                await auth.createUserWithEmailAndPassword(email, pass);
+                checkUser(id);
+            } else { alert(translations[currentLang].alert_error); }
+        }
+    }
+
+    async function checkUser(empID) {
+        const user = auth.currentUser;
+        const ref = db.collection("users").doc(user.uid);
+        let doc = await ref.get();
+        if (!doc.exists) {
+            const role = (empID === "2026") ? "admin" : "employee";
+            await ref.set({ empID, role });
+            doc = await ref.get();
+        }
+        document.getElementById("loginSection").style.display = "none";
+        if (doc.data().role === "admin") {
+            document.getElementById("adminPanel").style.display = "block";
+            loadLogs();
+        } else {
+            document.getElementById("employeePanel").style.display = "block";
+            startCam();
+        }
+    }
+
+    async function startCam() {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById("camera").srcObject = stream;
+    }
+
+    async function takeAction(type) {
+        const t = translations[currentLang];
+        alert(t.alert_process);
+        const video = document.getElementById("camera");
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        const base64 = canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
+        const fd = new FormData(); fd.append("image", base64);
+
+        try {
+            const res = await fetch("https://iimg.live/api/upload", {
+                method: "POST",
+                headers: { "Authorization": "Bearer pk_5512153eb5b86fd31e661634679102a2" },
+                body: fd
+            });
+            const data = await res.json();
+            await db.collection("attendance").add({
+                emp: auth.currentUser.email.split('@')[0],
+                status: (type === 'in') ? t.status_in : t.status_out,
+                img: data.url,
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert(t.alert_success);
+        } catch (e) { alert("Error connecting to server"); }
+    }
+
+    function loadLogs() {
+        const dateFrom = document.getElementById("dateFrom").value;
+        const dateTo = document.getElementById("dateTo").value;
+        
+        db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
+            let filteredDocs = snap.docs;
+            if(dateFrom || dateTo) {
+                filteredDocs = snap.docs.filter(doc => {
+                    const d = doc.data().time.toDate().toISOString().split('T')[0];
+                    return (!dateFrom || d >= dateFrom) && (!dateTo || d <= dateTo);
+                });
+            }
+            const html = filteredDocs.map(doc => {
+                const d = doc.data();
+                const timeStr = d.time ? d.time.toDate().toLocaleString(currentLang === 'ar' ? 'ar-SA' : 'en-US') : '...';
+                return `<tr>
+                    <td>${d.emp}</td>
+                    <td>${d.status}</td>
+                    <td>${timeStr}</td>
+                    <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
+                </tr>`;
+            }).join('');
+            document.getElementById("logsTable").innerHTML = html;
+        });
+    }
+
+    function exportToExcel() {
+        const table = document.getElementById("attendanceTable");
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString()}.xlsx`);
+    }
+</script>
+</body>
+</html>

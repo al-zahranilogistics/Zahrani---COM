@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الزهراني للحضور الذكي v2.5</title>
+    <title>نظام الزهراني للبصمة الذكية</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -15,19 +15,19 @@
         .container { width: 100%; max-width: 850px; }
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .header { text-align: center; margin-bottom: 20px; }
-        .header img { width: 100px; filter: drop-shadow(0 0 8px var(--gold)); }
+        .header img { width: 150px; filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.3)); }
         
         /* الجداول */
         .table-container { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; }
         th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; font-size: 0.85rem; }
         td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
 
         /* الأزرار */
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-gold { background: var(--gold); color: #000; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+        .btn-danger { background: var(--danger); color: white; padding: 8px 12px; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* مدخلات البيانات */
         .input-group { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
@@ -35,7 +35,7 @@
 
         /* الكاميرا والصور */
         #camera { width: 100%; max-width: 350px; border-radius: 15px; border: 2px solid var(--gold); transform: scaleX(-1); margin: 0 auto 15px; display: block; }
-        .img-preview { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gold); cursor: pointer; }
+        .img-preview { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gold); cursor: pointer; }
         
         #imgModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
         #imgModal img { max-width: 90%; max-height: 80%; border-radius: 10px; border: 2px solid var(--gold); }
@@ -45,14 +45,14 @@
 
 <div class="container">
     <div class="header">
-        <img src="https://i.ibb.co/X7Wq1v6/Alzahrani-Logo.png" alt="الزهراني">
-        <h2 style="color: var(--gold); margin: 5px 0;">نظام البصمة الذكي 2026</h2>
+        <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" alt="شعار الزهراني">
+        <h2 style="color: var(--gold); margin-top: 10px;">بوابة الحضور والانصراف الذكية</h2>
     </div>
 
     <div id="loginSection" class="glass-card" style="max-width: 350px; margin: 0 auto;">
-        <h3 style="text-align: center;">دخول الموظفين</h3>
-        <div class="input-group"><i class="fas fa-id-card"></i><input type="text" id="empID" placeholder="الرقم الوظيفي"></div>
-        <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="كلمة المرور"></div>
+        <h3 style="text-align: center;"><i class="fas fa-sign-in-alt"></i> دخول النظام</h3>
+        <div class="input-group"><i class="fas fa-user-tie"></i><input type="text" id="empID" placeholder="الرقم الوظيفي"></div>
+        <div class="input-group"><i class="fas fa-key"></i><input type="password" id="loginPass" placeholder="كلمة المرور"></div>
         <button class="btn btn-gold" style="width:100%" onclick="smartLogin()">دخول</button>
     </div>
 
@@ -63,24 +63,27 @@
             <button id="btnIn" class="btn btn-gold" style="flex:1" onclick="takeAction('in')">إثبات حضور ✅</button>
             <button id="btnOut" class="btn btn-danger" style="flex:1" onclick="takeAction('out')">تسجيل انصراف 🚪</button>
         </div>
-        <button class="btn" style="background:transparent; color:#94a3b8; width:100%; margin-top:10px;" onclick="location.reload()">خروج</button>
+        <button class="btn" style="background:transparent; color:#94a3b8; width:100%; margin-top:10px;" onclick="location.reload()">تسجيل خروج</button>
     </div>
 
     <div id="adminPanel" style="display:none;">
         <div class="glass-card">
-            <h3>إحصائيات اليوم</h3>
+            <h3><i class="fas fa-chart-pie"></i> إحصائيات اليوم</h3>
             <div style="display:flex; justify-content:space-around; text-align:center;">
                 <div><h2 id="countIn" style="color:var(--success)">0</h2><p>حضور</p></div>
                 <div><h2 id="countOut" style="color:var(--danger)">0</h2><p>انصراف</p></div>
             </div>
-            <button class="btn btn-gold" style="width:100%; margin-top:10px;" onclick="exportToExcel()">تحميل تقرير Excel</button>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-gold" style="flex:1" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تقرير Excel</button>
+                <button class="btn btn-danger" style="flex:1" onclick="deleteAllLogs()"><i class="fas fa-trash-sweep"></i> مسح كافة البيانات</button>
+            </div>
         </div>
 
         <div class="glass-card">
-            <h3>سجل الحضور</h3>
+            <h3><i class="fas fa-list-ul"></i> سجل الحضور المباشر</h3>
             <div class="table-container">
                 <table>
-                    <thead><tr><th>الموظف</th><th>الحالة</th><th>الوقت</th><th>الصورة</th></tr></thead>
+                    <thead><tr><th>الموظف</th><th>الحالة</th><th>الوقت</th><th>الصورة</th><th>إجراء</th></tr></thead>
                     <tbody id="logsTable"></tbody>
                 </table>
             </div>
@@ -121,7 +124,7 @@
                 startCam();
                 checkDailyLimit(userCred.user.uid);
             }
-        } catch (e) { alert("بيانات غير صحيحة"); }
+        } catch (e) { alert("فشل الدخول: تأكد من البيانات"); }
     }
 
     async function startCam() {
@@ -129,19 +132,17 @@
         document.getElementById("camera").srcObject = s;
     }
 
-    // فحص سجل اليوم لمنع التكرار
     async function checkDailyLimit(uid) {
         const start = new Date(); start.setHours(0,0,0,0);
         const snap = await db.collection("attendance").where("uid","==",uid).where("time",">=",start).get();
-        
         snap.forEach(doc => {
             if(doc.data().status.includes("حضور")) {
                 document.getElementById("btnIn").disabled = true;
-                document.getElementById("btnIn").innerText = "تم الحضور";
+                document.getElementById("btnIn").innerText = "تم إثبات الحضور";
             }
             if(doc.data().status.includes("انصراف")) {
                 document.getElementById("btnOut").disabled = true;
-                document.getElementById("btnOut").innerText = "تم الانصراف";
+                document.getElementById("btnOut").innerText = "تم تسجيل الانصراف";
             }
         });
     }
@@ -149,12 +150,10 @@
     async function takeAction(type) {
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
-        // تصغير الحجم والضغط لسرعة الرفع
         canvas.width = 320; canvas.height = 240;
         canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
         const base64 = canvas.toDataURL("image/jpeg", 0.4); 
 
-        alert("جاري التحقق السريع...");
         const fd = new FormData();
         fd.append("file", base64);
         fd.append("upload_preset", uploadPreset);
@@ -173,9 +172,9 @@
                 img: data.secure_url || "",
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("✅ تم التسجيل بنجاح");
+            alert("تم التسجيل بنجاح");
             location.reload();
-        } catch (e) { alert("خطأ في الاتصال"); }
+        } catch (e) { alert("حدث خطأ في الرفع"); }
     }
 
     function loadAdminLogs() {
@@ -185,13 +184,36 @@
                 const d = doc.data();
                 if(d.status.includes("حضور")) ins++; else outs++;
                 const t = d.time ? d.time.toDate().toLocaleString('ar-SA') : "...";
-                html += `<tr><td>${d.name}</td><td>${d.status}</td><td style="font-size:0.75rem">${t}</td>
-                <td><img src="${d.img}" class="img-preview" onclick="showImg('${d.img}')"></td></tr>`;
+                html += `<tr>
+                    <td><b>${d.name}</b></td>
+                    <td>${d.status}</td>
+                    <td style="font-size:0.75rem">${t}</td>
+                    <td><img src="${d.img}" class="img-preview" onclick="showImg('${d.img}')"></td>
+                    <td><button class="btn-danger" onclick="deleteSingleLog('${doc.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
             });
             document.getElementById("logsTable").innerHTML = html;
             document.getElementById("countIn").innerText = ins;
             document.getElementById("countOut").innerText = outs;
         });
+    }
+
+    // حذف سجل واحد
+    async function deleteSingleLog(id) {
+        if(confirm("هل تريد حذف هذا السجل نهائياً؟")) {
+            await db.collection("attendance").doc(id).delete();
+        }
+    }
+
+    // مسح كافة البيانات (للمدير فقط)
+    async function deleteAllLogs() {
+        if(confirm("تحذير: سيتم مسح كافة سجلات الحضور نهائياً. هل أنت متأكد؟")) {
+            const snap = await db.collection("attendance").get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("تم مسح كافة البيانات بنجاح");
+        }
     }
 
     function showImg(s) { document.getElementById("modalImg").src = s; document.getElementById("imgModal").style.display = "flex"; }
@@ -200,7 +222,7 @@
         const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Alzahrani_Report.xlsx`);
+        XLSX.writeFile(wb, `Report_Alzahrani_${new Date().toLocaleDateString()}.xlsx`);
     }
 </script>
 </body>

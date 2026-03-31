@@ -14,12 +14,11 @@
         .container { width: 100%; max-width: 500px; position: relative; }
         .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; border: 1px solid var(--gold); }
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
-        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
         .btn-gold { background: var(--gold); color: #0f172a; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
-        .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px dashed var(--gold); }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
         th, td { padding: 8px; border-bottom: 1px solid #334155; text-align: center; }
         th { color: var(--gold); }
@@ -35,35 +34,28 @@
     </video>
 
     <div id="loginSection" class="glass-card">
-        <h2 style="text-align:center; margin-top:0;">🏢 نظام الحضور الذكي</h2>
+        <h2 style="text-align:center; margin-top:0;">🏢 دخول الموظفين</h2>
         <input type="text" id="empID" placeholder="الرقم الوظيفي">
         <input type="password" id="loginPass" placeholder="كلمة المرور">
         <button class="btn-gold" onclick="smartLogin()">🚀 دخول</button>
     </div>
 
     <div id="employeePanel" style="display:none;" class="glass-card">
-        <h3 style="text-align:center;">📸 تسجيل البصمة</h3>
+        <h3 style="text-align:center;">📸 بصمة الوجه</h3>
         <video id="camera" autoplay muted playsinline></video>
         <div style="display: flex; gap: 10px;">
             <button class="btn-gold" style="flex:1" onclick="takeAction('in')">حضور ✅</button>
             <button class="btn-red" style="flex:1" onclick="takeAction('out')">انصراف 🚪</button>
         </div>
-        <button style="background:none; color:#94a3b8; margin-top:10px;" onclick="location.reload()">تسجيل خروج</button>
     </div>
 
     <div id="adminPanel" style="display:none;" class="glass-card">
-        <h3 style="text-align:center;">📊 لوحة المدير (2026)</h3>
-        <div class="admin-tools">
-            <h4 style="margin:0; color:var(--gold);">➕ إضافة موظف جديد</h4>
-            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (033)">
-            <input type="text" id="newEmpName" placeholder="الاسم (رانجار)">
-            <button class="btn-gold" onclick="addNewEmployee()">حفظ الموظف</button>
-        </div>
-        <button class="btn-green" style="margin-bottom: 10px;" onclick="exportToExcel()">📥 تصدير تقرير Excel</button>
+        <h3 style="text-align:center;">📊 السجل العام</h3>
+        <button class="btn-green" style="margin-bottom: 10px;" onclick="exportToExcel()">📥 تحميل تقرير Excel</button>
         <div style="overflow-x:auto;">
             <table id="attendanceTable">
                 <thead>
-                    <tr><th>الموظف</th><th>الحالة</th><th>التاريخ والزمن</th><th>🖼️</th></tr>
+                    <tr><th>الاسم</th><th>الحالة</th><th>الوقت</th><th>🖼️</th></tr>
                 </thead>
                 <tbody id="logsTable"></tbody>
             </table>
@@ -73,6 +65,7 @@
 </div>
 
 <script>
+    // إعدادات Firebase الخاصة بك
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -85,6 +78,10 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+
+    // إعدادات Cloudinary التي أرسلتها
+    const cloudName = "dzukfybwr";
+    const uploadPreset = "zahrani_private"; 
 
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
@@ -103,28 +100,12 @@
                     startCam();
                 }
             }
-        } catch (e) { alert("خطأ في البيانات: تأكد من الرقم وكلمة المرور"); }
-    }
-
-    async function addNewEmployee() {
-        const id = document.getElementById("newEmpID").value.trim();
-        const name = document.getElementById("newEmpName").value.trim();
-        if(!id || !name) return alert("أدخل البيانات كاملة");
-        const email = `${id}@alzahrani.com`;
-        const password = id.length >= 6 ? id : id.padEnd(6, "0");
-        try {
-            const tempApp = firebase.initializeApp(firebaseConfig, "App" + Math.random());
-            const userCred = await tempApp.auth().createUserWithEmailAndPassword(email, password);
-            await db.collection("users").doc(userCred.user.uid).set({ empID: id, name: name, role: "employee" });
-            await tempApp.delete();
-            alert(`✅ تم بنجاح!\nالاسم: ${name}\nكلمة المرور: ${password}`);
-            document.getElementById("newEmpID").value = ""; document.getElementById("newEmpName").value = "";
-        } catch (e) { alert("خطأ: " + e.message); }
+        } catch (e) { alert("بيانات الدخول غير صحيحة"); }
     }
 
     async function startCam() {
         try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); document.getElementById("camera").srcObject = s; }
-        catch (e) { alert("يرجى السماح بالكاميرا لتسجيل البصمة"); }
+        catch (e) { alert("يرجى تفعيل الكاميرا"); }
     }
 
     async function takeAction(type) {
@@ -132,53 +113,57 @@
         const canvas = document.createElement("canvas");
         canvas.width = 400; canvas.height = 300;
         canvas.getContext("2d").drawImage(video, 0, 0, 400, 300);
-        const base64 = canvas.toDataURL("image/jpeg", 0.4).split(",")[1];
+        const base64Data = canvas.toDataURL("image/jpeg", 0.5);
         
-        alert("جاري التحقق... يرجى الانتظار");
-        const fd = new FormData(); fd.append("image", base64);
-        
+        alert("جاري التحقق من البصمة...");
+
+        const formData = new FormData();
+        formData.append("file", base64Data);
+        formData.append("upload_preset", uploadPreset);
+
         try {
-            const res = await fetch("https://iimg.live/api/upload", {
+            // الرفع المباشر لـ Cloudinary
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
                 method: "POST",
-                headers: { "Authorization": "Bearer pk_public_3db6884c9c2c6f089fdfb904" },
-                body: fd
+                body: formData
             });
-            const data = await res.json();
-            const imageUrl = data.url || "https://via.placeholder.com/150?text=No+Image";
+
+            const data = await response.json();
+            const imgUrl = data.secure_url || "https://via.placeholder.com/150";
 
             const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
             await db.collection("attendance").add({
                 name: userDoc.data().name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
-                img: imageUrl,
+                img: imgUrl,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("✅ تم تسجيلك بنجاح!");
+            alert("✅ تم التسجيل بنجاح!");
             location.reload();
         } catch (e) {
-            // تسجيل الحضور حتى لو فشل الرفع لضمان حقوق الموظف
-            const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
-            await db.collection("attendance").add({
-                name: userDoc.data().name,
-                status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
-                img: "https://via.placeholder.com/150?text=Network+Error",
-                time: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("✅ تم التسجيل (بدون صورة بسبب ضعف الإنترنت)");
-            location.reload();
+            alert("حدث خطأ، سيتم التسجيل بدون صورة");
+            saveFailSafe(type);
         }
+    }
+
+    async function saveFailSafe(type) {
+        const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
+        await db.collection("attendance").add({
+            name: userDoc.data().name,
+            status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
+            img: "https://via.placeholder.com/150?text=Error",
+            time: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        location.reload();
     }
 
     function loadLogs() {
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
             const html = snap.docs.map(doc => {
                 const d = doc.data();
-                let fullTime = "...";
-                if (d.time) {
-                    const dt = d.time.toDate();
-                    fullTime = `${dt.toISOString().split('T')[0]} ${dt.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
-                }
-                return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction:ltr;">${fullTime}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
+                let t = "...";
+                if(d.time) { const dt = d.time.toDate(); t = dt.toLocaleString('ar-SA'); }
+                return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction:ltr;">${t}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
             }).join('');
             document.getElementById("logsTable").innerHTML = html;
         });
@@ -189,7 +174,7 @@
         const ws = XLSX.utils.table_to_sheet(table);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Report_2026.xlsx`);
+        XLSX.writeFile(wb, `Zahrani_Report_2026.xlsx`);
     }
 </script>
 </body>

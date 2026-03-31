@@ -3,39 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zahrani Attendance System v3</title>
+    <title>نظام الزهراني للحضور الذكي v4</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
         :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 850px; margin: 0 auto; position: relative; }
-        .lang-switcher { position: absolute; top: 5px; left: 5px; z-index: 100; }
-        html[dir="ltr"] .lang-switcher { left: auto; right: 5px; }
-        .glass-card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        button { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 4px 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; position: relative; }
+        
+        .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .lang-switcher { position: absolute; top: 10px; left: 10px; z-index: 100; }
+        .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
         .btn-gold { background: var(--gold); color: #0f172a; width: 100%; }
-        .btn-action { width: 48%; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
-        .filter-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px; border-bottom: 1px solid #334155; text-align: center; }
+        
+        .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px dashed var(--gold); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #334155; text-align: center; }
         th { color: var(--gold); }
-        #camera { width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1); }
-        .img-preview { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
+        
+        #camera { width: 100%; border-radius: 15px; background: #000; transform: scaleX(-1); margin-bottom: 10px; }
+        .img-preview { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="lang-switcher"><button onclick="toggleLanguage()" id="langBtn" style="background:var(--gold); font-size:12px;">🌐 English</button></div>
+    <div class="lang-switcher">
+        <button onclick="toggleLanguage()" id="langBtn" style="background:var(--gold); font-size:11px; padding:5px 10px;">🌐 English</button>
+    </div>
 
-    <div id="loginSection" class="glass-card" style="margin-top: 50px; text-align: center;">
-        <h2 id="txt_login_title">🏢 نظام الحضور الذكي</h2>
+    <video class="header-vid" autoplay muted loop playsinline>
+        <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
+    </video>
+
+    <div id="loginSection" class="glass-card">
+        <h2 id="txt_login_title" style="text-align:center; margin-top:0;">🏢 نظام الحضور الذكي</h2>
         <input type="text" id="empID" placeholder="الرقم الوظيفي">
         <input type="password" id="loginPass" placeholder="كلمة المرور">
         <button class="btn-gold" onclick="smartLogin()" id="txt_login_btn">🚀 دخول</button>
@@ -44,43 +54,46 @@
     <div id="employeePanel" style="display:none;" class="glass-card">
         <h3 id="txt_emp_title">📸 تسجيل البصمة</h3>
         <video id="camera" autoplay muted playsinline></video>
-        <div style="display: flex; justify-content: space-between;">
-            <button class="btn-gold btn-action" onclick="takeAction('in')" id="txt_btn_in">حضور</button>
-            <button class="btn-red btn-action" onclick="takeAction('out')" id="txt_btn_out">انصراف</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-gold" style="flex:1" onclick="takeAction('in')" id="txt_btn_in">حضور ✅</button>
+            <button class="btn-red" style="flex:1" onclick="takeAction('out')" id="txt_btn_out">انصراف 🚪</button>
         </div>
-        <button style="background:none; color:#94a3b8; width:100%" onclick="location.reload()" id="txt_logout">خروج</button>
+        <button style="background:none; color:#94a3b8; width:100%; margin-top:10px;" onclick="location.reload()" id="txt_logout">خروج</button>
     </div>
 
     <div id="adminPanel" style="display:none;" class="glass-card">
-        <h3 id="txt_admin_title">📊 لوحة التحكم (2026)</h3>
+        <h3 id="txt_admin_title">📊 لوحة المدير (2026)</h3>
         
-        <div class="filter-group" style="border: 1px solid var(--gold);">
-            <h4 style="width:100%; margin:0; font-size:14px;" id="txt_add_emp">➕ إضافة موظف جديد</h4>
-            <input type="text" id="newEmpID" placeholder="ID (006)" style="flex:1; min-width:80px;">
-            <input type="text" id="newEmpName" placeholder="Name (مشرف)" style="flex:1; min-width:120px;">
-            <button class="btn-gold" style="width:auto; padding:10px 20px;" onclick="addNewEmployee()">حفظ</button>
+        <div class="admin-tools">
+            <h4 id="txt_add_emp" style="margin:0; color:var(--gold);">➕ إضافة موظف جديد</h4>
+            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي">
+            <input type="text" id="newEmpName" placeholder="الاسم">
+            <button class="btn-gold" onclick="addNewEmployee()">إضافة للقائمة</button>
         </div>
 
-        <div class="filter-group">
-            <input type="date" id="dateFrom" style="flex:1;">
-            <input type="date" id="dateTo" style="flex:1;">
-            <button class="btn-green" style="flex:1;" onclick="exportToExcel()" id="txt_export">📥 Excel</button>
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <button class="btn-green" style="width:100%;" onclick="exportToExcel()" id="txt_export">📥 تصدير Excel</button>
         </div>
 
         <div style="overflow-x:auto;">
             <table id="attendanceTable">
                 <thead>
-                    <tr><th id="th_emp">الموظف</th><th id="th_status">الحالة</th><th id="th_time">الوقت</th><th id="th_photo">الصورة</th></tr>
+                    <tr>
+                        <th id="th_emp">الاسم</th>
+                        <th id="th_status">الحالة</th>
+                        <th id="th_time">التاريخ والوقت</th>
+                        <th>🖼️</th>
+                    </tr>
                 </thead>
                 <tbody id="logsTable"></tbody>
             </table>
         </div>
-        <button class="btn-red" style="width:100%; margin-top:15px;" onclick="location.reload()">LOGOUT</button>
+        <button class="btn-red" style="width:100%; margin-top:15px;" onclick="location.reload()">خروج</button>
     </div>
 </div>
 
 <script>
-    // --- إعدادات Firebase ---
+    // --- إعدادات Firebase (يجب التأكد من صحتها في مشروعك) ---
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -95,14 +108,13 @@
 
     // --- الترجمة ---
     const translations = {
-        ar: { dir: "rtl", btn_lang: "🌐 English", login_title: "🏢 نظام الحضور الذكي", login_btn: "🚀 دخول", emp_title: "📸 بصمة الوجه", btn_in: "حضور ✅", btn_out: "انصراف 🚪", logout: "تسجيل خروج", admin_title: "📊 لوحة المدير (2026)", add_emp: "➕ إضافة موظف", export: "📥 تصدير إكسل", th_emp: "الاسم", th_status: "الحالة", th_time: "الوقت", th_photo: "الصورة" },
-        en: { dir: "ltr", btn_lang: "🌐 العربية", login_title: "🏢 Smart Attendance", login_btn: "🚀 Login", emp_title: "📸 Face ID", btn_in: "Check In", btn_out: "Check Out", logout: "Logout", admin_title: "📊 Admin Panel (2026)", add_emp: "➕ Add Employee", export: "📥 Export Excel", th_emp: "Name", th_status: "Status", th_time: "Time", th_photo: "Photo" }
+        ar: { dir: "rtl", login_title: "🏢 نظام الحضور الذكي", login_btn: "🚀 دخول", emp_title: "📸 بصمة الوجه", btn_in: "حضور ✅", btn_out: "انصراف 🚪", logout: "خروج", admin_title: "📊 لوحة المدير (2026)", add_emp: "➕ إضافة موظف", export: "تصدير إكسل", th_emp: "الاسم", th_status: "الحالة", th_time: "التاريخ والوقت" },
+        en: { dir: "ltr", login_title: "🏢 Smart Attendance", login_btn: "🚀 Login", emp_title: "📸 Face ID", btn_in: "Check In", btn_out: "Check Out", logout: "Logout", admin_title: "📊 Admin Panel", add_emp: "➕ Add Staff", export: "Export Excel", th_emp: "Name", th_status: "Status", th_time: "Date & Time" }
     };
     let currentLang = localStorage.getItem('lang') || 'ar';
     function applyLanguage() {
         const t = translations[currentLang];
         document.documentElement.dir = t.dir;
-        document.getElementById("langBtn").innerText = t.btn_lang;
         document.getElementById("txt_login_title").innerText = t.login_title;
         document.getElementById("txt_login_btn").innerText = t.login_btn;
         document.getElementById("txt_emp_title").innerText = t.emp_title;
@@ -115,12 +127,11 @@
         document.getElementById("th_emp").innerText = t.th_emp;
         document.getElementById("th_status").innerText = t.th_status;
         document.getElementById("th_time").innerText = t.th_time;
-        document.getElementById("th_photo").innerText = t.th_photo;
     }
     function toggleLanguage() { currentLang = (currentLang === 'ar') ? 'en' : 'ar'; localStorage.setItem('lang', currentLang); applyLanguage(); }
     applyLanguage();
 
-    // --- العمليات الرئيسية ---
+    // --- العمليات ---
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
         const pass = document.getElementById("loginPass").value;
@@ -145,16 +156,17 @@
     async function addNewEmployee() {
         const id = document.getElementById("newEmpID").value.trim();
         const name = document.getElementById("newEmpName").value.trim();
-        if(!id || !name) return alert("أدخل البيانات");
+        if(!id || !name) return alert("يرجى إدخال الرقم والاسم");
         const email = `${id}@alzahrani.com`;
         try {
-            // سنستخدم كلمة مرور مؤقتة هي الرقم الوظيفي نفسه لتبسيط الأمر
             const userCredential = await auth.createUserWithEmailAndPassword(email, id);
             await db.collection("users").doc(userCredential.user.uid).set({
                 empID: id, name: name, role: "employee"
             });
-            alert(`تم إضافة ${name} بنجاح. كلمة مروره هي رقم وظيفتة.`);
-        } catch (e) { alert("الموظف موجود مسبقاً أو هناك خطأ في البيانات"); }
+            alert(`تم إضافة الموظف ${name} بنجاح! كلمة مروره هي رقمه الوظيفي.`);
+            document.getElementById("newEmpID").value = "";
+            document.getElementById("newEmpName").value = "";
+        } catch (e) { alert("حدث خطأ عند الإضافة"); }
     }
 
     async function startCam() {
@@ -163,7 +175,7 @@
     }
 
     async function takeAction(type) {
-        alert("جاري المعالجة...");
+        alert("جاري رفع البصمة...");
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -184,7 +196,7 @@
                 img: data.url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert(translations[currentLang].btn_in + " تمت بنجاح!");
+            alert("تم التسجيل بنجاح!");
         } catch (e) { alert("خطأ في الاتصال"); }
     }
 
@@ -192,7 +204,14 @@
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
             const html = snap.docs.map(doc => {
                 const d = doc.data();
-                return `<tr><td>${d.name}</td><td>${d.status}</td><td>${d.time?d.time.toDate().toLocaleString():'...'}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
+                let fullDateTime = "...";
+                if (d.time) {
+                    const dateObj = d.time.toDate();
+                    const datePart = dateObj.toISOString().split('T')[0];
+                    const timePart = dateObj.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    fullDateTime = `${datePart} ${timePart}`;
+                }
+                return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction: ltr;">${fullDateTime}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
             }).join('');
             document.getElementById("logsTable").innerHTML = html;
         });

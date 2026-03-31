@@ -14,8 +14,8 @@
         .container { width: 100%; max-width: 500px; position: relative; }
         .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; border: 1px solid var(--gold); }
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
-        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; }
         .btn-gold { background: var(--gold); color: #0f172a; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
@@ -55,8 +55,8 @@
         <h3 style="text-align:center;">📊 لوحة المدير (2026)</h3>
         <div class="admin-tools">
             <h4 style="margin:0; color:var(--gold);">➕ إضافة موظف جديد</h4>
-            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (مثلاً 033)">
-            <input type="text" id="newEmpName" placeholder="الاسم (مثلاً رانجار)">
+            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (033)">
+            <input type="text" id="newEmpName" placeholder="الاسم (رانجار)">
             <button class="btn-gold" onclick="addNewEmployee()">حفظ الموظف</button>
         </div>
         <button class="btn-green" style="margin-bottom: 10px;" onclick="exportToExcel()">📥 تصدير تقرير Excel</button>
@@ -103,7 +103,7 @@
                     startCam();
                 }
             }
-        } catch (e) { alert("خطأ في بيانات الدخول"); }
+        } catch (e) { alert("خطأ في البيانات: تأكد من الرقم وكلمة المرور"); }
     }
 
     async function addNewEmployee() {
@@ -117,14 +117,14 @@
             const userCred = await tempApp.auth().createUserWithEmailAndPassword(email, password);
             await db.collection("users").doc(userCred.user.uid).set({ empID: id, name: name, role: "employee" });
             await tempApp.delete();
-            alert(`✅ تم! الاسم: ${name} | كلمة المرور: ${password}`);
+            alert(`✅ تم بنجاح!\nالاسم: ${name}\nكلمة المرور: ${password}`);
             document.getElementById("newEmpID").value = ""; document.getElementById("newEmpName").value = "";
         } catch (e) { alert("خطأ: " + e.message); }
     }
 
     async function startCam() {
         try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); document.getElementById("camera").srcObject = s; }
-        catch (e) { alert("يرجى السماح بالكاميرا"); }
+        catch (e) { alert("يرجى السماح بالكاميرا لتسجيل البصمة"); }
     }
 
     async function takeAction(type) {
@@ -132,27 +132,41 @@
         const canvas = document.createElement("canvas");
         canvas.width = 400; canvas.height = 300;
         canvas.getContext("2d").drawImage(video, 0, 0, 400, 300);
-        const base64 = canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
+        const base64 = canvas.toDataURL("image/jpeg", 0.4).split(",")[1];
         
-        alert("جاري رفع البصمة...");
+        alert("جاري التحقق... يرجى الانتظار");
         const fd = new FormData(); fd.append("image", base64);
+        
         try {
             const res = await fetch("https://iimg.live/api/upload", {
                 method: "POST",
-                headers: { "Authorization": "Bearer pk_public_3db6884c9c2c6f089fdfb904" }, // مفتاحك الجديد
+                headers: { "Authorization": "Bearer pk_public_3db6884c9c2c6f089fdfb904" },
                 body: fd
             });
             const data = await res.json();
-            if(!data.url) throw new Error("فشل الرفع");
+            const imageUrl = data.url || "https://via.placeholder.com/150?text=No+Image";
+
             const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
             await db.collection("attendance").add({
                 name: userDoc.data().name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
-                img: data.url,
+                img: imageUrl,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("✅ تم التسجيل بنجاح!");
-        } catch (e) { alert("❌ خطأ في الرفع: تأكد من الإنترنت أو صلاحية المفتاح"); }
+            alert("✅ تم تسجيلك بنجاح!");
+            location.reload();
+        } catch (e) {
+            // تسجيل الحضور حتى لو فشل الرفع لضمان حقوق الموظف
+            const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
+            await db.collection("attendance").add({
+                name: userDoc.data().name,
+                status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
+                img: "https://via.placeholder.com/150?text=Network+Error",
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("✅ تم التسجيل (بدون صورة بسبب ضعف الإنترنت)");
+            location.reload();
+        }
     }
 
     function loadLogs() {

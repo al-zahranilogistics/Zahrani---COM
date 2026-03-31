@@ -15,24 +15,24 @@
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; transition: 0.3s; }
         .container { width: 100%; max-width: 900px; margin: 0 auto; }
         
-        /* الشعار البيضاوي والفيديو */
-        .header-vid { width: 100%; height: 160px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--gold); }
+        /* تصميم الشعار البيضاوي */
         .logo-oval { width: 160px; height: 90px; object-fit: contain; border-radius: 50% / 50%; border: 2px solid var(--gold); background: white; padding: 5px; margin: 0 auto 15px; display: block; box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); }
+        .header-vid { width: 100%; height: 160px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--gold); }
 
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         
         /* الأزرار والأيقونات */
-        .btn { padding: 10px 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+        .btn { padding: 10px 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-blue { background: #3b82f6; color: white; }
         
-        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; }
 
         /* الجداول */
-        .table-container { overflow-x: auto; border-radius: 15px; }
+        .table-container { overflow-x: auto; border-radius: 15px; background: rgba(0,0,0,0.2); }
         table { width: 100%; border-collapse: collapse; min-width: 650px; }
-        th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; }
+        th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; font-size: 0.9rem; }
         td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; font-size: 0.85rem; }
 
         #camera { width: 100%; max-width: 380px; border-radius: 20px; border: 3px solid var(--gold); transform: scaleX(-1); margin: 0 auto 15px; display: block; }
@@ -50,18 +50,10 @@
     </div>
 
     <div id="loginSection" class="glass-card" style="max-width: 400px; margin: 0 auto;">
-        <video class="header-vid" autoplay muted loop playsinline id="loginVid">
-            <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
-        </video>
+        <video class="header-vid" autoplay muted loop playsinline><source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4"></video>
         <h3 id="loginHeader" style="text-align: center;"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
-        <div style="background:#0f172a; border-radius:10px; padding:10px; margin-bottom:10px; display:flex; gap:10px; border:1px solid #334155;">
-            <i class="fas fa-user-tie" style="color:var(--gold); margin-top:3px;"></i>
-            <input type="text" id="empID" placeholder="الرقم الوظيفي" style="background:transparent; border:none; color:white; outline:none; width:100%;">
-        </div>
-        <div style="background:#0f172a; border-radius:10px; padding:10px; margin-bottom:15px; display:flex; gap:10px; border:1px solid #334155;">
-            <i class="fas fa-key" style="color:var(--gold); margin-top:3px;"></i>
-            <input type="password" id="loginPass" placeholder="كلمة المرور" style="background:transparent; border:none; color:white; outline:none; width:100%;">
-        </div>
+        <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155; box-sizing:border-box;">
+        <input type="password" id="loginPass" placeholder="كلمة المرور" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155; box-sizing:border-box;">
         <button class="btn btn-gold" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLogin">دخول</span></button>
     </div>
 
@@ -69,33 +61,33 @@
         <h3 id="empPanelHeader" style="text-align:center;"><i class="fas fa-camera"></i> تسجيل البصمة</h3>
         <video id="camera" autoplay muted playsinline></video>
         <div style="display: flex; gap: 10px;">
-            <button id="btnIn" class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">حضور</span></button>
-            <button id="btnOut" class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">انصراف</span></button>
+            <button class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">حضور</span></button>
+            <button class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">انصراف</span></button>
         </div>
-        <button class="btn" style="width:100%; margin-top:15px; background:rgba(255,255,255,0.05); color:white;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span id="btnBack">خروج</span></button>
+        <button class="btn" style="width:100%; margin-top:15px; background:rgba(255,255,255,0.05); color:white;" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> <span id="btnBack">خروج</span></button>
     </div>
 
     <div id="adminPanel" style="display:none;">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <button class="btn btn-blue" onclick="logout()"><i class="fas fa-arrow-right"></i> <span id="adminBack">عودة / خروج</span></button>
+            <button class="btn btn-blue" onclick="location.reload()"><i class="fas fa-arrow-right"></i> <span id="adminBack">عودة / خروج</span></button>
             <button class="btn btn-gold" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="glass-card">
             <h3><i class="fas fa-user-plus"></i> <span id="addEmpTitle">إضافة موظف جديد</span></h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
-                <input type="text" id="newName" placeholder="اسم الموظف" style="padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
+                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
+                <input type="text" id="newName" placeholder="اسم الموظف" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
             </div>
             <button class="btn btn-blue" style="width:100%; margin-top:10px;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmp">حفظ الموظف</span></button>
         </div>
 
         <div class="glass-card">
-            <h3><i class="fas fa-history"></i> <span id="logsTitle">سجل الحضور الموحد</span></h3>
+            <h3><i class="fas fa-history"></i> <span id="logsTitle">سجل الحضور المباشر</span></h3>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th id="thName">الاسم</th><th id="thStatus">الحالة</th><th id="thTime">التاريخ والوقت</th><th>📸</th><th id="thAction">إجراء</th></tr>
+                        <tr><th id="thName">الاسم</th><th id="thStatus">الحالة</th><th id="thTime">التاريخ والوقت</th><th>📸</th><th id="thAction">مسح</th></tr>
                     </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
@@ -105,7 +97,7 @@
 </div>
 
 <script>
-    // Firebase Config ( Alzahrani Logistics )
+    // إعدادات Firebase لشركة الزهراني
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -125,13 +117,13 @@
             title: "نظام الزهراني للبصمة الذكية", login: "دخول النظام", id: "الرقم الوظيفي", pass: "كلمة المرور", 
             btnLog: "دخول", cam: "تسجيل البصمة", in: "حضور", out: "انصراف", back: "خروج / عودة", 
             add: "إضافة موظف جديد", name: "اسم الموظف", save: "حفظ الموظف", logs: "سجل الحضور الموحد",
-            thName: "الاسم", thStatus: "الحالة", thTime: "التاريخ والوقت", thAction: "إجراء"
+            thName: "الاسم", thStatus: "الحالة", thTime: "التاريخ والوقت", thAction: "مسح"
         },
         en: {
             title: "Alzahrani Smart Attendance", login: "System Login", id: "Employee ID", pass: "Password", 
             btnLog: "Login", cam: "Face ID Capture", in: "Clock In", out: "Clock Out", back: "Back / Logout", 
-            add: "Add New Employee", name: "Employee Name", save: "Save Employee", logs: "Unified Attendance Logs",
-            thName: "Name", thStatus: "Status", thTime: "Date & Time", thAction: "Action"
+            add: "Add New Employee", name: "Employee Name", save: "Save Employee", logs: "Attendance Logs",
+            thName: "Name", thStatus: "Status", thTime: "Date & Time", thAction: "Delete"
         }
     };
 
@@ -139,7 +131,6 @@
         currentLang = currentLang === 'ar' ? 'en' : 'ar';
         document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
         document.getElementById("langText").innerText = currentLang === 'ar' ? "English" : "عربي";
-        
         const d = langData[currentLang];
         document.getElementById("mainTitle").innerText = d.title;
         document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${d.login}`;
@@ -176,7 +167,7 @@
                 document.getElementById("employeePanel").style.display = "block";
                 startCam();
             }
-        } catch (e) { alert(currentLang === 'ar' ? "خطأ في البيانات" : "Invalid Login Details"); }
+        } catch (e) { alert(currentLang === 'ar' ? "خطأ في تسجيل الدخول" : "Login Failed"); }
     }
 
     async function startCam() {
@@ -199,8 +190,7 @@
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/dzukfybwr/image/upload`, { method: "POST", body: fd });
             const data = await res.json();
-            const user = auth.currentUser;
-            const userDoc = await db.collection("users").doc(user.uid).get();
+            const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
 
             await db.collection("attendance").add({
                 name: userDoc.data().name,
@@ -208,18 +198,23 @@
                 img: data.secure_url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert(currentLang === 'ar' ? "تم بنجاح" : "Success");
+            alert(currentLang === 'ar' ? "تم التسجيل!" : "Success!");
             location.reload();
         } catch (e) { alert("Error"); }
     }
 
+    // إضافة موظف جديد لقاعدة البيانات
     async function addEmployee() {
         const id = document.getElementById("newID").value.trim();
         const name = document.getElementById("newName").value.trim();
-        if(!id || !name) return alert("Fill data");
-        await db.collection("users").add({ empID: id, name: name, role: "employee" });
-        alert(currentLang === 'ar' ? "تم إضافة الموظف" : "Employee Added");
-        document.getElementById("newID").value = ""; document.getElementById("newName").value = "";
+        if(!id || !name) return alert("الرجاء إدخال كافة البيانات");
+        try {
+            // سيتم تخزين بيانات الموظف ليتمكن من الدخول لاحقاً
+            await db.collection("users").add({ empID: id, name: name, role: "employee" });
+            alert(currentLang === 'ar' ? "تم حفظ الموظف بنجاح" : "Employee Saved");
+            document.getElementById("newID").value = ""; 
+            document.getElementById("newName").value = "";
+        } catch (e) { alert("Error saving"); }
     }
 
     function loadAdminLogs() {
@@ -240,17 +235,18 @@
         });
     }
 
+    // تفعيل زر مسح السجل
     async function deleteLog(id) {
-        if(confirm("Delete?")) await db.collection("attendance").doc(id).delete();
+        if(confirm(currentLang === 'ar' ? "هل تريد مسح هذا السجل؟" : "Delete this record?")) {
+            await db.collection("attendance").doc(id).delete();
+        }
     }
 
-    function logout() { location.reload(); }
-    
     function exportToExcel() {
         const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Alzahrani_Report_${new Date().toLocaleDateString()}.xlsx`);
+        XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString()}.xlsx`);
     }
 </script>
 </body>

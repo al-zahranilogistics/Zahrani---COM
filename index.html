@@ -8,29 +8,21 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <style>
         :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 500px; position: relative; }
-        
-        .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .lang-switcher { position: absolute; top: 10px; left: 10px; z-index: 100; }
+        .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; border: 1px solid var(--gold); }
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
-        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; font-size: 14px; }
-        
-        .btn-gold { background: var(--gold); color: #0f172a; width: 100%; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-gold { background: var(--gold); color: #0f172a; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
-        
         .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px dashed var(--gold); }
-        
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
         th, td { padding: 8px; border-bottom: 1px solid #334155; text-align: center; }
         th { color: var(--gold); }
-        
         #camera { width: 100%; border-radius: 15px; background: #000; transform: scaleX(-1); margin-bottom: 10px; border: 2px solid var(--gold); }
         .img-preview { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); cursor: pointer; }
     </style>
@@ -38,62 +30,49 @@
 <body>
 
 <div class="container">
-    <div class="lang-switcher">
-        <button onclick="toggleLanguage()" id="langBtn" style="background:var(--gold); font-size:11px; padding:5px 10px;">🌐 English</button>
-    </div>
-
     <video class="header-vid" autoplay muted loop playsinline>
         <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
     </video>
 
     <div id="loginSection" class="glass-card">
-        <h2 id="txt_login_title" style="text-align:center; margin-top:0;">🏢 نظام الحضور الذكي</h2>
+        <h2 style="text-align:center; margin-top:0;">🏢 نظام الحضور الذكي</h2>
         <input type="text" id="empID" placeholder="الرقم الوظيفي">
         <input type="password" id="loginPass" placeholder="كلمة المرور">
-        <button class="btn-gold" onclick="smartLogin()" id="txt_login_btn">🚀 دخول</button>
+        <button class="btn-gold" onclick="smartLogin()">🚀 دخول</button>
     </div>
 
     <div id="employeePanel" style="display:none;" class="glass-card">
-        <h3 id="txt_emp_title">📸 تسجيل البصمة</h3>
+        <h3 style="text-align:center;">📸 تسجيل البصمة</h3>
         <video id="camera" autoplay muted playsinline></video>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-gold" style="flex:1" onclick="takeAction('in')" id="txt_btn_in">حضور ✅</button>
-            <button class="btn-red" style="flex:1" onclick="takeAction('out')" id="txt_btn_out">انصراف 🚪</button>
+            <button class="btn-gold" style="flex:1" onclick="takeAction('in')">حضور ✅</button>
+            <button class="btn-red" style="flex:1" onclick="takeAction('out')">انصراف 🚪</button>
         </div>
-        <button style="background:none; color:#94a3b8; width:100%; margin-top:10px;" onclick="location.reload()">خروج</button>
+        <button style="background:none; color:#94a3b8; margin-top:10px;" onclick="location.reload()">تسجيل خروج</button>
     </div>
 
     <div id="adminPanel" style="display:none;" class="glass-card">
-        <h3 id="txt_admin_title">📊 لوحة المدير (2026)</h3>
-        
+        <h3 style="text-align:center;">📊 لوحة المدير (2026)</h3>
         <div class="admin-tools">
             <h4 style="margin:0; color:var(--gold);">➕ إضافة موظف جديد</h4>
-            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (033)">
-            <input type="text" id="newEmpName" placeholder="الاسم (رانجار)">
-            <button class="btn-gold" onclick="addNewEmployee()">حفظ في القاعدة</button>
+            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (مثلاً 033)">
+            <input type="text" id="newEmpName" placeholder="الاسم (مثلاً رانجار)">
+            <button class="btn-gold" onclick="addNewEmployee()">حفظ الموظف</button>
         </div>
-
-        <button class="btn-green" style="width:100%; margin-bottom: 10px;" onclick="exportToExcel()">📥 تصدير تقرير Excel</button>
-
+        <button class="btn-green" style="margin-bottom: 10px;" onclick="exportToExcel()">📥 تصدير تقرير Excel</button>
         <div style="overflow-x:auto;">
             <table id="attendanceTable">
                 <thead>
-                    <tr>
-                        <th>الموظف</th>
-                        <th>الحالة</th>
-                        <th>التاريخ والزمن</th>
-                        <th>🖼️</th>
-                    </tr>
+                    <tr><th>الموظف</th><th>الحالة</th><th>التاريخ والزمن</th><th>🖼️</th></tr>
                 </thead>
                 <tbody id="logsTable"></tbody>
             </table>
         </div>
-        <button class="btn-red" style="width:100%; margin-top:15px;" onclick="location.reload()">تسجيل خروج</button>
+        <button class="btn-red" style="margin-top:15px;" onclick="location.reload()">خروج</button>
     </div>
 </div>
 
 <script>
-    // --- إعدادات Firebase ---
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -107,22 +86,6 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- الترجمة ---
-    const translations = {
-        ar: { login_title: "🏢 نظام الحضور الذكي", login_btn: "🚀 دخول", emp_title: "📸 بصمة الوجه" },
-        en: { login_title: "🏢 Smart Attendance", login_btn: "🚀 Login", emp_title: "📸 Face ID" }
-    };
-    let currentLang = 'ar';
-
-    function toggleLanguage() {
-        currentLang = (currentLang === 'ar') ? 'en' : 'ar';
-        document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
-        document.getElementById("txt_login_title").innerText = translations[currentLang].login_title;
-        document.getElementById("txt_login_btn").innerText = translations[currentLang].login_btn;
-        document.getElementById("txt_emp_title").innerText = translations[currentLang].emp_title;
-    }
-
-    // --- تسجيل الدخول ---
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
         const pass = document.getElementById("loginPass").value;
@@ -140,71 +103,58 @@
                     startCam();
                 }
             }
-        } catch (e) { alert("خطأ: الرقم أو كلمة المرور غير صحيحة"); }
+        } catch (e) { alert("خطأ في بيانات الدخول"); }
     }
 
-    // --- دالة إضافة الموظف (المعالجة الذكية لكلمة المرور) ---
     async function addNewEmployee() {
         const id = document.getElementById("newEmpID").value.trim();
         const name = document.getElementById("newEmpName").value.trim();
-        if(!id || !name) return alert("يرجى إكمال الحقول");
-
+        if(!id || !name) return alert("أدخل البيانات كاملة");
         const email = `${id}@alzahrani.com`;
-        // حل مشكلة الـ 6 خانات: تكملة الرقم بأصفار
         const password = id.length >= 6 ? id : id.padEnd(6, "0");
-
         try {
             const tempApp = firebase.initializeApp(firebaseConfig, "App" + Math.random());
-            const tempAuth = tempApp.auth();
-
-            const userCredential = await tempAuth.createUserWithEmailAndPassword(email, password);
-            await db.collection("users").doc(userCredential.user.uid).set({
-                empID: id, name: name, role: "employee"
-            });
-
+            const userCred = await tempApp.auth().createUserWithEmailAndPassword(email, password);
+            await db.collection("users").doc(userCred.user.uid).set({ empID: id, name: name, role: "employee" });
             await tempApp.delete();
-            alert(`✅ تم الحفظ بنجاح!\nالموظف: ${name}\nكلمة المرور للدخول: ${password}`);
-            document.getElementById("newEmpID").value = "";
-            document.getElementById("newEmpName").value = "";
+            alert(`✅ تم! الاسم: ${name} | كلمة المرور: ${password}`);
+            document.getElementById("newEmpID").value = ""; document.getElementById("newEmpName").value = "";
         } catch (e) { alert("خطأ: " + e.message); }
     }
 
-    // --- الكاميرا والبصمة ---
     async function startCam() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById("camera").srcObject = stream;
-        } catch (e) { alert("يرجى السماح بالوصول للكاميرا"); }
+        try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); document.getElementById("camera").srcObject = s; }
+        catch (e) { alert("يرجى السماح بالكاميرا"); }
     }
 
     async function takeAction(type) {
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0);
-        const base64 = canvas.toDataURL("image/jpeg", 0.5).split(",")[1];
+        canvas.width = 400; canvas.height = 300;
+        canvas.getContext("2d").drawImage(video, 0, 0, 400, 300);
+        const base64 = canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
         
+        alert("جاري رفع البصمة...");
         const fd = new FormData(); fd.append("image", base64);
         try {
             const res = await fetch("https://iimg.live/api/upload", {
                 method: "POST",
-                headers: { "Authorization": "Bearer pk_5512153eb5b86fd31e661634679102a2" },
+                headers: { "Authorization": "Bearer pk_415f3da8d4902db59514e398010abb43" }, // مفتاحك الجديد
                 body: fd
             });
             const data = await res.json();
+            if(!data.url) throw new Error("فشل الرفع");
             const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
-            
             await db.collection("attendance").add({
                 name: userDoc.data().name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
                 img: data.url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("تم تسجيل البصمة بنجاح!");
-        } catch (e) { alert("خطأ في رفع الصورة"); }
+            alert("✅ تم التسجيل بنجاح!");
+        } catch (e) { alert("❌ خطأ في الرفع: تأكد من الإنترنت أو صلاحية المفتاح"); }
     }
 
-    // --- عرض السجلات بالوقت المختصر ---
     function loadLogs() {
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
             const html = snap.docs.map(doc => {
@@ -212,9 +162,7 @@
                 let fullTime = "...";
                 if (d.time) {
                     const dt = d.time.toDate();
-                    const datePart = dt.toISOString().split('T')[0];
-                    const timePart = dt.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    fullTime = `${datePart} ${timePart}`;
+                    fullTime = `${dt.toISOString().split('T')[0]} ${dt.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
                 }
                 return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction:ltr;">${fullTime}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
             }).join('');
@@ -222,13 +170,12 @@
         });
     }
 
-    // --- تصدير Excel ---
     function exportToExcel() {
         const table = document.getElementById("attendanceTable");
         const ws = XLSX.utils.table_to_sheet(table);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "الحضور");
-        XLSX.writeFile(wb, `تقرير_حضور_2026.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, `Report_2026.xlsx`);
     }
 </script>
 </body>

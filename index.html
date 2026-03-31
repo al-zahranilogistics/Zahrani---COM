@@ -11,7 +11,7 @@
     
     <style>
         :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; --success: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; transition: 0.3s; }
         .container { width: 100%; max-width: 900px; margin: 0 auto; }
         .logo-oval { width: 150px; height: 85px; object-fit: contain; border-radius: 50% / 50%; border: 2px solid var(--gold); background: white; padding: 5px; margin: 0 auto 15px; display: block; box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); }
         .header-vid { width: 100%; height: 160px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--gold); }
@@ -21,7 +21,7 @@
         .btn-danger { background: var(--danger); color: white; }
         .btn-blue { background: #3b82f6; color: white; }
         .btn-outline { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
-        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; }
+        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .table-container { overflow-x: auto; border-radius: 15px; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; }
@@ -32,7 +32,7 @@
 </head>
 <body dir="rtl">
 
-<div class="lang-toggle" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langText">English</span></div>
+<div class="lang-toggle" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langBtnText">English</span></div>
 
 <div class="container">
     <div class="header" style="text-align:center;">
@@ -44,7 +44,7 @@
         <video class="header-vid" autoplay muted loop playsinline><source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4"></video>
         <h3 id="loginHeader" style="text-align: center;"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; padding:14px; margin-bottom:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155; box-sizing:border-box;">
-        <button class="btn btn-gold" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLogin">دخول</span></button>
+        <button class="btn btn-gold" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
     <div id="employeePanel" style="display:none;" class="glass-card">
@@ -55,36 +55,38 @@
             <button class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">تسجيل انصراف</span></button>
         </div>
         <button class="btn btn-outline" style="width:100%" onclick="location.reload()">
-            <i class="fas fa-undo"></i> <span>خروج وعودة للشاشة الرئيسية</span>
+            <i class="fas fa-undo"></i> <span id="btnBackText">خروج وعودة للشاشة الرئيسية</span>
         </button>
     </div>
 
     <div id="adminPanel" style="display:none;">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <button class="btn btn-blue" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> <span id="adminBack">خروج</span></button>
+            <button class="btn btn-blue" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> <span id="adminLogoutText">خروج</span></button>
             <button class="btn btn-gold" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="glass-card">
-            <h3><i class="fas fa-user-plus"></i> <span id="addEmpTitle">إضافة موظف</span></h3>
+            <h3><i class="fas fa-user-plus"></i> <span id="addEmpHeader">إضافة موظف</span></h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
                 <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
                 <input type="text" id="newName" placeholder="اسم الموظف" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
             </div>
-            <button class="btn btn-blue" style="width:100%;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmp">حفظ الموظف</span></button>
+            <button class="btn btn-blue" style="width:100%;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ الموظف</span></button>
         </div>
 
         <div class="glass-card">
-            <h3><i class="fas fa-users-cog"></i> إدارة الموظفين</h3>
+            <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> إدارة الموظفين</h3>
             <div id="staffList" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
         </div>
 
         <div class="glass-card">
-            <h3><i class="fas fa-list"></i> سجل الحضور</h3>
+            <h3 id="logsHeader"><i class="fas fa-list"></i> سجل الحضور</h3>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>الاسم</th><th>الحالة</th><th>التاريخ والوقت</th><th>📸</th><th>مسح</th></tr>
+                        <tr id="tableHead">
+                            <th>الاسم</th><th>الحالة</th><th>التاريخ والوقت</th><th>📸</th><th>مسح</th>
+                        </tr>
                     </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
@@ -103,14 +105,90 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let currentUser = null;
+    let currentLang = 'ar';
+
+    // بيانات الترجمة
+    const translations = {
+        ar: {
+            mainTitle: "نظام الزهراني للبصمة الذكية",
+            loginHeader: "دخول النظام",
+            empIDPlaceholder: "الرقم الوظيفي",
+            btnLogin: "دخول",
+            empPanelHeader: "بصمة الوجه لـ: ",
+            txtIn: "إثبات حضور",
+            txtOut: "تسجيل انصراف",
+            btnBack: "خروج وعودة للشاشة الرئيسية",
+            adminLogout: "خروج",
+            addEmpHeader: "إضافة موظف",
+            newNamePlaceholder: "اسم الموظف",
+            btnSaveEmp: "حفظ الموظف",
+            staffListHeader: "إدارة الموظفين",
+            logsHeader: "سجل الحضور",
+            thName: "الاسم", thStatus: "الحالة", thTime: "التاريخ والوقت", thAction: "مسح",
+            langBtn: "English",
+            msgSuccess: "تم بنجاح", msgError: "خطأ في الاتصال"
+        },
+        en: {
+            mainTitle: "Alzahrani Smart Attendance System",
+            loginHeader: "System Login",
+            empIDPlaceholder: "Employee ID",
+            btnLogin: "Login",
+            empPanelHeader: "Face ID for: ",
+            txtIn: "Clock In",
+            txtOut: "Clock Out",
+            btnBack: "Back to Home",
+            adminLogout: "Logout",
+            addEmpHeader: "Add Employee",
+            newNamePlaceholder: "Employee Name",
+            btnSaveEmp: "Save Employee",
+            staffListHeader: "Staff Management",
+            logsHeader: "Attendance Logs",
+            thName: "Name", thStatus: "Status", thTime: "Date & Time", thAction: "Delete",
+            langBtn: "عربي",
+            msgSuccess: "Success", msgError: "Connection Error"
+        }
+    };
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        const t = translations[currentLang];
+        
+        // تغيير اتجاه الصفحة
+        document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        
+        // تحديث النصوص
+        document.getElementById("langBtnText").innerText = t.langBtn;
+        document.getElementById("mainTitle").innerText = t.mainTitle;
+        document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${t.loginHeader}`;
+        document.getElementById("empID").placeholder = t.empIDPlaceholder;
+        document.getElementById("btnLoginText").innerText = t.btnLogin;
+        document.getElementById("empPanelHeader").innerHTML = `<i class="fas fa-video"></i> ${t.empPanelHeader} <span id="currentUserName" style="color:var(--gold)">${currentUser ? currentUser.name : ""}</span>`;
+        document.getElementById("txtIn").innerText = t.txtIn;
+        document.getElementById("txtOut").innerText = t.txtOut;
+        document.getElementById("btnBackText").innerText = t.btnBack;
+        document.getElementById("adminLogoutText").innerText = t.adminLogout;
+        document.getElementById("addEmpHeader").innerHTML = `<i class="fas fa-user-plus"></i> ${t.addEmpHeader}`;
+        document.getElementById("newID").placeholder = t.empIDPlaceholder;
+        document.getElementById("newName").placeholder = t.newNamePlaceholder;
+        document.getElementById("btnSaveEmpText").innerText = t.btnSaveEmp;
+        document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t.staffListHeader}`;
+        document.getElementById("logsHeader").innerHTML = `<i class="fas fa-list"></i> ${t.logsHeader}`;
+        
+        // تحديث عناوين الجدول
+        document.getElementById("tableHead").innerHTML = `<th>${t.thName}</th><th>${t.thStatus}</th><th>${t.thTime}</th><th>📸</th><th>${t.thAction}</th>`;
+        
+        if (currentUser && currentUser.role === "admin") loadAdminData();
+    }
 
     async function smartLogin() {
         const idInput = document.getElementById("empID").value.trim();
         if(!idInput) return;
         const q = await db.collection("users").where("empID", "==", idInput).get();
-        if (q.empty) return alert("الرقم الوظيفي غير موجود");
+        if (q.empty) return alert(currentLang === 'ar' ? "الرقم الوظيفي غير موجود" : "ID not found");
+        
         q.forEach(doc => { currentUser = doc.data(); currentUser.id = doc.id; });
         document.getElementById("loginSection").style.display = "none";
+        
         if(currentUser.role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
             loadAdminData();
@@ -142,13 +220,13 @@
             const data = await res.json();
             await db.collection("attendance").add({
                 name: currentUser.name,
-                status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
+                status: type === 'in' ? (currentLang === 'ar' ? 'حضور ✅' : 'Clock In ✅') : (currentLang === 'ar' ? 'انصراف 🚪' : 'Clock Out 🚪'),
                 img: data.secure_url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert(type === 'in' ? "تم تسجيل الحضور" : "تم تسجيل الانصراف");
+            alert(translations[currentLang].msgSuccess);
             if(type === 'out') location.reload();
-        } catch (e) { alert("خطأ في الاتصال"); }
+        } catch (e) { alert(translations[currentLang].msgError); }
     }
 
     async function addEmployee() {
@@ -160,7 +238,9 @@
     }
 
     async function deleteEmployee(id) {
-        if(confirm("مسح الموظف؟")) { await db.collection("users").doc(id).delete(); loadAdminData(); }
+        if(confirm(currentLang === 'ar' ? "حذف الموظف؟" : "Delete Employee?")) { 
+            await db.collection("users").doc(id).delete(); loadAdminData(); 
+        }
     }
 
     function loadAdminData() {
@@ -179,7 +259,7 @@
             let html = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                const t = d.time ? d.time.toDate().toLocaleString('ar-SA') : "...";
+                const t = d.time ? d.time.toDate().toLocaleString(currentLang === 'ar' ? 'ar-SA' : 'en-US') : "...";
                 html += `<tr><td><b>${d.name}</b></td><td>${d.status}</td><td style="direction:ltr;">${t}</td>
                 <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
                 <td><i class="fas fa-trash" onclick="deleteLog('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></td></tr>`;
@@ -189,7 +269,7 @@
     }
 
     async function deleteLog(id) {
-        if(confirm("مسح السجل؟")) await db.collection("attendance").doc(id).delete();
+        if(confirm(currentLang === 'ar' ? "مسح السجل؟" : "Delete Record?")) await db.collection("attendance").doc(id).delete();
     }
 
     function exportToExcel() {
@@ -197,10 +277,6 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Logs");
         XLSX.writeFile(wb, `Zahrani_Logs.xlsx`);
-    }
-
-    function toggleLanguage() {
-        // منطق تبديل اللغة
     }
 </script>
 </body>

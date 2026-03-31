@@ -3,87 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الزهراني للبصمة الذكية</title>
+    <title>Alzahrani Smart Attendance 2026</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; --success: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 850px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; transition: 0.3s; }
+        .container { width: 100%; max-width: 900px; margin: 0 auto; }
+        
+        /* الشعار البيضاوي والفيديو */
+        .header-vid { width: 100%; height: 160px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--gold); }
+        .logo-oval { width: 160px; height: 90px; object-fit: contain; border-radius: 50% / 50%; border: 2px solid var(--gold); background: white; padding: 5px; margin: 0 auto 15px; display: block; box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); }
+
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { width: 150px; filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.3)); }
         
-        /* الجداول */
-        .table-container { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 550px; }
-        th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; font-size: 0.85rem; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
-
-        /* الأزرار */
-        .btn { padding: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        /* الأزرار والأيقونات */
+        .btn { padding: 10px 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
         .btn-gold { background: var(--gold); color: #000; }
-        .btn-danger { background: var(--danger); color: white; padding: 8px 12px; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* مدخلات البيانات */
-        .input-group { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-group input { background: transparent; border: none; color: white; outline: none; width: 100%; }
-
-        /* الكاميرا والصور */
-        #camera { width: 100%; max-width: 350px; border-radius: 15px; border: 2px solid var(--gold); transform: scaleX(-1); margin: 0 auto 15px; display: block; }
-        .img-preview { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gold); cursor: pointer; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-blue { background: #3b82f6; color: white; }
         
-        #imgModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        #imgModal img { max-width: 90%; max-height: 80%; border-radius: 10px; border: 2px solid var(--gold); }
+        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+        /* الجداول */
+        .table-container { overflow-x: auto; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; font-size: 0.85rem; }
+
+        #camera { width: 100%; max-width: 380px; border-radius: 20px; border: 3px solid var(--gold); transform: scaleX(-1); margin: 0 auto 15px; display: block; }
+        .img-preview { width: 45px; height: 45px; border-radius: 10px; border: 1px solid var(--gold); cursor: pointer; }
     </style>
 </head>
-<body>
+<body dir="rtl">
+
+<div class="lang-toggle" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langText">English</span></div>
 
 <div class="container">
-    <div class="header">
-        <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" alt="شعار الزهراني">
-        <h2 style="color: var(--gold); margin-top: 10px;">بوابة الحضور والانصراف الذكية</h2>
+    <div class="header" style="text-align:center;">
+        <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-oval">
+        <h2 id="mainTitle" style="color: var(--gold);">نظام الزهراني للبصمة الذكية</h2>
     </div>
 
-    <div id="loginSection" class="glass-card" style="max-width: 350px; margin: 0 auto;">
-        <h3 style="text-align: center;"><i class="fas fa-sign-in-alt"></i> دخول النظام</h3>
-        <div class="input-group"><i class="fas fa-user-tie"></i><input type="text" id="empID" placeholder="الرقم الوظيفي"></div>
-        <div class="input-group"><i class="fas fa-key"></i><input type="password" id="loginPass" placeholder="كلمة المرور"></div>
-        <button class="btn btn-gold" style="width:100%" onclick="smartLogin()">دخول</button>
+    <div id="loginSection" class="glass-card" style="max-width: 400px; margin: 0 auto;">
+        <video class="header-vid" autoplay muted loop playsinline id="loginVid">
+            <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
+        </video>
+        <h3 id="loginHeader" style="text-align: center;"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
+        <div style="background:#0f172a; border-radius:10px; padding:10px; margin-bottom:10px; display:flex; gap:10px; border:1px solid #334155;">
+            <i class="fas fa-user-tie" style="color:var(--gold); margin-top:3px;"></i>
+            <input type="text" id="empID" placeholder="الرقم الوظيفي" style="background:transparent; border:none; color:white; outline:none; width:100%;">
+        </div>
+        <div style="background:#0f172a; border-radius:10px; padding:10px; margin-bottom:15px; display:flex; gap:10px; border:1px solid #334155;">
+            <i class="fas fa-key" style="color:var(--gold); margin-top:3px;"></i>
+            <input type="password" id="loginPass" placeholder="كلمة المرور" style="background:transparent; border:none; color:white; outline:none; width:100%;">
+        </div>
+        <button class="btn btn-gold" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLogin">دخول</span></button>
     </div>
 
     <div id="employeePanel" style="display:none;" class="glass-card">
-        <h3 style="text-align:center;">بصمة الوجه الحية</h3>
+        <h3 id="empPanelHeader" style="text-align:center;"><i class="fas fa-camera"></i> تسجيل البصمة</h3>
         <video id="camera" autoplay muted playsinline></video>
-        <div id="actionButtons" style="display: flex; gap: 10px;">
-            <button id="btnIn" class="btn btn-gold" style="flex:1" onclick="takeAction('in')">إثبات حضور ✅</button>
-            <button id="btnOut" class="btn btn-danger" style="flex:1" onclick="takeAction('out')">تسجيل انصراف 🚪</button>
+        <div style="display: flex; gap: 10px;">
+            <button id="btnIn" class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">حضور</span></button>
+            <button id="btnOut" class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">انصراف</span></button>
         </div>
-        <button class="btn" style="background:transparent; color:#94a3b8; width:100%; margin-top:10px;" onclick="location.reload()">تسجيل خروج</button>
+        <button class="btn" style="width:100%; margin-top:15px; background:rgba(255,255,255,0.05); color:white;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span id="btnBack">خروج</span></button>
     </div>
 
     <div id="adminPanel" style="display:none;">
-        <div class="glass-card">
-            <h3><i class="fas fa-chart-pie"></i> إحصائيات اليوم</h3>
-            <div style="display:flex; justify-content:space-around; text-align:center;">
-                <div><h2 id="countIn" style="color:var(--success)">0</h2><p>حضور</p></div>
-                <div><h2 id="countOut" style="color:var(--danger)">0</h2><p>انصراف</p></div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn btn-gold" style="flex:1" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تقرير Excel</button>
-                <button class="btn btn-danger" style="flex:1" onclick="deleteAllLogs()"><i class="fas fa-trash-sweep"></i> مسح كافة البيانات</button>
-            </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <button class="btn btn-blue" onclick="logout()"><i class="fas fa-arrow-right"></i> <span id="adminBack">عودة / خروج</span></button>
+            <button class="btn btn-gold" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="glass-card">
-            <h3><i class="fas fa-list-ul"></i> سجل الحضور المباشر</h3>
+            <h3><i class="fas fa-user-plus"></i> <span id="addEmpTitle">إضافة موظف جديد</span></h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
+                <input type="text" id="newName" placeholder="اسم الموظف" style="padding:10px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
+            </div>
+            <button class="btn btn-blue" style="width:100%; margin-top:10px;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmp">حفظ الموظف</span></button>
+        </div>
+
+        <div class="glass-card">
+            <h3><i class="fas fa-history"></i> <span id="logsTitle">سجل الحضور الموحد</span></h3>
             <div class="table-container">
                 <table>
-                    <thead><tr><th>الموظف</th><th>الحالة</th><th>الوقت</th><th>الصورة</th><th>إجراء</th></tr></thead>
+                    <thead>
+                        <tr><th id="thName">الاسم</th><th id="thStatus">الحالة</th><th id="thTime">التاريخ والوقت</th><th>📸</th><th id="thAction">إجراء</th></tr>
+                    </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
             </div>
@@ -91,9 +104,8 @@
     </div>
 </div>
 
-<div id="imgModal" onclick="this.style.display='none'"><img id="modalImg"></div>
-
 <script>
+    // Firebase Config ( Alzahrani Logistics )
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -106,8 +118,49 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const cloudName = "dzukfybwr";
-    const uploadPreset = "zahrani_private";
+    let currentLang = 'ar';
+
+    const langData = {
+        ar: {
+            title: "نظام الزهراني للبصمة الذكية", login: "دخول النظام", id: "الرقم الوظيفي", pass: "كلمة المرور", 
+            btnLog: "دخول", cam: "تسجيل البصمة", in: "حضور", out: "انصراف", back: "خروج / عودة", 
+            add: "إضافة موظف جديد", name: "اسم الموظف", save: "حفظ الموظف", logs: "سجل الحضور الموحد",
+            thName: "الاسم", thStatus: "الحالة", thTime: "التاريخ والوقت", thAction: "إجراء"
+        },
+        en: {
+            title: "Alzahrani Smart Attendance", login: "System Login", id: "Employee ID", pass: "Password", 
+            btnLog: "Login", cam: "Face ID Capture", in: "Clock In", out: "Clock Out", back: "Back / Logout", 
+            add: "Add New Employee", name: "Employee Name", save: "Save Employee", logs: "Unified Attendance Logs",
+            thName: "Name", thStatus: "Status", thTime: "Date & Time", thAction: "Action"
+        }
+    };
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById("langText").innerText = currentLang === 'ar' ? "English" : "عربي";
+        
+        const d = langData[currentLang];
+        document.getElementById("mainTitle").innerText = d.title;
+        document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${d.login}`;
+        document.getElementById("empID").placeholder = d.id;
+        document.getElementById("loginPass").placeholder = d.pass;
+        document.getElementById("btnLogin").innerText = d.btnLog;
+        document.getElementById("empPanelHeader").innerText = d.cam;
+        document.getElementById("txtIn").innerText = d.in;
+        document.getElementById("txtOut").innerText = d.out;
+        document.getElementById("btnBack").innerText = d.back;
+        document.getElementById("adminBack").innerText = d.back;
+        document.getElementById("addEmpTitle").innerText = d.add;
+        document.getElementById("newID").placeholder = d.id;
+        document.getElementById("newName").placeholder = d.name;
+        document.getElementById("btnSaveEmp").innerText = d.save;
+        document.getElementById("logsTitle").innerText = d.logs;
+        document.getElementById("thName").innerText = d.thName;
+        document.getElementById("thStatus").innerText = d.thStatus;
+        document.getElementById("thTime").innerText = d.thTime;
+        document.getElementById("thAction").innerText = d.thAction;
+    }
 
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
@@ -122,9 +175,8 @@
             } else {
                 document.getElementById("employeePanel").style.display = "block";
                 startCam();
-                checkDailyLimit(userCred.user.uid);
             }
-        } catch (e) { alert("فشل الدخول: تأكد من البيانات"); }
+        } catch (e) { alert(currentLang === 'ar' ? "خطأ في البيانات" : "Invalid Login Details"); }
     }
 
     async function startCam() {
@@ -132,97 +184,73 @@
         document.getElementById("camera").srcObject = s;
     }
 
-    async function checkDailyLimit(uid) {
-        const start = new Date(); start.setHours(0,0,0,0);
-        const snap = await db.collection("attendance").where("uid","==",uid).where("time",">=",start).get();
-        snap.forEach(doc => {
-            if(doc.data().status.includes("حضور")) {
-                document.getElementById("btnIn").disabled = true;
-                document.getElementById("btnIn").innerText = "تم إثبات الحضور";
-            }
-            if(doc.data().status.includes("انصراف")) {
-                document.getElementById("btnOut").disabled = true;
-                document.getElementById("btnOut").innerText = "تم تسجيل الانصراف";
-            }
-        });
-    }
-
     async function takeAction(type) {
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
         canvas.width = 320; canvas.height = 240;
         canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
-        const base64 = canvas.toDataURL("image/jpeg", 0.4); 
+        const base64 = canvas.toDataURL("image/jpeg", 0.4);
 
+        alert(currentLang === 'ar' ? "جاري المعالجة..." : "Processing...");
         const fd = new FormData();
         fd.append("file", base64);
-        fd.append("upload_preset", uploadPreset);
+        fd.append("upload_preset", "zahrani_private");
 
         try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dzukfybwr/image/upload`, { method: "POST", body: fd });
             const data = await res.json();
-            
             const user = auth.currentUser;
             const userDoc = await db.collection("users").doc(user.uid).get();
 
             await db.collection("attendance").add({
-                uid: user.uid,
                 name: userDoc.data().name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
-                img: data.secure_url || "",
+                img: data.secure_url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("تم التسجيل بنجاح");
+            alert(currentLang === 'ar' ? "تم بنجاح" : "Success");
             location.reload();
-        } catch (e) { alert("حدث خطأ في الرفع"); }
+        } catch (e) { alert("Error"); }
+    }
+
+    async function addEmployee() {
+        const id = document.getElementById("newID").value.trim();
+        const name = document.getElementById("newName").value.trim();
+        if(!id || !name) return alert("Fill data");
+        await db.collection("users").add({ empID: id, name: name, role: "employee" });
+        alert(currentLang === 'ar' ? "تم إضافة الموظف" : "Employee Added");
+        document.getElementById("newID").value = ""; document.getElementById("newName").value = "";
     }
 
     function loadAdminLogs() {
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
-            let html = "", ins = 0, outs = 0;
+            let html = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                if(d.status.includes("حضور")) ins++; else outs++;
-                const t = d.time ? d.time.toDate().toLocaleString('ar-SA') : "...";
+                const t = d.time ? d.time.toDate().toLocaleString(currentLang === 'ar' ? 'ar-SA' : 'en-US') : "...";
                 html += `<tr>
                     <td><b>${d.name}</b></td>
-                    <td>${d.status}</td>
-                    <td style="font-size:0.75rem">${t}</td>
-                    <td><img src="${d.img}" class="img-preview" onclick="showImg('${d.img}')"></td>
-                    <td><button class="btn-danger" onclick="deleteSingleLog('${doc.id}')"><i class="fas fa-trash"></i></button></td>
+                    <td><span style="color:${d.status.includes('حضور') ? 'var(--success)' : 'var(--danger)'}">${d.status}</span></td>
+                    <td style="direction:ltr;">${t}</td>
+                    <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
+                    <td><button class="btn btn-danger" onclick="deleteLog('${doc.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
             });
             document.getElementById("logsTable").innerHTML = html;
-            document.getElementById("countIn").innerText = ins;
-            document.getElementById("countOut").innerText = outs;
         });
     }
 
-    // حذف سجل واحد
-    async function deleteSingleLog(id) {
-        if(confirm("هل تريد حذف هذا السجل نهائياً؟")) {
-            await db.collection("attendance").doc(id).delete();
-        }
+    async function deleteLog(id) {
+        if(confirm("Delete?")) await db.collection("attendance").doc(id).delete();
     }
 
-    // مسح كافة البيانات (للمدير فقط)
-    async function deleteAllLogs() {
-        if(confirm("تحذير: سيتم مسح كافة سجلات الحضور نهائياً. هل أنت متأكد؟")) {
-            const snap = await db.collection("attendance").get();
-            const batch = db.batch();
-            snap.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            alert("تم مسح كافة البيانات بنجاح");
-        }
-    }
-
-    function showImg(s) { document.getElementById("modalImg").src = s; document.getElementById("imgModal").style.display = "flex"; }
-
+    function logout() { location.reload(); }
+    
     function exportToExcel() {
         const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Report_Alzahrani_${new Date().toLocaleDateString()}.xlsx`);
+        XLSX.writeFile(wb, `Alzahrani_Report_${new Date().toLocaleDateString()}.xlsx`);
     }
 </script>
 </body>

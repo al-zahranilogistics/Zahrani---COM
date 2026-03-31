@@ -8,24 +8,31 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
         :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 500px; position: relative; }
-        .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; }
+        
+        .header-vid { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .lang-switcher { position: absolute; top: 10px; left: 10px; z-index: 100; }
         .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
-        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; font-size: 14px; }
+        
         .btn-gold { background: var(--gold); color: #0f172a; width: 100%; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
+        
         .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px dashed var(--gold); }
+        
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
         th, td { padding: 8px; border-bottom: 1px solid #334155; text-align: center; }
         th { color: var(--gold); }
-        #camera { width: 100%; border-radius: 15px; background: #000; transform: scaleX(-1); margin-bottom: 10px; }
-        .img-preview { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
+        
+        #camera { width: 100%; border-radius: 15px; background: #000; transform: scaleX(-1); margin-bottom: 10px; border: 2px solid var(--gold); }
+        .img-preview { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -61,18 +68,18 @@
         
         <div class="admin-tools">
             <h4 style="margin:0; color:var(--gold);">➕ إضافة موظف جديد</h4>
-            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (مثلاً 033)">
-            <input type="text" id="newEmpName" placeholder="الاسم (مثلاً رانجار)">
-            <button class="btn-gold" onclick="addNewEmployee()">حفظ الموظف</button>
+            <input type="text" id="newEmpID" placeholder="الرقم الوظيفي (033)">
+            <input type="text" id="newEmpName" placeholder="الاسم (رانجار)">
+            <button class="btn-gold" onclick="addNewEmployee()">حفظ في القاعدة</button>
         </div>
 
-        <button class="btn-green" style="width:100%;" onclick="exportToExcel()">📥 تصدير Excel</button>
+        <button class="btn-green" style="width:100%; margin-bottom: 10px;" onclick="exportToExcel()">📥 تصدير تقرير Excel</button>
 
         <div style="overflow-x:auto;">
             <table id="attendanceTable">
                 <thead>
                     <tr>
-                        <th>الاسم</th>
+                        <th>الموظف</th>
                         <th>الحالة</th>
                         <th>التاريخ والزمن</th>
                         <th>🖼️</th>
@@ -86,6 +93,7 @@
 </div>
 
 <script>
+    // --- إعدادات Firebase ---
     const firebaseConfig = {
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         authDomain: "zahrani-attendance.firebaseapp.com",
@@ -99,20 +107,22 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // --- الترجمة ---
     const translations = {
-        ar: { dir: "rtl", login_title: "🏢 نظام الحضور الذكي", login_btn: "🚀 دخول", emp_title: "📸 بصمة الوجه", btn_in: "حضور ✅", btn_out: "انصراف 🚪" },
-        en: { dir: "ltr", login_title: "🏢 Smart Attendance", login_btn: "🚀 Login", emp_title: "📸 Face ID", btn_in: "Clock In", btn_out: "Clock Out" }
+        ar: { login_title: "🏢 نظام الحضور الذكي", login_btn: "🚀 دخول", emp_title: "📸 بصمة الوجه" },
+        en: { login_title: "🏢 Smart Attendance", login_btn: "🚀 Login", emp_title: "📸 Face ID" }
     };
-    let currentLang = localStorage.getItem('lang') || 'ar';
-    function applyLanguage() {
-        const t = translations[currentLang];
-        document.documentElement.dir = t.dir;
-        document.getElementById("txt_login_title").innerText = t.login_title;
-        document.getElementById("txt_login_btn").innerText = t.login_btn;
-    }
-    function toggleLanguage() { currentLang = (currentLang === 'ar') ? 'en' : 'ar'; localStorage.setItem('lang', currentLang); applyLanguage(); }
-    applyLanguage();
+    let currentLang = 'ar';
 
+    function toggleLanguage() {
+        currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+        document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+        document.getElementById("txt_login_title").innerText = translations[currentLang].login_title;
+        document.getElementById("txt_login_btn").innerText = translations[currentLang].login_btn;
+        document.getElementById("txt_emp_title").innerText = translations[currentLang].emp_title;
+    }
+
+    // --- تسجيل الدخول ---
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
         const pass = document.getElementById("loginPass").value;
@@ -130,51 +140,50 @@
                     startCam();
                 }
             }
-        } catch (e) { alert("خطأ في بيانات الدخول"); }
+        } catch (e) { alert("خطأ: الرقم أو كلمة المرور غير صحيحة"); }
     }
 
-    // --- الدالة المحدثة والمضمونة للإضافة ---
+    // --- دالة إضافة الموظف (المعالجة الذكية لكلمة المرور) ---
     async function addNewEmployee() {
         const id = document.getElementById("newEmpID").value.trim();
         const name = document.getElementById("newEmpName").value.trim();
-        if(!id || !name) return alert("أدخل البيانات كاملة");
+        if(!id || !name) return alert("يرجى إكمال الحقول");
 
         const email = `${id}@alzahrani.com`;
-        const password = id;
+        // حل مشكلة الـ 6 خانات: تكملة الرقم بأصفار
+        const password = id.length >= 6 ? id : id.padEnd(6, "0");
 
         try {
-            // إنشاء تطبيق مؤقت للإضافة دون التأثير على حساب المدير
-            const tempApp = firebase.initializeApp(firebaseConfig, "SecondaryApp" + Math.random());
+            const tempApp = firebase.initializeApp(firebaseConfig, "App" + Math.random());
             const tempAuth = tempApp.auth();
 
             const userCredential = await tempAuth.createUserWithEmailAndPassword(email, password);
-            const uid = userCredential.user.uid;
-
-            await db.collection("users").doc(uid).set({
+            await db.collection("users").doc(userCredential.user.uid).set({
                 empID: id, name: name, role: "employee"
             });
 
             await tempApp.delete();
-            alert(`✅ تم بنجاح!\nالاسم: ${name}\nكلمة المرور: ${id}`);
+            alert(`✅ تم الحفظ بنجاح!\nالموظف: ${name}\nكلمة المرور للدخول: ${password}`);
             document.getElementById("newEmpID").value = "";
             document.getElementById("newEmpName").value = "";
-        } catch (e) {
-            alert("خطأ: " + e.message);
-        }
+        } catch (e) { alert("خطأ: " + e.message); }
     }
 
+    // --- الكاميرا والبصمة ---
     async function startCam() {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById("camera").srcObject = stream;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById("camera").srcObject = stream;
+        } catch (e) { alert("يرجى السماح بالوصول للكاميرا"); }
     }
 
     async function takeAction(type) {
-        alert("جاري تسجيل البصمة...");
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0);
         const base64 = canvas.toDataURL("image/jpeg", 0.5).split(",")[1];
+        
         const fd = new FormData(); fd.append("image", base64);
         try {
             const res = await fetch("https://iimg.live/api/upload", {
@@ -184,39 +193,42 @@
             });
             const data = await res.json();
             const userDoc = await db.collection("users").doc(auth.currentUser.uid).get();
+            
             await db.collection("attendance").add({
                 name: userDoc.data().name,
                 status: type === 'in' ? 'حضور ✅' : 'انصراف 🚪',
                 img: data.url,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("تم التسجيل!");
-        } catch (e) { alert("فشل الاتصال"); }
+            alert("تم تسجيل البصمة بنجاح!");
+        } catch (e) { alert("خطأ في رفع الصورة"); }
     }
 
+    // --- عرض السجلات بالوقت المختصر ---
     function loadLogs() {
         db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
             const html = snap.docs.map(doc => {
                 const d = doc.data();
-                let fullDateTime = "...";
+                let fullTime = "...";
                 if (d.time) {
                     const dt = d.time.toDate();
-                    const dateStr = dt.toISOString().split('T')[0];
-                    const timeStr = dt.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    fullDateTime = `${dateStr} ${timeStr}`;
+                    const datePart = dt.toISOString().split('T')[0];
+                    const timePart = dt.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    fullTime = `${datePart} ${timePart}`;
                 }
-                return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction:ltr; font-size:10px;">${fullDateTime}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
+                return `<tr><td>${d.name}</td><td>${d.status}</td><td style="direction:ltr;">${fullTime}</td><td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td></tr>`;
             }).join('');
             document.getElementById("logsTable").innerHTML = html;
         });
     }
 
+    // --- تصدير Excel ---
     function exportToExcel() {
         const table = document.getElementById("attendanceTable");
         const ws = XLSX.utils.table_to_sheet(table);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Report_2026.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "الحضور");
+        XLSX.writeFile(wb, `تقرير_حضور_2026.xlsx`);
     }
 </script>
 </body>

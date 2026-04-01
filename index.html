@@ -123,7 +123,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 700px;
+            min-width: 750px;
         }
         th, td {
             padding: 10px 8px;
@@ -136,17 +136,18 @@
             background: rgba(20,184,166,0.2);
             color: var(--primary);
         }
-        /* كاميرا متجاوبة بالكامل - بدون اقتصاص */
+        /* كاميرا عريضة - نسبة عرض 16:9 لعرض طبيعي واسع */
         .camera-wrapper {
             position: relative;
             width: 100%;
-            max-width: 450px;
+            max-width: 550px;
             margin: 0 auto 20px;
             border-radius: 28px;
             overflow: hidden;
             background: #000;
-            aspect-ratio: 3 / 4;
+            aspect-ratio: 16 / 9;
             border: 3px solid var(--primary);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
         #camera {
             width: 100%;
@@ -156,8 +157,8 @@
             display: block;
         }
         .img-preview {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 12px;
             border: 2px solid var(--primary);
             cursor: pointer;
@@ -239,15 +240,21 @@
             .employee-name-greet { font-size: 1.3rem; }
             .filter-bar { flex-direction: column; align-items: stretch; border-radius: 28px; }
             .filter-bar button { width: 100%; }
-            .camera-wrapper { max-width: 100%; aspect-ratio: 3/4; }
-            th, td { font-size: 0.75rem; padding: 6px 4px; }
+            .camera-wrapper { max-width: 100%; aspect-ratio: 16 / 9; }
+            th, td { font-size: 0.7rem; padding: 6px 4px; }
         }
         @media (min-width: 768px) {
-            .camera-wrapper { max-width: 400px; }
+            .camera-wrapper { max-width: 550px; }
         }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        .thankyou-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
         }
     </style>
 </head>
@@ -294,7 +301,7 @@
     <div id="thankyouPanel" style="display:none;" class="glass-card">
         <div class="thankyou-screen">
             <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" alt="شعار">
-            <div class="thankyou-message" id="thankyouMsg" style="font-size:1.4rem; font-weight:bold; color:var(--primary);">شكراً لتسجيل الحضور</div>
+            <div class="thankyou-message" id="thankyouMsg">شكراً لتسجيل الحضور</div>
             <div class="employee-name-greet" id="thankyouEmployeeName"></div>
             <button class="btn btn-primary" style="margin-top: 20px; padding: 12px 28px;" onclick="proceedToCheckout()">
                 <i class="fas fa-door-open"></i> <span id="proceedBtnText">متابعة الانصراف</span>
@@ -342,7 +349,7 @@
             <div class="table-container">
                 <table id="attendanceTable">
                     <thead id="tableHead">
-                        <tr><th>الموظف</th><th>التاريخ</th><th>حضور (وقت)</th><th>انصراف (وقت)</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th> </tr>
+                        <tr><th>الموظف</th><th>التاريخ</th><th>حضور (وقت)</th><th>انصراف (وقت)</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th>  </tr>
                     </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
@@ -364,6 +371,7 @@
     let allAttendanceRecords = [];
     let currentLocation = null;
     let locationWatchId = null;
+    let cameraStream = null;
 
     const translations = {
         ar: {
@@ -457,12 +465,18 @@
 
     async function startCamera() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            // طلب كاميرا بدقة عالية مع نسبة عرض 16:9 للحصول على صورة واسعة طبيعية
+            cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: "user",
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    aspectRatio: { ideal: 1.7777777778 } // 16:9 نسبة عريضة
+                } 
             });
             const videoEl = document.getElementById("camera");
-            videoEl.srcObject = stream;
-            videoEl.onloadedmetadata = () => videoEl.play();
+            videoEl.srcObject = cameraStream;
+            await videoEl.play();
         } catch (err) {
             console.error("Camera error:", err);
             showToast("الرجاء السماح بالكاميرا", false);
@@ -470,11 +484,12 @@
     }
 
     function stopCamera() {
-        const video = document.getElementById("camera");
-        if (video && video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
         }
+        const video = document.getElementById("camera");
+        if (video) video.srcObject = null;
     }
 
     async function checkTodayStatusAndUpdateUI() {
@@ -502,6 +517,24 @@
             document.getElementById("checkInBtn").disabled = false;
             document.getElementById("checkOutBtn").disabled = true;
         }
+    }
+
+    // التقاط صورة واسعة وعريضة بنفس نسبة الكاميرا 16:9
+    async function captureWidePhoto() {
+        const video = document.getElementById("camera");
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+        
+        // استخدام نفس أبعاد الفيديو للحصول على صورة طبيعية واسعة
+        const canvas = document.createElement("canvas");
+        canvas.width = videoWidth || 960;
+        canvas.height = videoHeight || 540;
+        
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // جودة متوسطة عالية للحفاظ على وضوح الوجه
+        return canvas.toDataURL("image/jpeg", 0.85);
     }
 
     async function takeAction(type) {
@@ -536,14 +569,10 @@
             }
         }
 
-        const video = document.getElementById("camera");
-        const canvas = document.createElement("canvas");
-        canvas.width = 640;
-        canvas.height = 480;
-        canvas.getContext("2d").drawImage(video, 0, 0, 640, 480);
-        const base64 = canvas.toDataURL("image/jpeg", 0.7);
+        // التقاط صورة واسعة طبيعية
+        const base64Image = await captureWidePhoto();
         const fd = new FormData();
-        fd.append("file", base64);
+        fd.append("file", base64Image);
         fd.append("upload_preset", "zahrani_private");
         
         try {
@@ -740,7 +769,7 @@
         document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t.staffListHeader}`;
         document.getElementById("logsHeader").innerHTML = `<i class="fas fa-calendar-alt"></i> ${t.logsHeader}`;
         document.getElementById("filterHeader").innerHTML = `<i class="fas fa-filter"></i> ${t.filterHeader}`;
-        document.getElementById("tableHead").innerHTML = `<tr><th>${t.thName}</th><th>${t.thDate}</th><th>${t.thIn}</th><th>${t.thOut}</th><th>${t.thInImg}</th><th>${t.thOutImg}</th><th>${t.thLocation}</th><th>${t.thAction}</th></tr>`;
+        document.getElementById("tableHead").innerHTML = `骨<th>${t.thName}</th><th>${t.thDate}</th><th>${t.thIn}</th><th>${t.thOut}</th><th>${t.thInImg}</th><th>${t.thOutImg}</th><th>${t.thLocation}</th><th>${t.thAction}</th>`;
         if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t.proceedCheckout;
         if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t.logoutThankBtn;
         if (currentUser && currentUser.role === "admin") applyFiltersAndRenderLogs();

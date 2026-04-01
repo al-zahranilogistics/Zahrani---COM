@@ -2,32 +2,253 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alzahrani Logistics - Smart Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>نظام الحضور والانصراف - Alzahrani</title>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --gold: #facc15; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; --success: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; transition: 0.3s; }
-        .container { width: 100%; max-width: 900px; margin: 0 auto; }
-        .logo-oval { width: 150px; height: 85px; object-fit: contain; border-radius: 50% / 50%; border: 2px solid var(--gold); background: white; padding: 5px; margin: 0 auto 15px; display: block; box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); }
-        .header-vid { width: 100%; height: 160px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--gold); }
-        .glass-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .btn { padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-blue { background: #3b82f6; color: white; }
-        .btn-outline { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
-        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; background: var(--gold); border-radius: 50px; padding: 8px 15px; cursor: pointer; color: black; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .table-container { overflow-x: auto; border-radius: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { background: rgba(255,255,255,0.05); color: var(--gold); padding: 12px; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        #camera { width: 100%; max-width: 380px; border-radius: 20px; border: 3px solid var(--gold); transform: scaleX(-1); margin: 0 auto 15px; display: block; }
-        .img-preview { width: 45px; height: 45px; border-radius: 8px; border: 1px solid var(--gold); cursor: pointer; }
+        * {
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #14b8a6;
+            --primary-dark: #0d9488;
+            --primary-glow: rgba(20, 184, 166, 0.5);
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Tajawal', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 12px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        /* شعار دائري */
+        .logo-circle {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            background: white;
+            padding: 8px;
+            margin: 0 auto 15px;
+            display: block;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .header-vid {
+            width: 100%;
+            height: auto;
+            max-height: 180px;
+            border-radius: 24px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 1px solid var(--primary);
+        }
+        .glass-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        }
+        .btn {
+            padding: 12px 20px;
+            border-radius: 40px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #0a0f1f;
+            box-shadow: 0 4px 10px rgba(20,184,166,0.3);
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-outline {
+            background: rgba(255,255,255,0.05);
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .lang-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            background: var(--primary);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #0f172a;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 0.85rem;
+        }
+        .table-container {
+            overflow-x: auto;
+            border-radius: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        th, td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+        th {
+            background: rgba(20,184,166,0.2);
+            color: var(--primary);
+        }
+        /* كاميرا متجاوبة بالكامل - بدون اقتصاص */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 20px;
+            border-radius: 28px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 3 / 4;
+            border: 3px solid var(--primary);
+        }
+        #camera {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            display: block;
+        }
+        .img-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            object-fit: cover;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 48px;
+        }
+        .filter-bar input, .filter-bar button {
+            flex: 1;
+            min-width: 120px;
+        }
+        input, select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 28px;
+            padding: 12px 16px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: #0f172a;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            z-index: 2000;
+            box-shadow: 0 8px 20px black;
+            text-align: center;
+            direction: rtl;
+            max-width: 90%;
+            font-size: 0.9rem;
+        }
+        .thankyou-screen {
+            text-align: center;
+            padding: 20px;
+        }
+        .employee-name-greet {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 15px 0;
+            word-break: break-word;
+        }
+        .location-status {
+            font-size: 0.75rem;
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.4);
+            display: inline-block;
+        }
+        .status-badge {
+            background: #14b8a620;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        @media (max-width: 640px) {
+            body { padding: 8px; }
+            .glass-card { padding: 16px; }
+            .btn { padding: 10px 14px; font-size: 0.8rem; }
+            .logo-circle { width: 90px; height: 90px; }
+            .employee-name-greet { font-size: 1.3rem; }
+            .filter-bar { flex-direction: column; align-items: stretch; border-radius: 28px; }
+            .filter-bar button { width: 100%; }
+            .camera-wrapper { max-width: 100%; aspect-ratio: 3/4; }
+            th, td { font-size: 0.75rem; padding: 6px 4px; }
+        }
+        @media (min-width: 768px) {
+            .camera-wrapper { max-width: 400px; }
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -36,57 +257,92 @@
 
 <div class="container">
     <div class="header" style="text-align:center;">
-        <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-oval">
-        <h2 id="mainTitle" style="color: var(--gold);">نظام الزهراني للبصمة الذكية</h2>
+        <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" alt="شعار النظام">
+        <h2 id="mainTitle" style="color: var(--primary); font-size: clamp(1.2rem, 5vw, 1.8rem);">نظام الحضور والانصراف</h2>
     </div>
 
-    <div id="loginSection" class="glass-card" style="max-width: 400px; margin: 0 auto;">
-        <video class="header-vid" autoplay muted loop playsinline><source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4"></video>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginSection" class="glass-card" style="max-width: 420px; margin: 0 auto;">
+        <video class="header-vid" autoplay muted loop playsinline>
+            <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
+        </video>
         <h3 id="loginHeader" style="text-align: center;"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
-        <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; padding:14px; margin-bottom:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155; box-sizing:border-box;">
-        <button class="btn btn-gold" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
+        <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:12px;">
+        <button class="btn btn-primary" style="width:100%" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
+    <!-- لوحة الموظف -->
     <div id="employeePanel" style="display:none;" class="glass-card">
-        <h3 id="empPanelHeader" style="text-align:center;"><i class="fas fa-video"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--gold)"></span></h3>
-        <video id="camera" autoplay muted playsinline></video>
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <button class="btn btn-gold" style="flex:1" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">إثبات حضور</span></button>
-            <button class="btn btn-danger" style="flex:1" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">تسجيل انصراف</span></button>
+        <h3 id="empPanelHeader" style="text-align:center;"><i class="fas fa-camera-retro"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--primary); font-weight:bold"></span></h3>
+        <div class="camera-wrapper">
+            <video id="camera" autoplay playsinline muted></video>
         </div>
-        <button class="btn btn-outline" style="width:100%" onclick="location.reload()">
-            <i class="fas fa-undo"></i> <span id="btnBackText">خروج وعودة للشاشة الرئيسية</span>
+        <div id="locationStatus" class="location-status" style="text-align:center; margin-bottom:12px;">
+            <i class="fas fa-map-marker-alt"></i> <span id="locationText">جاري تحديد الموقع...</span>
+        </div>
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+            <button class="btn btn-primary" style="flex:1" id="checkInBtn" onclick="takeAction('in')"><i class="fas fa-check-circle"></i> <span id="txtIn">إثبات حضور</span></button>
+            <button class="btn btn-danger" style="flex:1" id="checkOutBtn" onclick="takeAction('out')"><i class="fas fa-door-open"></i> <span id="txtOut">تسجيل انصراف</span></button>
+        </div>
+        <div id="attStatusMsg" style="text-align: center; margin-top: 10px; font-size: 0.85rem;"></div>
+        <button class="btn btn-outline" style="width:100%; margin-top:12px" onclick="logoutToLogin()">
+            <i class="fas fa-arrow-right"></i> <span id="btnBackText">خروج وعودة للشاشة الرئيسية</span>
         </button>
     </div>
 
+    <!-- شاشة الشكر بعد الحضور -->
+    <div id="thankyouPanel" style="display:none;" class="glass-card">
+        <div class="thankyou-screen">
+            <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" alt="شعار">
+            <div class="thankyou-message" id="thankyouMsg" style="font-size:1.4rem; font-weight:bold; color:var(--primary);">شكراً لتسجيل الحضور</div>
+            <div class="employee-name-greet" id="thankyouEmployeeName"></div>
+            <button class="btn btn-primary" style="margin-top: 20px; padding: 12px 28px;" onclick="proceedToCheckout()">
+                <i class="fas fa-door-open"></i> <span id="proceedBtnText">متابعة الانصراف</span>
+            </button>
+            <button class="btn btn-outline" style="margin-top: 12px;" onclick="logoutToLogin()">
+                <i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج للنظام</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- لوحة المدير -->
     <div id="adminPanel" style="display:none;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <button class="btn btn-blue" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> <span id="adminLogoutText">خروج</span></button>
-            <button class="btn btn-gold" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+            <button class="btn btn-outline" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="adminLogoutText">خروج</span></button>
+            <button class="btn btn-primary" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="glass-card">
             <h3><i class="fas fa-user-plus"></i> <span id="addEmpHeader">إضافة موظف</span></h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
-                <input type="text" id="newName" placeholder="اسم الموظف" style="padding:12px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:white;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <input type="text" id="newID" placeholder="الرقم الوظيفي">
+                <input type="text" id="newName" placeholder="اسم الموظف">
             </div>
-            <button class="btn btn-blue" style="width:100%;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ الموظف</span></button>
+            <button class="btn btn-primary" style="width:100%;" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ الموظف</span></button>
+        </div>
+
+        <div class="glass-card">
+            <h3><i class="fas fa-filter"></i> <span id="filterHeader">فلترة الحضور والانصراف</span></h3>
+            <div class="filter-bar">
+                <input type="text" id="filterEmployeeName" placeholder="اسم الموظف">
+                <input type="date" id="filterDateFrom">
+                <input type="date" id="filterDateTo">
+                <button class="btn btn-primary" onclick="applyFiltersAndRenderLogs()"><i class="fas fa-search"></i> بحث</button>
+                <button class="btn btn-outline" onclick="resetFilters()">إعادة ضبط</button>
+            </div>
         </div>
 
         <div class="glass-card">
             <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> إدارة الموظفين</h3>
-            <div id="staffList" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+            <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap:12px;"></div>
         </div>
 
         <div class="glass-card">
-            <h3 id="logsHeader"><i class="fas fa-list"></i> سجل الحضور</h3>
+            <h3 id="logsHeader"><i class="fas fa-calendar-alt"></i> سجل الحضور والانصراف</h3>
             <div class="table-container">
-                <table>
-                    <thead>
-                        <tr id="tableHead">
-                            <th>الاسم</th><th>الحالة</th><th>التاريخ والوقت</th><th>📸</th><th>مسح</th>
-                        </tr>
+                <table id="attendanceTable">
+                    <thead id="tableHead">
+                        <tr><th>الموظف</th><th>التاريخ</th><th>حضور (وقت)</th><th>انصراف (وقت)</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th> </tr>
                     </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
@@ -101,183 +357,399 @@
         projectId: "zahrani-attendance",
         appId: "1:861962206748:web:43500609b0d84d2b25e9d9"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let currentUser = null;
     let currentLang = 'ar';
+    let allAttendanceRecords = [];
+    let currentLocation = null;
+    let locationWatchId = null;
 
-    // بيانات الترجمة
     const translations = {
         ar: {
-            mainTitle: "نظام الزهراني للبصمة الذكية",
-            loginHeader: "دخول النظام",
-            empIDPlaceholder: "الرقم الوظيفي",
-            btnLogin: "دخول",
-            empPanelHeader: "بصمة الوجه لـ: ",
-            txtIn: "إثبات حضور",
-            txtOut: "تسجيل انصراف",
-            btnBack: "خروج وعودة للشاشة الرئيسية",
-            adminLogout: "خروج",
-            addEmpHeader: "إضافة موظف",
-            newNamePlaceholder: "اسم الموظف",
-            btnSaveEmp: "حفظ الموظف",
-            staffListHeader: "إدارة الموظفين",
-            logsHeader: "سجل الحضور",
-            thName: "الاسم", thStatus: "الحالة", thTime: "التاريخ والوقت", thAction: "مسح",
-            langBtn: "English",
-            msgSuccess: "تم بنجاح", msgError: "خطأ في الاتصال"
+            mainTitle: "نظام الحضور والانصراف", loginHeader: "دخول النظام", empIDPlaceholder: "الرقم الوظيفي",
+            btnLogin: "دخول", empPanelHeader: "بصمة الوجه لـ: ", txtIn: "إثبات حضور", txtOut: "تسجيل انصراف",
+            btnBack: "خروج وعودة للشاشة الرئيسية", adminLogout: "خروج", addEmpHeader: "إضافة موظف",
+            newNamePlaceholder: "اسم الموظف", btnSaveEmp: "حفظ الموظف", staffListHeader: "إدارة الموظفين",
+            logsHeader: "سجل الحضور والانصراف", filterHeader: "فلترة السجلات",
+            thName: "الموظف", thDate: "التاريخ", thIn: "حضور (وقت)", thOut: "انصراف (وقت)", thInImg: "صورة الحضور", thOutImg: "صورة الانصراف", thLocation: "الموقع", thAction: "مسح",
+            langBtn: "English", msgSuccess: "تم بنجاح", msgError: "خطأ", confirmDelete: "مسح السجل؟",
+            alreadyCheckedIn: "⚠️ تم تسجيل حضورك اليوم!", alreadyCheckedOut: "⚠️ تم تسجيل انصرافك مسبقاً!",
+            morningGreeting: "شكراً لتسجيل الحضور", thankYouMsg: "شكرا لك", dayBlessing: "يومك سعيد",
+            proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج", locationError: "يرجى تفعيل الموقع الجغرافي", locationSuccess: "تم تحديد الموقع"
         },
         en: {
-            mainTitle: "Alzahrani Smart Attendance System",
-            loginHeader: "System Login",
-            empIDPlaceholder: "Employee ID",
-            btnLogin: "Login",
-            empPanelHeader: "Face ID for: ",
-            txtIn: "Clock In",
-            txtOut: "Clock Out",
-            btnBack: "Back to Home",
-            adminLogout: "Logout",
-            addEmpHeader: "Add Employee",
-            newNamePlaceholder: "Employee Name",
-            btnSaveEmp: "Save Employee",
-            staffListHeader: "Staff Management",
-            logsHeader: "Attendance Logs",
-            thName: "Name", thStatus: "Status", thTime: "Date & Time", thAction: "Delete",
-            langBtn: "عربي",
-            msgSuccess: "Success", msgError: "Connection Error"
+            mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
+            btnLogin: "Login", empPanelHeader: "Face ID for: ", txtIn: "Clock In", txtOut: "Clock Out",
+            btnBack: "Back to Main", adminLogout: "Logout", addEmpHeader: "Add Employee",
+            newNamePlaceholder: "Name", btnSaveEmp: "Save", staffListHeader: "Staff",
+            logsHeader: "Attendance Logs", filterHeader: "Filter",
+            thName: "Name", thDate: "Date", thIn: "In Time", thOut: "Out Time", thInImg: "In Photo", thOutImg: "Out Photo", thLocation: "Location", thAction: "Delete",
+            langBtn: "عربي", msgSuccess: "Success", msgError: "Error", confirmDelete: "Delete?",
+            alreadyCheckedIn: "⚠️ Already checked in!", alreadyCheckedOut: "⚠️ Already checked out!",
+            morningGreeting: "Thank you for check-in", thankYouMsg: "Thank you", dayBlessing: "Have a nice day",
+            proceedCheckout: "Proceed to Checkout", logoutThankBtn: "Exit", locationError: "Please enable location", locationSuccess: "Location acquired"
         }
     };
 
-    function toggleLanguage() {
-        currentLang = currentLang === 'ar' ? 'en' : 'ar';
-        const t = translations[currentLang];
-        
-        // تغيير اتجاه الصفحة
-        document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-        
-        // تحديث النصوص
-        document.getElementById("langBtnText").innerText = t.langBtn;
-        document.getElementById("mainTitle").innerText = t.mainTitle;
-        document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${t.loginHeader}`;
-        document.getElementById("empID").placeholder = t.empIDPlaceholder;
-        document.getElementById("btnLoginText").innerText = t.btnLogin;
-        document.getElementById("empPanelHeader").innerHTML = `<i class="fas fa-video"></i> ${t.empPanelHeader} <span id="currentUserName" style="color:var(--gold)">${currentUser ? currentUser.name : ""}</span>`;
-        document.getElementById("txtIn").innerText = t.txtIn;
-        document.getElementById("txtOut").innerText = t.txtOut;
-        document.getElementById("btnBackText").innerText = t.btnBack;
-        document.getElementById("adminLogoutText").innerText = t.adminLogout;
-        document.getElementById("addEmpHeader").innerHTML = `<i class="fas fa-user-plus"></i> ${t.addEmpHeader}`;
-        document.getElementById("newID").placeholder = t.empIDPlaceholder;
-        document.getElementById("newName").placeholder = t.newNamePlaceholder;
-        document.getElementById("btnSaveEmpText").innerText = t.btnSaveEmp;
-        document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t.staffListHeader}`;
-        document.getElementById("logsHeader").innerHTML = `<i class="fas fa-list"></i> ${t.logsHeader}`;
-        
-        // تحديث عناوين الجدول
-        document.getElementById("tableHead").innerHTML = `<th>${t.thName}</th><th>${t.thStatus}</th><th>${t.thTime}</th><th>📸</th><th>${t.thAction}</th>`;
-        
-        if (currentUser && currentUser.role === "admin") loadAdminData();
+    function showToast(msg, isSuccess = true) {
+        let toast = document.createElement("div");
+        toast.className = "toast-message";
+        toast.innerText = msg;
+        toast.style.background = isSuccess ? "var(--primary)" : "#ef4444";
+        toast.style.color = "white";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    // تفعيل الموقع الجغرافي
+    function startLocationTracking() {
+        if (!navigator.geolocation) {
+            document.getElementById("locationText").innerText = "المتصفح لا يدعم الموقع";
+            return;
+        }
+        if (locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = navigator.geolocation.watchPosition(
+            (position) => {
+                currentLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                };
+                const locText = `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}`;
+                document.getElementById("locationText").innerHTML = `<i class="fas fa-check-circle"></i> ${locText}`;
+            },
+            (error) => {
+                console.warn(error);
+                document.getElementById("locationText").innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${translations[currentLang].locationError}`;
+                currentLocation = null;
+            },
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+        );
+    }
+
+    function stopLocationTracking() {
+        if (locationWatchId) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+        }
     }
 
     async function smartLogin() {
         const idInput = document.getElementById("empID").value.trim();
-        if(!idInput) return;
+        if (!idInput) return;
         const q = await db.collection("users").where("empID", "==", idInput).get();
-        if (q.empty) return alert(currentLang === 'ar' ? "الرقم الوظيفي غير موجود" : "ID not found");
-        
+        if (q.empty) { alert(translations[currentLang].empIDPlaceholder + " غير موجود"); return; }
         q.forEach(doc => { currentUser = doc.data(); currentUser.id = doc.id; });
         document.getElementById("loginSection").style.display = "none";
-        
-        if(currentUser.role === "admin") {
+        if (currentUser.role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
-            loadAdminData();
+            loadAdminDataAndListeners();
         } else {
             document.getElementById("employeePanel").style.display = "block";
             document.getElementById("currentUserName").innerText = currentUser.name;
-            startCam();
+            startCamera();
+            startLocationTracking();
+            await checkTodayStatusAndUpdateUI();
+        }
+        if (currentLang !== 'ar') toggleLanguage();
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            });
+            const videoEl = document.getElementById("camera");
+            videoEl.srcObject = stream;
+            videoEl.onloadedmetadata = () => videoEl.play();
+        } catch (err) {
+            console.error("Camera error:", err);
+            showToast("الرجاء السماح بالكاميرا", false);
         }
     }
 
-    async function startCam() {
-        const s = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById("camera").srcObject = s;
+    function stopCamera() {
+        const video = document.getElementById("camera");
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    }
+
+    async function checkTodayStatusAndUpdateUI() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const snap = await db.collection("attendance_raw")
+            .where("empID", "==", currentUser.empID)
+            .where("dateOnly", "==", todayStr)
+            .get();
+        let hasIn = false, hasOut = false;
+        snap.forEach(doc => {
+            if (doc.data().type === 'in') hasIn = true;
+            if (doc.data().type === 'out') hasOut = true;
+        });
+        const statusDiv = document.getElementById("attStatusMsg");
+        if (hasIn && hasOut) {
+            statusDiv.innerHTML = `<span class="status-badge">✅ تم الحضور والانصراف</span>`;
+            document.getElementById("checkInBtn").disabled = true;
+            document.getElementById("checkOutBtn").disabled = true;
+        } else if (hasIn) {
+            statusDiv.innerHTML = `<span class="status-badge">🟢 تم الحضور، يمكنك الانصراف</span>`;
+            document.getElementById("checkInBtn").disabled = true;
+            document.getElementById("checkOutBtn").disabled = false;
+        } else {
+            statusDiv.innerHTML = `<span class="status-badge">⏳ لم يتم تسجيل الحضور</span>`;
+            document.getElementById("checkInBtn").disabled = false;
+            document.getElementById("checkOutBtn").disabled = true;
+        }
     }
 
     async function takeAction(type) {
+        if (!currentUser) return;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const t = translations[currentLang];
+        
+        // التحقق من الموقع
+        if (!currentLocation) {
+            showToast(t.locationError, false);
+            return;
+        }
+        
+        const existing = await db.collection("attendance_raw")
+            .where("empID", "==", currentUser.empID)
+            .where("dateOnly", "==", todayStr)
+            .where("type", "==", type)
+            .get();
+        if (!existing.empty) {
+            showToast(type === 'in' ? t.alreadyCheckedIn : t.alreadyCheckedOut, false);
+            return;
+        }
+        if (type === 'out') {
+            const hasIn = await db.collection("attendance_raw")
+                .where("empID", "==", currentUser.empID)
+                .where("dateOnly", "==", todayStr)
+                .where("type", "==", "in")
+                .get();
+            if (hasIn.empty) {
+                showToast("⚠️ يجب تسجيل الحضور أولاً", false);
+                return;
+            }
+        }
+
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
-        canvas.width = 280; canvas.height = 210; 
-        canvas.getContext("2d").drawImage(video, 0, 0, 280, 210);
-        const base64 = canvas.toDataURL("image/jpeg", 0.25); 
-
+        canvas.width = 640;
+        canvas.height = 480;
+        canvas.getContext("2d").drawImage(video, 0, 0, 640, 480);
+        const base64 = canvas.toDataURL("image/jpeg", 0.7);
         const fd = new FormData();
         fd.append("file", base64);
         fd.append("upload_preset", "zahrani_private");
-
+        
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/dzukfybwr/image/upload`, { method: "POST", body: fd });
             const data = await res.json();
-            await db.collection("attendance").add({
+            const now = firebase.firestore.Timestamp.now();
+            const locationStr = `${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)}`;
+            
+            await db.collection("attendance_raw").add({
                 name: currentUser.name,
-                status: type === 'in' ? (currentLang === 'ar' ? 'حضور ✅' : 'Clock In ✅') : (currentLang === 'ar' ? 'انصراف 🚪' : 'Clock Out 🚪'),
+                empID: currentUser.empID,
+                type: type,
                 img: data.secure_url,
-                time: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: now,
+                dateOnly: todayStr,
+                location: locationStr,
+                locationAccuracy: currentLocation.accuracy
             });
-            alert(translations[currentLang].msgSuccess);
-            if(type === 'out') location.reload();
-        } catch (e) { alert(translations[currentLang].msgError); }
+
+            if (type === 'in') {
+                stopCamera();
+                stopLocationTracking();
+                document.getElementById("employeePanel").style.display = "none";
+                document.getElementById("thankyouPanel").style.display = "block";
+                document.getElementById("thankyouMsg").innerHTML = `🙏 ${t.morningGreeting}`;
+                document.getElementById("thankyouEmployeeName").innerHTML = `${currentUser.name}`;
+            } else {
+                showToast(`${t.thankYouMsg} ${currentUser.name} ${t.dayBlessing}`, true);
+                setTimeout(() => logoutToLogin(), 1800);
+            }
+        } catch (e) { 
+            console.error(e);
+            showToast(t.msgError, false); 
+        }
+    }
+
+    function proceedToCheckout() {
+        document.getElementById("thankyouPanel").style.display = "none";
+        document.getElementById("employeePanel").style.display = "block";
+        startCamera();
+        startLocationTracking();
+        document.getElementById("checkInBtn").disabled = true;
+        document.getElementById("checkOutBtn").disabled = false;
+        document.getElementById("attStatusMsg").innerHTML = `<span class="status-badge">🟢 تم الحضور، انتظر الانصراف</span>`;
+    }
+
+    function logoutToLogin() {
+        stopCamera();
+        stopLocationTracking();
+        currentUser = null;
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("employeePanel").style.display = "none";
+        document.getElementById("adminPanel").style.display = "none";
+        document.getElementById("thankyouPanel").style.display = "none";
+        document.getElementById("empID").value = "";
     }
 
     async function addEmployee() {
         const id = document.getElementById("newID").value.trim();
         const name = document.getElementById("newName").value.trim();
-        if(!id || !name) return;
+        if (!id || !name) return;
         await db.collection("users").add({ empID: id, name: name, role: "employee" });
-        loadAdminData();
+        document.getElementById("newID").value = ""; document.getElementById("newName").value = "";
+        loadAdminDataAndListeners();
     }
 
     async function deleteEmployee(id) {
-        if(confirm(currentLang === 'ar' ? "حذف الموظف؟" : "Delete Employee?")) { 
-            await db.collection("users").doc(id).delete(); loadAdminData(); 
+        if (confirm(translations[currentLang].confirmDelete)) {
+            await db.collection("users").doc(id).delete();
+            loadAdminDataAndListeners();
         }
     }
 
-    function loadAdminData() {
+    function groupAttendanceWithPhotos(records) {
+        const map = new Map();
+        records.forEach(rec => {
+            const key = `${rec.empID}_${rec.dateOnly}`;
+            if (!map.has(key)) {
+                map.set(key, { name: rec.name, empID: rec.empID, date: rec.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [] });
+            }
+            const entry = map.get(key);
+            entry.rawIds.push(rec.id);
+            if (rec.type === 'in') {
+                entry.inTime = rec.timestamp?.toDate?.() || new Date(rec.timestamp);
+                entry.inImg = rec.img;
+                entry.location = rec.location || "—";
+            } else if (rec.type === 'out') {
+                entry.outTime = rec.timestamp?.toDate?.() || new Date(rec.timestamp);
+                entry.outImg = rec.img;
+            }
+        });
+        return Array.from(map.values()).sort((a,b) => (b.date || '').localeCompare(a.date));
+    }
+
+    async function applyFiltersAndRenderLogs() {
+        let records = [...allAttendanceRecords];
+        const nameFilter = document.getElementById("filterEmployeeName")?.value.trim().toLowerCase() || "";
+        const fromDate = document.getElementById("filterDateFrom")?.value;
+        const toDate = document.getElementById("filterDateTo")?.value;
+        if (nameFilter) records = records.filter(r => r.name?.toLowerCase().includes(nameFilter) || r.empID?.toString().includes(nameFilter));
+        if (fromDate) records = records.filter(r => r.dateOnly >= fromDate);
+        if (toDate) records = records.filter(r => r.dateOnly <= toDate);
+        const grouped = groupAttendanceWithPhotos(records);
+        const tbody = document.getElementById("logsTable");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const t = translations[currentLang];
+        for (const g of grouped) {
+            const inTimeStr = g.inTime ? g.inTime.toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', {hour:'2-digit', minute:'2-digit'}) : "—";
+            const outTimeStr = g.outTime ? g.outTime.toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', {hour:'2-digit', minute:'2-digit'}) : "—";
+            const inImgHtml = g.inImg ? `<img src="${g.inImg}" class="img-preview" onclick="window.open(this.src)">` : "—";
+            const outImgHtml = g.outImg ? `<img src="${g.outImg}" class="img-preview" onclick="window.open(this.src)">` : "—";
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><b>${g.name}</b><br><small>${g.empID || ''}</small></td>
+                <td style="direction:ltr;">${g.date}</td>
+                <td>${inTimeStr}</td><td>${outTimeStr}</td>
+                <td>${inImgHtml}</td><td>${outImgHtml}</td>
+                <td style="font-size:0.7rem;">${g.location || "—"}</td>
+                <td><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteGroupRecords(['${g.rawIds.join("','")}'])"></i></td>
+            `;
+            tbody.appendChild(row);
+        }
+        if (grouped.length === 0) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
+    }
+
+    window.deleteGroupRecords = async (idsArray) => {
+        if (!idsArray.length) return;
+        if (confirm(translations[currentLang].confirmDelete)) {
+            for (const id of idsArray) if (id) await db.collection("attendance_raw").doc(id).delete();
+            applyFiltersAndRenderLogs();
+        }
+    };
+
+    function resetFilters() {
+        document.getElementById("filterEmployeeName").value = "";
+        document.getElementById("filterDateFrom").value = "";
+        document.getElementById("filterDateTo").value = "";
+        applyFiltersAndRenderLogs();
+    }
+
+    function loadAdminDataAndListeners() {
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let h = "";
             snap.forEach(doc => {
-                h += `<div class="btn-outline" style="padding:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:white;">
-                    <span>${doc.data().name} (${doc.data().empID})</span>
+                const data = doc.data();
+                h += `<div class="btn-outline" style="padding:10px; border-radius:20px; display:flex; justify-content:space-between;">
+                    <span><i class="fas fa-user-circle"></i> ${data.name} (${data.empID})</span>
                     <i class="fas fa-trash-alt" onclick="deleteEmployee('${doc.id}')" style="cursor:pointer; color:var(--danger)"></i>
                 </div>`;
             });
-            document.getElementById("staffList").innerHTML = h;
+            document.getElementById("staffList").innerHTML = h || "<div>لا يوجد موظفون</div>";
         });
-
-        db.collection("attendance").orderBy("time", "desc").onSnapshot(snap => {
-            let html = "";
+        db.collection("attendance_raw").orderBy("timestamp", "desc").onSnapshot(snap => {
+            allAttendanceRecords = [];
             snap.forEach(doc => {
-                const d = doc.data();
-                const t = d.time ? d.time.toDate().toLocaleString(currentLang === 'ar' ? 'ar-SA' : 'en-US') : "...";
-                html += `<tr><td><b>${d.name}</b></td><td>${d.status}</td><td style="direction:ltr;">${t}</td>
-                <td><img src="${d.img}" class="img-preview" onclick="window.open(this.src)"></td>
-                <td><i class="fas fa-trash" onclick="deleteLog('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></td></tr>`;
+                let d = doc.data();
+                d.id = doc.id;
+                if (!d.dateOnly) {
+                    let dateObj = d.timestamp?.toDate() || new Date();
+                    d.dateOnly = dateObj.toISOString().split('T')[0];
+                }
+                allAttendanceRecords.push(d);
             });
-            document.getElementById("logsTable").innerHTML = html;
+            applyFiltersAndRenderLogs();
         });
-    }
-
-    async function deleteLog(id) {
-        if(confirm(currentLang === 'ar' ? "مسح السجل؟" : "Delete Record?")) await db.collection("attendance").doc(id).delete();
     }
 
     function exportToExcel() {
-        const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
+        const table = document.getElementById("attendanceTable");
+        if (!table) return;
+        const ws = XLSX.utils.table_to_sheet(table, { raw: true });
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Logs");
-        XLSX.writeFile(wb, `Zahrani_Logs.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, `Attendance_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        const t = translations[currentLang];
+        document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById("langBtnText").innerText = t.langBtn;
+        document.getElementById("mainTitle").innerText = t.mainTitle;
+        document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${t.loginHeader}`;
+        document.getElementById("empID").placeholder = t.empIDPlaceholder;
+        document.getElementById("btnLoginText").innerText = t.btnLogin;
+        if (document.getElementById("txtIn")) document.getElementById("txtIn").innerText = t.txtIn;
+        if (document.getElementById("txtOut")) document.getElementById("txtOut").innerText = t.txtOut;
+        document.getElementById("btnBackText").innerText = t.btnBack;
+        document.getElementById("adminLogoutText").innerText = t.adminLogout;
+        document.getElementById("addEmpHeader").innerHTML = `<i class="fas fa-user-plus"></i> ${t.addEmpHeader}`;
+        document.getElementById("newName").placeholder = t.newNamePlaceholder;
+        document.getElementById("btnSaveEmpText").innerText = t.btnSaveEmp;
+        document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t.staffListHeader}`;
+        document.getElementById("logsHeader").innerHTML = `<i class="fas fa-calendar-alt"></i> ${t.logsHeader}`;
+        document.getElementById("filterHeader").innerHTML = `<i class="fas fa-filter"></i> ${t.filterHeader}`;
+        document.getElementById("tableHead").innerHTML = `<tr><th>${t.thName}</th><th>${t.thDate}</th><th>${t.thIn}</th><th>${t.thOut}</th><th>${t.thInImg}</th><th>${t.thOutImg}</th><th>${t.thLocation}</th><th>${t.thAction}</th></tr>`;
+        if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t.proceedCheckout;
+        if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t.logoutThankBtn;
+        if (currentUser && currentUser.role === "admin") applyFiltersAndRenderLogs();
+    }
+
+    window.takeAction = takeAction; window.addEmployee = addEmployee; window.deleteEmployee = deleteEmployee;
+    window.applyFiltersAndRenderLogs = applyFiltersAndRenderLogs; window.resetFilters = resetFilters;
+    window.exportToExcel = exportToExcel; window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
+    window.logoutToLogin = logoutToLogin; window.proceedToCheckout = proceedToCheckout;
 </script>
 </body>
 </html>

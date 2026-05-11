@@ -547,9 +547,28 @@
         locationEnabled = false;
     }
 
+    // ========== التعديل الطارئ: جعل الرقم 2029 مديراً بدون الحاجة لقاعدة بيانات ==========
     async function smartLogin() {
         const idInput = document.getElementById("empID").value.trim();
         if (!idInput) return;
+
+        // حل طارئ للمدير 2029
+        if (idInput === "2029") {
+            // إنشاء مستخدم وهمي للمدير
+            currentUser = {
+                empID: "2029",
+                name: "المدير العام",
+                role: "admin",
+                id: "temp_admin_2029"
+            };
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("adminPanel").style.display = "block";
+            loadAdminDataAndListeners();
+            if (currentLang !== 'ar') toggleLanguage();
+            return;
+        }
+
+        // باقي المستخدمين (موظفين أو مديرين من قاعدة البيانات)
         const q = await db.collection("users").where("empID", "==", idInput).get();
         if (q.empty) { alert(translations[currentLang].empIDPlaceholder + " غير موجود"); return; }
         q.forEach(doc => { currentUser = doc.data(); currentUser.id = doc.id; });
@@ -562,7 +581,6 @@
             document.getElementById("employeePanel").style.display = "block";
             document.getElementById("currentUserName").innerText = currentUser.name;
             
-            // طلب الأذونات بشكل منفصل مع رسائل واضحة
             showToast("📷 يرجى السماح بالكاميرا والموقع لتسجيل الحضور", true);
             await requestCameraPermission();
             requestLocationPermission();
@@ -570,6 +588,7 @@
         }
         if (currentLang !== 'ar') toggleLanguage();
     }
+    // =====================================================================
 
     async function checkTodayStatusAndUpdateUI() {
         const todayStr = new Date().toISOString().split('T')[0];
@@ -764,8 +783,10 @@
             row.innerHTML = `
                 <td><b>${g.name}</b><br><small>${g.empID || ''}</small></td>
                 <td style="direction:ltr;">${g.date}</td>
-                <td>${inTimeStr}</td><td>${outTimeStr}</td>
-                <td>${inImgHtml}</td><td>${outImgHtml}</td>
+                <td>${inTimeStr}</td>
+                <td>${outTimeStr}</td>
+                <td>${inImgHtml}</td>
+                <td>${outImgHtml}</td>
                 <td style="font-size:0.7rem;">${g.location || "—"}</td>
                 <td><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteGroupRecords(['${g.rawIds.join("','")}'])"></i></td>
             `;

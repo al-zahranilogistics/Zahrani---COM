@@ -16,12 +16,12 @@
         :root {
             --primary: #14b8a6;
             --primary-dark: #0d9488;
-            --primary-glow: rgba(20, 184, 166, 0.5);
+            --primary-glow: rgba(20, 184, 166, 0.6);
             --gold: #eab308;
             --gold-glow: rgba(234, 179, 8, 0.5);
-            --navy: #0a1929;
+            --navy: #020c1b;
             --dark-blue: #0f172a;
-            --card: rgba(30, 41, 59, 0.75);
+            --card: rgba(30, 41, 59, 0.8);
             --glass-border: rgba(255,255,255,0.12);
             --text: #f8fafc;
             --text-secondary: #cbd5e1;
@@ -29,15 +29,43 @@
             --success: #10b981;
             --warning: #f59e0b;
             --info: #06b6d4;
-            --glow: 0 0 20px var(--primary-glow);
         }
         body {
-            background: radial-gradient(circle at 20% 10%, #1e293b, #0a1929);
+            background: var(--navy);
             color: var(--text);
             font-family: 'Segoe UI', 'Tajawal', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
             transition: all 0.3s ease;
+            position: relative;
+        }
+        /* خلفية الفيديو بملء الشاشة */
+        #loginVideoBackground {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            filter: brightness(0.8);
+        }
+        .video-overlay-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 10, 28, 0.3);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .logo-circle {
+            width: 110px; height: 110px; object-fit: cover; border-radius: 50%;
+            border: 3px solid var(--primary); background: white; padding: 6px;
+            display: block; margin: 0 auto 12px;
+            animation: logoGlow 2s infinite alternate;
+        }
+        @keyframes logoGlow {
+            0% { box-shadow: 0 0 15px var(--primary-glow); }
+            100% { box-shadow: 0 0 40px var(--primary-glow), 0 0 80px var(--gold-glow); }
         }
         .glass {
             background: var(--card);
@@ -49,27 +77,6 @@
             transition: all 0.4s ease;
         }
         .glass:hover { border-color: var(--primary-glow); box-shadow: 0 20px 50px rgba(20,184,166,0.2); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .logo-circle {
-            width: 110px; height: 110px; object-fit: cover; border-radius: 50%;
-            border: 3px solid var(--primary); background: white; padding: 6px;
-            display: block; margin: 0 auto 12px;
-            animation: logoGlow 2s infinite alternate;
-        }
-        @keyframes logoGlow {
-            0% { box-shadow: 0 0 15px var(--primary-glow); }
-            100% { box-shadow: 0 0 40px var(--primary-glow), 0 0 80px var(--gold-glow); }
-        }
-        .video-bg {
-            position: relative; width: 100%; border-radius: 24px; overflow: hidden;
-            margin-bottom: 20px; aspect-ratio: 16/9; max-height: 280px;
-        }
-        .video-bg video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
-        .video-overlay {
-            position: absolute; top:0; left:0; right:0; bottom:0;
-            background: rgba(10,25,41,0.5); backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center;
-        }
         .btn {
             padding: 14px 28px; border-radius: 60px; border: none; font-weight: 700;
             cursor: pointer; transition: all 0.3s ease; display: inline-flex;
@@ -123,7 +130,7 @@
         .stat-value { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, #fff, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .stat-label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 6px; }
         .table-container { overflow-x: auto; border-radius: 24px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 0.9rem; }
         th { background: rgba(20,184,166,0.15); color: var(--primary); font-weight: 700; }
         .row-present { border-right: 5px solid var(--success); }
@@ -139,11 +146,14 @@
             box-shadow: 0 10px 30px black; animation: slideUp 0.3s;
         }
         @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-        .employee-name-greet {
-            font-size: 2.4rem; font-weight: 800;
-            background: linear-gradient(135deg, #14b8a6, #facc15);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin: 12px 0;
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 3000;
+        }
+        .modal-content {
+            background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--primary-glow);
+            border-radius: 28px; padding: 30px; width: 90%; max-width: 500px;
+            text-align: center; box-shadow: 0 0 50px var(--primary-glow);
         }
         @media (max-width: 640px) {
             .container { padding: 10px; }
@@ -155,6 +165,10 @@
 </head>
 <body dir="rtl">
 
+<!-- فيديو الخلفية الثابت -->
+<video id="loginVideoBackground" autoplay muted loop playsinline src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4"></video>
+<div class="video-overlay-bg"></div>
+
 <div class="lang-toggle" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langBtnText">English</span></div>
 
 <div class="container">
@@ -163,14 +177,8 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- تسجيل الدخول -->
+    <!-- شاشة الدخول -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
-        <div class="video-bg">
-            <video id="loginVideo" autoplay muted loop playsinline>
-                <source src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4" type="video/mp4">
-            </video>
-            <div class="video-overlay"><i class="fas fa-play-circle" style="font-size: 3.5rem; color: rgba(255,255,255,0.8);"></i></div>
-        </div>
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
         <button class="btn btn-primary" style="width:100%; padding:16px;" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
@@ -211,7 +219,7 @@
     <div id="thankyouPanel" style="display:none;" class="glass" style="text-align:center; padding:40px;">
         <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" style="animation: logoGlow 1.5s infinite alternate;">
         <div style="font-size:2.5rem; color:var(--gold); margin:25px 0;" id="thankyouMsg">شكراً لتسجيل الحضور</div>
-        <div class="employee-name-greet" id="thankyouEmployeeName"></div>
+        <div class="employee-name-greet" id="thankyouEmployeeName" style="font-size:2rem; color:white;"></div>
         <button class="btn btn-primary" style="margin-top:30px;" onclick="proceedToCheckout()"><i class="fas fa-door-open"></i> <span id="proceedBtnText">متابعة الانصراف</span></button>
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
@@ -226,7 +234,18 @@
             <button class="btn btn-sm" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> CSV</button>
         </div>
 
-        <!-- رفع فيديو الخلفية -->
+        <!-- إدارة المناطق -->
+        <div class="glass" style="margin-bottom:25px;">
+            <h3><i class="fas fa-map-marked-alt"></i> <span id="regionsHeader">إدارة المناطق</span></h3>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="newRegionNameAr" placeholder="اسم المنطقة (عربي)" style="flex:1;">
+                <input type="text" id="newRegionNameEn" placeholder="English Name" style="flex:1;">
+                <button class="btn btn-primary btn-sm" onclick="addRegion()">إضافة</button>
+            </div>
+            <div id="regionsList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <!-- فيديو الخلفية -->
         <div class="glass" style="margin-bottom:25px;">
             <h3><i class="fas fa-video"></i> <span id="vidUploadHeader">تغيير فيديو الخلفية</span></h3>
             <div class="upload-area" id="videoUploadArea">
@@ -237,29 +256,32 @@
             <div id="videoUploadStatus" style="margin-top:10px;"></div>
         </div>
 
-        <!-- إضافة موظف (مبسطة) -->
+        <!-- إضافة موظف مبسطة -->
         <div class="glass" style="margin-bottom:25px;">
-            <h3 id="addEmpHeader" style="margin-bottom:20px;"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
-            <div style="display:flex; flex-direction:column; gap:18px;">
-                <input type="text" id="newName" placeholder="اسم الموظف" style="padding:16px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; font-size:1.1rem;">
-                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="padding:16px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; font-size:1.1rem;">
-                <button class="btn btn-primary" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ الموظف</span></button>
+            <h3 id="addEmpHeader"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <input type="text" id="newName" placeholder="اسم الموظف" style="flex:1;">
+                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="flex:1;">
+                <button class="btn btn-primary" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ</span></button>
             </div>
         </div>
 
-        <!-- قائمة الموظفين -->
+        <!-- قائمة الموظفين مع المنطقة -->
         <div class="glass" style="margin-bottom:25px;">
-            <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> إدارة الموظفين</h3>
-            <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap:14px;"></div>
+            <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> الموظفين</h3>
+            <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:14px;"></div>
         </div>
 
         <!-- فلترة السجلات -->
         <div class="glass" style="margin-bottom:25px;">
             <h3 id="filterHeader"><i class="fas fa-filter"></i> فلترة السجلات</h3>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <input type="text" id="filterEmployeeName" placeholder="اسم الموظف" style="flex:1; padding:12px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white;">
-                <input type="date" id="filterDateFrom" style="flex:1; padding:12px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white;">
-                <input type="date" id="filterDateTo" style="flex:1; padding:12px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white;">
+                <input type="text" id="filterEmployeeName" placeholder="اسم الموظف" style="flex:1;">
+                <select id="filterRegion" style="flex:1;">
+                    <option value="">جميع المناطق</option>
+                </select>
+                <input type="date" id="filterDateFrom" style="flex:1;">
+                <input type="date" id="filterDateTo" style="flex:1;">
                 <button class="btn btn-primary btn-sm" onclick="applyFiltersAndRenderLogs()"><i class="fas fa-search"></i> بحث</button>
                 <button class="btn btn-sm" onclick="resetFilters()">إعادة ضبط</button>
             </div>
@@ -271,7 +293,7 @@
             <div class="table-container">
                 <table id="attendanceTable">
                     <thead id="tableHead">
-                        <tr><th>الموظف</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th></tr>
+                        <tr><th>الموظف</th><th>المنطقة</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th></tr>
                     </thead>
                     <tbody id="logsTable"></tbody>
                 </table>
@@ -281,7 +303,33 @@
     </div>
 </div>
 
+<!-- مودال تعديل الموظف -->
+<div id="editModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h3 style="color:var(--primary);">تعديل بيانات الموظف</h3>
+        <input type="text" id="editEmpName" placeholder="اسم الموظف" style="width:100%; margin:15px 0; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        <input type="text" id="editEmpID" placeholder="الرقم الوظيفي الجديد" style="width:100%; margin-bottom:15px; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn btn-primary" onclick="updateEmployee()">حفظ</button>
+            <button class="btn" onclick="closeEditModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- مودال اختيار المنطقة للموظف -->
+<div id="regionModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h3 style="color:var(--primary);">تحديد المنطقة</h3>
+        <select id="regionSelect" style="width:100%; margin:20px 0; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;"></select>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn btn-primary" onclick="assignRegionToEmployee()">حفظ</button>
+            <button class="btn" onclick="closeRegionModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Firebase init
     firebase.initializeApp({
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         projectId: "zahrani-attendance",
@@ -304,6 +352,9 @@
     const pageSize = 10;
     let workStartTime = null;
     let timerInterval = null;
+    let selectedEmployeeIdForRegion = null;
+    let editingEmployeeId = null;
+    let userRegionCache = new Map(); // empID -> region name
 
     function playSuccessSound() {
         try {
@@ -324,11 +375,13 @@
             btnBack: "خروج للرئيسية", adminLogout: "خروج", addEmpHeader: "إضافة موظف",
             newNamePlaceholder: "اسم الموظف", btnSaveEmp: "حفظ", staffListHeader: "الموظفين",
             logsHeader: "سجل الحضور والانصراف", filterHeader: "فلترة",
-            thName: "الموظف", thDate: "التاريخ", thIn: "حضور", thOut: "انصراف", thDuration: "المدة", thStatus: "الحالة",
-            thInImg: "صورة الحضور", thOutImg: "صورة الانصراف", thLocation: "الموقع", thAction: "مسح",
+            thName: "الموظف", thRegion: "المنطقة", thDate: "التاريخ", thIn: "حضور", thOut: "انصراف",
+            thDuration: "المدة", thStatus: "الحالة", thInImg: "صورة الحضور", thOutImg: "صورة الانصراف",
+            thLocation: "الموقع", thAction: "مسح",
             langBtn: "English", msgSuccess: "تم بنجاح", msgError: "خطأ", confirmDelete: "متأكد من الحذف؟",
             alreadyCheckedIn: "⚠️ تم تسجيل حضورك اليوم!", alreadyCheckedOut: "⚠️ تم تسجيل انصرافك مسبقاً!",
-            morningGreeting: "شكراً لتسجيل الحضور", thankYouMsg: "شكرا لك", dayBlessing: "يومك سعيد",
+            morningGreeting: "شكراً لتسجيل الحضور", returningGreeting: "مرحباً بعودتك",
+            thankYouMsg: "شكرا لك", dayBlessing: "يومك سعيد",
             proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج",
             locationError: "يرجى تفعيل الموقع", locationSuccess: "تم تحديد الموقع",
             cameraRequest: "نحتاج للكاميرا", enablePermissions: "اسمح بالكاميرا والموقع",
@@ -340,11 +393,13 @@
             btnBack: "Back", adminLogout: "Logout", addEmpHeader: "Add Employee",
             newNamePlaceholder: "Name", btnSaveEmp: "Save", staffListHeader: "Staff",
             logsHeader: "Attendance Log", filterHeader: "Filter",
-            thName: "Name", thDate: "Date", thIn: "In", thOut: "Out", thDuration: "Duration", thStatus: "Status",
-            thInImg: "In Photo", thOutImg: "Out Photo", thLocation: "Location", thAction: "Delete",
+            thName: "Name", thRegion: "Region", thDate: "Date", thIn: "In", thOut: "Out",
+            thDuration: "Duration", thStatus: "Status", thInImg: "In Photo", thOutImg: "Out Photo",
+            thLocation: "Location", thAction: "Delete",
             langBtn: "عربي", msgSuccess: "Success", msgError: "Error", confirmDelete: "Delete?",
             alreadyCheckedIn: "⚠️ Already checked in!", alreadyCheckedOut: "⚠️ Already checked out!",
-            morningGreeting: "Thank you for check-in", thankYouMsg: "Thank you", dayBlessing: "Have a nice day",
+            morningGreeting: "Thank you for check-in", returningGreeting: "Welcome back",
+            thankYouMsg: "Thank you", dayBlessing: "Have a nice day",
             proceedCheckout: "Checkout", logoutThankBtn: "Exit",
             locationError: "Enable location", locationSuccess: "Location acquired",
             cameraRequest: "Camera needed", enablePermissions: "Allow camera & location",
@@ -369,16 +424,14 @@
             video.srcObject = cameraStream; video.style.display = "block"; placeholder.style.display = "none";
             await video.play(); cameraEnabled = true; enableButtonsIfReady(); return true;
         } catch (e) {
-            placeholder.innerHTML = `<i class="fas fa-ban fa-3x"></i><span>${t('cameraRequest')}</span><button class="btn" style="margin-top:10px;" onclick="requestCameraPermission()">إعادة</button>`;
-            cameraEnabled = false; showToast(t('cameraRequest') + " ❌", false); return false;
+            placeholder.innerHTML = `<i class="fas fa-ban fa-3x"></i><span>${t('cameraRequest')}</span><button class="btn" onclick="requestCameraPermission()">إعادة</button>`;
+            cameraEnabled = false; showToast(t('cameraRequest'), false); return false;
         }
     }
-
     function stopCamera() {
         if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
         document.getElementById("camera").srcObject = null; cameraEnabled = false;
     }
-
     function captureWidePhoto() {
         const video = document.getElementById("camera");
         const canvas = document.createElement("canvas");
@@ -386,7 +439,6 @@
         canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
         return canvas.toDataURL("image/jpeg", 0.85);
     }
-
     function requestLocationPermission() {
         if (!navigator.geolocation) return;
         stopLocationTracking();
@@ -400,12 +452,10 @@
             locationEnabled = false;
         }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
     }
-
     function stopLocationTracking() {
         if (locationWatchId) { navigator.geolocation.clearWatch(locationWatchId); locationWatchId = null; }
         locationEnabled = false;
     }
-
     function enableButtonsIfReady() {
         if (currentUser && currentUser.role === 'employee') checkTodayStatusAndUpdateUI();
     }
@@ -418,7 +468,6 @@
         };
         update(); setInterval(update, 1000);
     }
-
     function startWorkTimer(start) {
         if (timerInterval) clearInterval(timerInterval);
         workStartTime = start;
@@ -431,7 +480,6 @@
         update(); timerInterval = setInterval(update, 1000);
         document.getElementById("workTimer").style.display = 'block';
     }
-
     function stopWorkTimer() {
         if (timerInterval) clearInterval(timerInterval);
         workStartTime = null; document.getElementById("workTimer").style.display = 'none';
@@ -482,13 +530,26 @@
             });
             freeze.style.display = 'none'; isUploading = false;
             if (type === 'in') {
-                playSuccessSound(); stopCamera(); stopLocationTracking(); stopWorkTimer();
+                playSuccessSound();
+                stopCamera(); stopLocationTracking(); stopWorkTimer();
                 document.getElementById("employeePanel").style.display = "none";
                 document.getElementById("thankyouPanel").style.display = "block";
-                document.getElementById("thankyouMsg").innerHTML = `🙏 ${t('morningGreeting')}`;
-                document.getElementById("thankyouEmployeeName").innerHTML = currentUser.name;
+                
+                // رسالة ترحيب ذكية
+                const previousRecords = await db.collection("attendance_raw")
+                    .where("empID", "==", currentUser.empID)
+                    .where("dateOnly", "<", today)
+                    .limit(1)
+                    .get();
+                if (!previousRecords.empty) {
+                    document.getElementById("thankyouMsg").innerText = `${t('returningGreeting')} ${currentUser.name}`;
+                } else {
+                    document.getElementById("thankyouMsg").innerText = t('morningGreeting');
+                }
+                document.getElementById("thankyouEmployeeName").innerText = currentUser.name;
             } else {
-                playSuccessSound(); showToast(`${t('thankYouMsg')} ${currentUser.name}`, true);
+                playSuccessSound();
+                showToast(`${t('thankYouMsg')} ${currentUser.name}`, true);
                 setTimeout(() => logoutToLogin(), 1800);
             }
         } catch (e) { showToast(t('msgError'), false); freeze.style.display = 'none'; isUploading = false; }
@@ -507,6 +568,7 @@
             currentUser = { empID: "2029", name: "المدير العام", role: "admin", id: "temp_admin" };
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPanel").style.display = "block";
+            await loadRegionsAndCache();
             loadAdminDataAndListeners(); updateAdminStats(); return;
         }
         const q = await db.collection("users").where("empID", "==", id).get();
@@ -515,6 +577,7 @@
         document.getElementById("loginSection").style.display = "none";
         if (currentUser.role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
+            await loadRegionsAndCache();
             loadAdminDataAndListeners(); updateAdminStats();
         } else {
             document.getElementById("employeePanel").style.display = "block";
@@ -535,6 +598,91 @@
         document.getElementById("empID").value = "";
     }
 
+    // =============== المناطق ===============
+    async function loadRegionsAndCache() {
+        userRegionCache.clear();
+        const usersSnap = await db.collection("users").get();
+        usersSnap.forEach(doc => {
+            const d = doc.data();
+            if (d.region) userRegionCache.set(d.empID, d.region);
+        });
+        renderRegionsFilterDropdown();
+    }
+
+    async function addRegion() {
+        const nameAr = document.getElementById("newRegionNameAr").value.trim();
+        const nameEn = document.getElementById("newRegionNameEn").value.trim();
+        if (!nameAr && !nameEn) return;
+        await db.collection("regions").add({ nameAr, nameEn });
+        document.getElementById("newRegionNameAr").value = "";
+        document.getElementById("newRegionNameEn").value = "";
+        showToast("تمت إضافة المنطقة");
+        renderRegionsList();
+    }
+
+    async function deleteRegion(regionId) {
+        if (confirm("حذف المنطقة؟")) {
+            await db.collection("regions").doc(regionId).delete();
+            showToast("تم الحذف");
+            renderRegionsList();
+        }
+    }
+
+    async function renderRegionsList() {
+        const container = document.getElementById("regionsList");
+        const snap = await db.collection("regions").get();
+        container.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            const display = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
+            container.innerHTML += `<span class="btn btn-sm" style="gap:5px;">${display} <i class="fas fa-trash" onclick="deleteRegion('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></span>`;
+        });
+    }
+
+    async function renderRegionsFilterDropdown() {
+        const select = document.getElementById("filterRegion");
+        const snap = await db.collection("regions").get();
+        select.innerHTML = `<option value="">جميع المناطق</option>`;
+        snap.forEach(doc => {
+            const d = doc.data();
+            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    }
+
+    function openRegionModal(empId) {
+        selectedEmployeeIdForRegion = empId;
+        document.getElementById("regionModal").style.display = "flex";
+        populateRegionSelect();
+    }
+
+    async function populateRegionSelect() {
+        const select = document.getElementById("regionSelect");
+        select.innerHTML = "";
+        const snap = await db.collection("regions").get();
+        snap.forEach(doc => {
+            const d = doc.data();
+            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    }
+
+    async function assignRegionToEmployee() {
+        const region = document.getElementById("regionSelect").value;
+        if (!selectedEmployeeIdForRegion || !region) return;
+        await db.collection("users").doc(selectedEmployeeIdForRegion).update({ region });
+        userRegionCache.set(/* need empID from doc */ /* we'll fetch */);
+        closeRegionModal();
+        showToast("تم تحديث المنطقة");
+        loadAdminDataAndListeners();
+    }
+
+    function closeRegionModal() {
+        document.getElementById("regionModal").style.display = "none";
+        selectedEmployeeIdForRegion = null;
+    }
+
+    // =============== إضافة موظف ===============
     async function addEmployee() {
         const name = document.getElementById("newName").value.trim();
         const empID = document.getElementById("newID").value.trim();
@@ -548,11 +696,74 @@
         if (confirm(t('confirmDelete'))) { await db.collection("users").doc(docId).delete(); showToast(t('msgSuccess')); }
     }
 
+    // =============== تعديل الموظف ===============
+    function openEditModal(empId, currentName, currentEmpID) {
+        editingEmployeeId = empId;
+        document.getElementById("editEmpName").value = currentName;
+        document.getElementById("editEmpID").value = currentEmpID;
+        document.getElementById("editModal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+        editingEmployeeId = null;
+    }
+
+    async function updateEmployee() {
+        const newName = document.getElementById("editEmpName").value.trim();
+        const newID = document.getElementById("editEmpID").value.trim();
+        if (!newName || !newID) return;
+        if (newID !== currentUser?.empID) { // check uniqueness
+            const existing = await db.collection("users").where("empID", "==", newID).get();
+            if (!existing.empty) {
+                showToast("الرقم الوظيفي موجود مسبقاً", false);
+                return;
+            }
+        }
+        await db.collection("users").doc(editingEmployeeId).update({ name: newName, empID: newID });
+        closeEditModal();
+        showToast(t('msgSuccess'));
+        loadAdminDataAndListeners();
+    }
+
+    // =============== عرض الموظفين ===============
+    async function loadAdminDataAndListeners() {
+        db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
+            let html = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const region = userRegionCache.get(d.empID) || d.region || "—";
+                html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${d.name}</strong>
+                        <span style="font-size:0.8rem;">${d.empID}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <small>المنطقة: ${region}</small>
+                        <div>
+                            <i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}')"></i>
+                            <i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i>
+                            <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById("staffList").innerHTML = html || "<div>لا يوجد موظفون</div>";
+        });
+
+        db.collection("attendance_raw").orderBy("timestamp", "desc").onSnapshot(snap => {
+            allAttendanceRecords = [];
+            snap.forEach(doc => { const d = doc.data(); d.id = doc.id; if (!d.dateOnly) d.dateOnly = d.timestamp?.toDate().toISOString().split('T')[0]; allAttendanceRecords.push(d); });
+            applyFiltersAndRenderLogs(paginationPage);
+        });
+        updateAdminStats();
+    }
+
     function groupRecords(records) {
         const map = new Map();
         records.forEach(r => {
             const key = `${r.empID}_${r.dateOnly}`;
-            if (!map.has(key)) map.set(key, { name: r.name, empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null });
+            if (!map.has(key)) map.set(key, { name: r.name, empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null, region: userRegionCache.get(r.empID) || '—' });
             const e = map.get(key);
             e.rawIds.push(r.id);
             if (r.type === 'in') { e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime; }
@@ -565,8 +776,10 @@
         paginationPage = page;
         let recs = [...allAttendanceRecords];
         const nameF = document.getElementById("filterEmployeeName")?.value.trim().toLowerCase();
+        const regionFilter = document.getElementById("filterRegion")?.value;
         const from = document.getElementById("filterDateFrom")?.value, to = document.getElementById("filterDateTo")?.value;
         if (nameF) recs = recs.filter(r => r.name?.toLowerCase().includes(nameF) || r.empID?.toString().includes(nameF));
+        if (regionFilter) recs = recs.filter(r => (userRegionCache.get(r.empID) || '—') === regionFilter);
         if (from) recs = recs.filter(r => r.dateOnly >= from);
         if (to) recs = recs.filter(r => r.dateOnly <= to);
         const grouped = groupRecords(recs);
@@ -584,6 +797,7 @@
             const row = document.createElement("tr"); row.className = cls;
             row.innerHTML = `
                 <td><b>${g.name}</b><br><small>${g.empID}</small></td>
+                <td>${g.region}</td>
                 <td>${g.date}</td><td>${inStr}</td><td>${outStr}</td><td>${dur}</td>
                 <td><span style="padding:6px 15px; border-radius:15px; background:${cls==='row-present'?'var(--success)':(cls==='row-incomplete'?'var(--warning)':'var(--danger)')}; color:black;">${st}</span></td>
                 <td>${g.inImg ? `<img src="${g.inImg}" class="img-preview" onclick="window.open(this.src)">` : "—"}</td>
@@ -592,7 +806,7 @@
                 <td><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteGroupRecords(['${g.rawIds.join("','")}'])"></i></td>`;
             tbody.appendChild(row);
         });
-        if (paginated.length === 0) tbody.innerHTML = `<tr><td colspan="10">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
+        if (paginated.length === 0) tbody.innerHTML = `<tr><td colspan="11">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
         const pages = Math.ceil(grouped.length / pageSize);
         let pagHtml = '';
         for (let i=0; i<pages; i++) pagHtml += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${i})" ${i===page?'style="background:var(--primary);color:black;"':''}>${i+1}</button>`;
@@ -605,6 +819,7 @@
 
     function resetFilters() {
         document.getElementById("filterEmployeeName").value = "";
+        document.getElementById("filterRegion").value = "";
         document.getElementById("filterDateFrom").value = "";
         document.getElementById("filterDateTo").value = "";
         applyFiltersAndRenderLogs(0);
@@ -625,27 +840,6 @@
             <div class="stat-card"><div class="stat-icon"><i class="fas fa-door-open"></i></div><div class="stat-value">${out}</div><div class="stat-label">منصرف</div></div>
             <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-clock"></i></div><div class="stat-value">${absent}</div><div class="stat-label">غائب</div></div>
             <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-value">${rate}%</div><div class="stat-label">نسبة الحضور</div></div>`;
-    }
-
-    function loadAdminDataAndListeners() {
-        db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
-            let html = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                html += `<div class="glass" style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                    <div><strong style="font-size:1.1rem;">${d.name}</strong> <span style="opacity:0.7;">(${d.empID})</span></div>
-                    <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i>
-                </div>`;
-            });
-            document.getElementById("staffList").innerHTML = html || "<div>لا يوجد موظفون</div>";
-        });
-        db.collection("attendance_raw").orderBy("timestamp", "desc").onSnapshot(snap => {
-            allAttendanceRecords = [];
-            snap.forEach(doc => { const d = doc.data(); d.id = doc.id; if (!d.dateOnly) d.dateOnly = d.timestamp?.toDate().toISOString().split('T')[0]; allAttendanceRecords.push(d); });
-            applyFiltersAndRenderLogs(paginationPage);
-        });
-        updateAdminStats();
-        setInterval(updateAdminStats, 60000);
     }
 
     function exportToCSV() {
@@ -677,7 +871,10 @@
         try {
             const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/video/upload", { method: "POST", body: fd });
             const data = await res.json();
-            if (data.secure_url) { document.getElementById("loginVideo").src = data.secure_url; status.innerHTML = `✅ تم الرفع`; }
+            if (data.secure_url) {
+                document.getElementById("loginVideoBackground").src = data.secure_url;
+                status.innerHTML = "✅ تم الرفع";
+            }
         } catch(e) { status.innerHTML = "فشل الرفع"; }
     }
     document.getElementById("videoUploadArea").addEventListener("click", ()=> document.getElementById("videoFileInput").click());
@@ -700,9 +897,12 @@
         document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t('staffListHeader')}`;
         document.getElementById("logsHeader").innerHTML = `<i class="fas fa-calendar-alt"></i> ${t('logsHeader')}`;
         document.getElementById("filterHeader").innerHTML = `<i class="fas fa-filter"></i> ${t('filterHeader')}`;
-        document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th></tr>`;
+        document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thRegion')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th></tr>`;
         if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t('proceedCheckout');
         if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t('logoutThankBtn');
+        // refresh regions list & dropdown
+        renderRegionsList();
+        renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
 
@@ -713,6 +913,11 @@
     window.resetFilters = resetFilters; window.takeAction = takeAction;
     window.requestCameraPermission = requestCameraPermission;
     window.exportToExcel = exportToExcel; window.exportToPDF = exportToPDF; window.exportToCSV = exportToCSV;
+    window.openEditModal = openEditModal; window.closeEditModal = closeEditModal;
+    window.updateEmployee = updateEmployee;
+    window.openRegionModal = openRegionModal; window.closeRegionModal = closeRegionModal;
+    window.assignRegionToEmployee = assignRegionToEmployee;
+    window.addRegion = addRegion; window.deleteRegion = deleteRegion;
 </script>
 </body>
 </html>

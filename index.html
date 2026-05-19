@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>نظام الحضور والانصراف - Alzahrani ERP</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -161,6 +166,47 @@
             .logo-circle { width: 90px; height: 90px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
+        /* أنماط شريط التنقل والصفحات (إضافة فقط) */
+        .sidebar {
+            width: 220px;
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+        .sidebar .nav-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .sidebar .nav-item:hover, .sidebar .nav-item.active {
+            background: var(--primary);
+            color: #0a1929;
+        }
+        .content {
+            flex: 1;
+            margin-right: 20px;
+            min-width: 0;
+        }
+        #adminPanel {
+            display: none;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -224,81 +270,105 @@
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
 
-    <!-- لوحة المدير -->
-    <div id="adminPanel" style="display:none;">
-        <div class="stats-grid" id="adminStats"></div>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:25px;">
+    <!-- لوحة المدير (SPA) -->
+    <div id="adminPanel">
+        <!-- شريط التنقل الجانبي -->
+        <div class="sidebar">
+            <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span id="navDashboardText">الرئيسية</span></div>
+            <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
+            <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
+            <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
+            <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
+            <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
+        </div>
+
+        <!-- محتوى الصفحات -->
+        <div class="content">
+            <!-- الصفحة الرئيسية -->
+            <div id="dashboardPage" class="page-section active">
+                <div class="stats-grid" id="adminStats"></div>
+                <!-- فيديو الخلفية -->
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3><i class="fas fa-video"></i> <span id="vidUploadHeader">تغيير فيديو الخلفية</span></h3>
+                    <div class="upload-area" id="videoUploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        <p id="vidUploadText">اضغط لرفع فيديو 16:9</p>
+                        <input type="file" id="videoFileInput" accept="video/*" style="display:none;" onchange="uploadVideo()">
+                    </div>
+                    <div id="videoUploadStatus" style="margin-top:10px;"></div>
+                </div>
+            </div>
+
+            <!-- صفحة الموظفين -->
+            <div id="employeesPage" class="page-section">
+                <!-- إضافة موظف -->
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3 id="addEmpHeader"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <input type="text" id="newName" placeholder="اسم الموظف" style="flex:1;">
+                        <input type="text" id="newID" placeholder="الرقم الوظيفي" style="flex:1;">
+                        <button class="btn btn-primary" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ</span></button>
+                    </div>
+                </div>
+                <!-- قائمة الموظفين -->
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> الموظفين</h3>
+                    <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:14px;"></div>
+                </div>
+            </div>
+
+            <!-- صفحة المناطق -->
+            <div id="regionsPage" class="page-section">
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3><i class="fas fa-map-marked-alt"></i> <span id="regionsHeader">إدارة المناطق</span></h3>
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <input type="text" id="newRegionNameAr" placeholder="اسم المنطقة (عربي)" style="flex:1;">
+                        <input type="text" id="newRegionNameEn" placeholder="English Name" style="flex:1;">
+                        <button class="btn btn-primary btn-sm" onclick="addRegion()">إضافة</button>
+                    </div>
+                    <div id="regionsList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                </div>
+            </div>
+
+            <!-- صفحة السجل (الفلاتر + الجدول + الترقيم) -->
+            <div id="logsPage" class="page-section">
+                <!-- فلترة السجلات -->
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3 id="filterHeader"><i class="fas fa-filter"></i> فلترة السجلات</h3>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <input type="text" id="filterEmployeeName" placeholder="اسم الموظف" style="flex:1;">
+                        <select id="filterRegion" style="flex:1;">
+                            <option value="">جميع المناطق</option>
+                        </select>
+                        <input type="date" id="filterDateFrom" style="flex:1;">
+                        <input type="date" id="filterDateTo" style="flex:1;">
+                        <button class="btn btn-primary btn-sm" onclick="applyFiltersAndRenderLogs()"><i class="fas fa-search"></i> بحث</button>
+                        <button class="btn btn-sm" onclick="resetFilters()">إعادة ضبط</button>
+                    </div>
+                </div>
+
+                <!-- جدول الحضور -->
+                <div class="glass">
+                    <h3 id="logsHeader"><i class="fas fa-calendar-alt"></i> سجل الحضور والانصراف</h3>
+                    <div class="table-container">
+                        <table id="attendanceTable">
+                            <thead id="tableHead">
+                                <tr><th>الموظف</th><th>المنطقة</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th></tr>
+                            </thead>
+                            <tbody id="logsTable"></tbody>
+                        </table>
+                    </div>
+                    <div id="paginationContainer" style="display:flex; justify-content:center; gap:12px; margin-top:20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الأزرار الأصلية (مخفية) -->
+        <div style="display:none;">
             <button class="btn btn-sm" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="adminLogoutText">خروج</span></button>
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
             <button class="btn btn-gold btn-sm" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
             <button class="btn btn-sm" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> CSV</button>
-        </div>
-
-        <!-- إدارة المناطق -->
-        <div class="glass" style="margin-bottom:25px;">
-            <h3><i class="fas fa-map-marked-alt"></i> <span id="regionsHeader">إدارة المناطق</span></h3>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="newRegionNameAr" placeholder="اسم المنطقة (عربي)" style="flex:1;">
-                <input type="text" id="newRegionNameEn" placeholder="English Name" style="flex:1;">
-                <button class="btn btn-primary btn-sm" onclick="addRegion()">إضافة</button>
-            </div>
-            <div id="regionsList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-        </div>
-
-        <!-- فيديو الخلفية -->
-        <div class="glass" style="margin-bottom:25px;">
-            <h3><i class="fas fa-video"></i> <span id="vidUploadHeader">تغيير فيديو الخلفية</span></h3>
-            <div class="upload-area" id="videoUploadArea">
-                <i class="fas fa-cloud-upload-alt fa-3x"></i>
-                <p id="vidUploadText">اضغط لرفع فيديو 16:9</p>
-                <input type="file" id="videoFileInput" accept="video/*" style="display:none;" onchange="uploadVideo()">
-            </div>
-            <div id="videoUploadStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <!-- إضافة موظف مبسطة -->
-        <div class="glass" style="margin-bottom:25px;">
-            <h3 id="addEmpHeader"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <input type="text" id="newName" placeholder="اسم الموظف" style="flex:1;">
-                <input type="text" id="newID" placeholder="الرقم الوظيفي" style="flex:1;">
-                <button class="btn btn-primary" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ</span></button>
-            </div>
-        </div>
-
-        <!-- قائمة الموظفين مع المنطقة -->
-        <div class="glass" style="margin-bottom:25px;">
-            <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> الموظفين</h3>
-            <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:14px;"></div>
-        </div>
-
-        <!-- فلترة السجلات -->
-        <div class="glass" style="margin-bottom:25px;">
-            <h3 id="filterHeader"><i class="fas fa-filter"></i> فلترة السجلات</h3>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <input type="text" id="filterEmployeeName" placeholder="اسم الموظف" style="flex:1;">
-                <select id="filterRegion" style="flex:1;">
-                    <option value="">جميع المناطق</option>
-                </select>
-                <input type="date" id="filterDateFrom" style="flex:1;">
-                <input type="date" id="filterDateTo" style="flex:1;">
-                <button class="btn btn-primary btn-sm" onclick="applyFiltersAndRenderLogs()"><i class="fas fa-search"></i> بحث</button>
-                <button class="btn btn-sm" onclick="resetFilters()">إعادة ضبط</button>
-            </div>
-        </div>
-
-        <!-- جدول الحضور -->
-        <div class="glass">
-            <h3 id="logsHeader"><i class="fas fa-calendar-alt"></i> سجل الحضور والانصراف</h3>
-            <div class="table-container">
-                <table id="attendanceTable">
-                    <thead id="tableHead">
-                        <tr><th>الموظف</th><th>المنطقة</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th></tr>
-                    </thead>
-                    <tbody id="logsTable"></tbody>
-                </table>
-            </div>
-            <div id="paginationContainer" style="display:flex; justify-content:center; gap:12px; margin-top:20px;"></div>
         </div>
     </div>
 </div>
@@ -385,7 +455,8 @@
             proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج",
             locationError: "يرجى تفعيل الموقع", locationSuccess: "تم تحديد الموقع",
             cameraRequest: "نحتاج للكاميرا", enablePermissions: "اسمح بالكاميرا والموقع",
-            statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غياب"
+            statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غياب",
+            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل", navLogout: "تسجيل خروج"
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
@@ -403,7 +474,8 @@
             proceedCheckout: "Checkout", logoutThankBtn: "Exit",
             locationError: "Enable location", locationSuccess: "Location acquired",
             cameraRequest: "Camera needed", enablePermissions: "Allow camera & location",
-            statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent"
+            statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
+            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs", navLogout: "Logout"
         }
     };
     const t = (key) => translations[currentLang][key] || key;
@@ -414,6 +486,16 @@
         el.style.background = ok ? "var(--primary)" : "var(--danger)";
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 3500);
+    }
+
+    // وظيفة عرض الصفحات (SPA Navigation)
+    function showPage(page) {
+        document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(page + 'Page');
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+        const navItem = document.querySelector(`.sidebar .nav-item[data-page="${page}"]`);
+        if (navItem) navItem.classList.add('active');
     }
 
     async function requestCameraPermission() {
@@ -535,7 +617,6 @@
                 document.getElementById("employeePanel").style.display = "none";
                 document.getElementById("thankyouPanel").style.display = "block";
                 
-                // رسالة ترحيب ذكية
                 const previousRecords = await db.collection("attendance_raw")
                     .where("empID", "==", currentUser.empID)
                     .where("dateOnly", "<", today)
@@ -567,7 +648,8 @@
         if (id === "2029") {
             currentUser = { empID: "2029", name: "المدير العام", role: "admin", id: "temp_admin" };
             document.getElementById("loginSection").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
+            document.getElementById("adminPanel").style.display = "flex";
+            showPage('dashboard');
             await loadRegionsAndCache();
             loadAdminDataAndListeners(); updateAdminStats(); return;
         }
@@ -576,7 +658,8 @@
         q.forEach(doc => { currentUser = { ...doc.data(), id: doc.id }; });
         document.getElementById("loginSection").style.display = "none";
         if (currentUser.role === "admin") {
-            document.getElementById("adminPanel").style.display = "block";
+            document.getElementById("adminPanel").style.display = "flex";
+            showPage('dashboard');
             await loadRegionsAndCache();
             loadAdminDataAndListeners(); updateAdminStats();
         } else {
@@ -713,7 +796,7 @@
         const newName = document.getElementById("editEmpName").value.trim();
         const newID = document.getElementById("editEmpID").value.trim();
         if (!newName || !newID) return;
-        if (newID !== currentUser?.empID) { // check uniqueness
+        if (newID !== currentUser?.empID) {
             const existing = await db.collection("users").where("empID", "==", newID).get();
             if (!existing.empty) {
                 showToast("الرقم الوظيفي موجود مسبقاً", false);
@@ -900,6 +983,12 @@
         document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thRegion')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th></tr>`;
         if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t('proceedCheckout');
         if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t('logoutThankBtn');
+        // تحديث نصوص التنقل
+        document.getElementById("navDashboardText").innerText = t('navDashboard');
+        document.getElementById("navEmployeesText").innerText = t('navEmployees');
+        document.getElementById("navRegionsText").innerText = t('navRegions');
+        document.getElementById("navLogsText").innerText = t('navLogs');
+        document.getElementById("navLogoutText").innerText = t('navLogout');
         // refresh regions list & dropdown
         renderRegionsList();
         renderRegionsFilterDropdown();
@@ -918,6 +1007,7 @@
     window.openRegionModal = openRegionModal; window.closeRegionModal = closeRegionModal;
     window.assignRegionToEmployee = assignRegionToEmployee;
     window.addRegion = addRegion; window.deleteRegion = deleteRegion;
+    window.showPage = showPage;
 </script>
 </body>
 </html>

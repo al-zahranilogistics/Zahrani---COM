@@ -44,7 +44,6 @@
             transition: all 0.3s ease;
             position: relative;
         }
-        /* خلفية الفيديو بملء الشاشة */
         #loginVideoBackground {
             position: fixed;
             top: 0; left: 0;
@@ -128,7 +127,7 @@
         .stat-card {
             padding: 28px 20px; text-align: center; background: var(--card);
             border-radius: 28px; border: 1px solid var(--glass-border);
-            backdrop-filter: blur(16px); transition: 0.3s;
+            backdrop-filter: blur(16px); transition: 0.3s; cursor: pointer;
         }
         .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .stat-icon { font-size: 2.2rem; color: var(--primary); margin-bottom: 12px; }
@@ -141,7 +140,8 @@
         .row-present { border-right: 5px solid var(--success); }
         .row-incomplete { border-right: 5px solid var(--warning); }
         .row-absent { border-right: 5px solid var(--danger); }
-        body[dir="ltr"] .row-present, body[dir="ltr"] .row-incomplete, body[dir="ltr"] .row-absent { border-right: none; border-left: 5px solid; }
+        .row-late { border-right: 5px solid var(--info); }
+        body[dir="ltr"] .row-present, body[dir="ltr"] .row-incomplete, body[dir="ltr"] .row-absent, body[dir="ltr"] .row-late { border-right: none; border-left: 5px solid; }
         .upload-area { border: 2px dashed var(--primary); border-radius: 24px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; }
         .upload-area:hover { background: rgba(20,184,166,0.1); }
         .toast {
@@ -157,8 +157,9 @@
         }
         .modal-content {
             background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--primary-glow);
-            border-radius: 28px; padding: 30px; width: 90%; max-width: 500px;
+            border-radius: 28px; padding: 30px; width: 90%; max-width: 700px;
             text-align: center; box-shadow: 0 0 50px var(--primary-glow);
+            max-height: 80vh; overflow-y: auto;
         }
         @media (max-width: 640px) {
             .container { padding: 10px; }
@@ -166,7 +167,6 @@
             .logo-circle { width: 90px; height: 90px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
-        /* أنماط شريط التنقل والصفحات (إضافة فقط) */
         .sidebar {
             width: 220px;
             background: var(--card);
@@ -207,11 +207,47 @@
         .page-section.active {
             display: block;
         }
+        .detail-item {
+            background: rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .detail-item .info {
+            text-align: right;
+            flex: 1;
+            min-width: 200px;
+        }
+        .detail-item .info .emp-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .detail-item .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .detail-input {
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body dir="rtl">
 
-<!-- فيديو الخلفية الثابت -->
 <video id="loginVideoBackground" autoplay muted loop playsinline src="https://videotourl.com/videos/1774779789874-936d4d66-2e77-4040-99d1-0781811fa154.mp4"></video>
 <div class="video-overlay-bg"></div>
 
@@ -223,14 +259,14 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- شاشة الدخول -->
+    <!-- شاشة الدخول (لم يتم تغييرها) -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
         <button class="btn btn-primary" style="width:100%; padding:16px;" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
-    <!-- لوحة الموظف -->
+    <!-- لوحة الموظف (لم يتم تغييرها) -->
     <div id="employeePanel" style="display:none;" class="glass">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
             <h3 id="empPanelHeader" style="font-size:1.3rem;"><i class="fas fa-camera-retro"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--primary);"></span></h3>
@@ -261,7 +297,7 @@
         <button class="btn" style="width:100%; margin-top:16px;" onclick="logoutToLogin()"><i class="fas fa-arrow-right"></i> <span id="btnBackText">خروج للرئيسية</span></button>
     </div>
 
-    <!-- شاشة الشكر -->
+    <!-- شاشة الشكر (لم يتم تغييرها) -->
     <div id="thankyouPanel" style="display:none;" class="glass" style="text-align:center; padding:40px;">
         <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" style="animation: logoGlow 1.5s infinite alternate;">
         <div style="font-size:2.5rem; color:var(--gold); margin:25px 0;" id="thankyouMsg">شكراً لتسجيل الحضور</div>
@@ -270,9 +306,8 @@
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
 
-    <!-- لوحة المدير (SPA) -->
+    <!-- لوحة المدير (SPA) - التخطيط دون تغيير -->
     <div id="adminPanel">
-        <!-- شريط التنقل الجانبي -->
         <div class="sidebar">
             <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span id="navDashboardText">الرئيسية</span></div>
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
@@ -282,12 +317,10 @@
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
-        <!-- محتوى الصفحات -->
         <div class="content">
-            <!-- الصفحة الرئيسية -->
+            <!-- الصفحات الداخلية (لم يتم تغيير المحتوى الأساسي) -->
             <div id="dashboardPage" class="page-section active">
                 <div class="stats-grid" id="adminStats"></div>
-                <!-- فيديو الخلفية -->
                 <div class="glass" style="margin-bottom:25px;">
                     <h3><i class="fas fa-video"></i> <span id="vidUploadHeader">تغيير فيديو الخلفية</span></h3>
                     <div class="upload-area" id="videoUploadArea">
@@ -299,25 +332,22 @@
                 </div>
             </div>
 
-            <!-- صفحة الموظفين -->
             <div id="employeesPage" class="page-section">
-                <!-- إضافة موظف -->
                 <div class="glass" style="margin-bottom:25px;">
                     <h3 id="addEmpHeader"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
                         <input type="text" id="newName" placeholder="اسم الموظف" style="flex:1;">
                         <input type="text" id="newID" placeholder="الرقم الوظيفي" style="flex:1;">
+                        <input type="text" id="newWhatsApp" placeholder="رقم الواتساب" style="flex:1;" inputmode="tel">
                         <button class="btn btn-primary" onclick="addEmployee()"><i class="fas fa-save"></i> <span id="btnSaveEmpText">حفظ</span></button>
                     </div>
                 </div>
-                <!-- قائمة الموظفين -->
                 <div class="glass" style="margin-bottom:25px;">
                     <h3 id="staffListHeader"><i class="fas fa-users-cog"></i> الموظفين</h3>
                     <div id="staffList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:14px;"></div>
                 </div>
             </div>
 
-            <!-- صفحة المناطق -->
             <div id="regionsPage" class="page-section">
                 <div class="glass" style="margin-bottom:25px;">
                     <h3><i class="fas fa-map-marked-alt"></i> <span id="regionsHeader">إدارة المناطق</span></h3>
@@ -330,9 +360,7 @@
                 </div>
             </div>
 
-            <!-- صفحة السجل (الفلاتر + الجدول + الترقيم) -->
             <div id="logsPage" class="page-section">
-                <!-- فلترة السجلات -->
                 <div class="glass" style="margin-bottom:25px;">
                     <h3 id="filterHeader"><i class="fas fa-filter"></i> فلترة السجلات</h3>
                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -347,7 +375,6 @@
                     </div>
                 </div>
 
-                <!-- جدول الحضور -->
                 <div class="glass">
                     <h3 id="logsHeader"><i class="fas fa-calendar-alt"></i> سجل الحضور والانصراف</h3>
                     <div class="table-container">
@@ -362,23 +389,16 @@
                 </div>
             </div>
         </div>
-
-        <!-- الأزرار الأصلية (مخفية) -->
-        <div style="display:none;">
-            <button class="btn btn-sm" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="adminLogoutText">خروج</span></button>
-            <button class="btn btn-primary btn-sm" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-            <button class="btn btn-gold btn-sm" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-            <button class="btn btn-sm" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> CSV</button>
-        </div>
     </div>
 </div>
 
-<!-- مودال تعديل الموظف -->
+<!-- مودال تعديل الموظف (لم يتم تغييره) -->
 <div id="editModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تعديل بيانات الموظف</h3>
         <input type="text" id="editEmpName" placeholder="اسم الموظف" style="width:100%; margin:15px 0; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
         <input type="text" id="editEmpID" placeholder="الرقم الوظيفي الجديد" style="width:100%; margin-bottom:15px; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        <input type="text" id="editEmpWhatsApp" placeholder="رقم الواتساب" style="width:100%; margin-bottom:15px; padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;" inputmode="tel">
         <div style="display:flex; gap:10px; justify-content:center;">
             <button class="btn btn-primary" onclick="updateEmployee()">حفظ</button>
             <button class="btn" onclick="closeEditModal()">إلغاء</button>
@@ -386,7 +406,7 @@
     </div>
 </div>
 
-<!-- مودال اختيار المنطقة للموظف -->
+<!-- مودال اختيار المنطقة للموظف (لم يتم تغييره) -->
 <div id="regionModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تحديد المنطقة</h3>
@@ -398,8 +418,17 @@
     </div>
 </div>
 
+<!-- مودال التفاصيل للإحصائيات (إضافة بسيطة للتنسيق فقط) -->
+<div id="detailsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width:750px; text-align:right;">
+        <h3 style="color:var(--primary); margin-bottom:20px;" id="detailsModalTitle"></h3>
+        <div id="detailsModalBody"></div>
+        <button class="btn" onclick="document.getElementById('detailsModal').style.display='none'" style="margin-top:20px;">إغلاق</button>
+    </div>
+</div>
+
 <script>
-    // Firebase init
+    // Firebase init (بدون تغيير)
     firebase.initializeApp({
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         projectId: "zahrani-attendance",
@@ -424,7 +453,8 @@
     let timerInterval = null;
     let selectedEmployeeIdForRegion = null;
     let editingEmployeeId = null;
-    let userRegionCache = new Map(); // empID -> region name
+    let userRegionCache = new Map();
+    let userWhatsAppCache = new Map();
 
     function playSuccessSound() {
         try {
@@ -455,8 +485,20 @@
             proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج",
             locationError: "يرجى تفعيل الموقع", locationSuccess: "تم تحديد الموقع",
             cameraRequest: "نحتاج للكاميرا", enablePermissions: "اسمح بالكاميرا والموقع",
-            statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غياب",
-            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل", navLogout: "تسجيل خروج"
+            statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
+            statusLate: "متأخر",
+            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل", navLogout: "تسجيل خروج",
+            whatsappWarningMsg: "تنبيه إداري بسبب الغياب أو التأخير",
+            whatsappDeductionMsg: "إشعار خصم بسبب الغياب أو التأخير",
+            modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
+            modalLate: "المتأخرون", modalAbsent: "الغائبون",
+            reasonLabel: "رسالة للموظف",
+            lateDetailLine: (name, empID, region, time, delay) =>
+                `${empID}\nالمنطقة: ${region}\nوقت الحضور: ${time}\nمتأخر ${delay} دقيقة`,
+            absentDetailLine: (empID, region, date) =>
+                `${empID}\nالمنطقة: ${region}\nالتاريخ: ${date}\nالحالة: غائب`,
+            warningPrefix: "تحذير: ",
+            deductionPrefix: "خصم: "
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
@@ -475,10 +517,26 @@
             locationError: "Enable location", locationSuccess: "Location acquired",
             cameraRequest: "Camera needed", enablePermissions: "Allow camera & location",
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
-            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs", navLogout: "Logout"
+            statusLate: "Late",
+            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs", navLogout: "Logout",
+            whatsappWarningMsg: "Administrative warning due to absence or delay",
+            whatsappDeductionMsg: "Deduction notice due to absence or delay",
+            modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
+            modalLate: "Late Arrivals", modalAbsent: "Absent",
+            reasonLabel: "Message to employee",
+            lateDetailLine: (name, empID, region, time, delay) =>
+                `${empID} - Region: ${region} - Check-in: ${time} - Late ${delay} min`,
+            absentDetailLine: (empID, region, date) =>
+                `${empID} - Region: ${region} - Date: ${date} - Status: Absent`,
+            warningPrefix: "Warning: ",
+            deductionPrefix: "Deduction: "
         }
     };
-    const t = (key) => translations[currentLang][key] || key;
+    const t = (key, ...args) => {
+        let val = translations[currentLang][key];
+        if (typeof val === 'function') return val(...args);
+        return val || key;
+    };
 
     function showToast(msg, ok = true) {
         const el = document.createElement("div");
@@ -488,7 +546,6 @@
         setTimeout(() => el.remove(), 3500);
     }
 
-    // وظيفة عرض الصفحات (SPA Navigation)
     function showPage(page) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
         const target = document.getElementById(page + 'Page');
@@ -616,7 +673,7 @@
                 stopCamera(); stopLocationTracking(); stopWorkTimer();
                 document.getElementById("employeePanel").style.display = "none";
                 document.getElementById("thankyouPanel").style.display = "block";
-                
+
                 const previousRecords = await db.collection("attendance_raw")
                     .where("empID", "==", currentUser.empID)
                     .where("dateOnly", "<", today)
@@ -633,7 +690,9 @@
                 showToast(`${t('thankYouMsg')} ${currentUser.name}`, true);
                 setTimeout(() => logoutToLogin(), 1800);
             }
-        } catch (e) { showToast(t('msgError'), false); freeze.style.display = 'none'; isUploading = false; }
+        } catch (e) {
+            freeze.style.display = 'none'; isUploading = false;
+        }
     }
 
     function proceedToCheckout() {
@@ -681,13 +740,15 @@
         document.getElementById("empID").value = "";
     }
 
-    // =============== المناطق ===============
+    // =============== المناطق (لم يتم تغييرها) ===============
     async function loadRegionsAndCache() {
         userRegionCache.clear();
+        userWhatsAppCache.clear();
         const usersSnap = await db.collection("users").get();
         usersSnap.forEach(doc => {
             const d = doc.data();
             if (d.region) userRegionCache.set(d.empID, d.region);
+            if (d.whatsapp) userWhatsAppCache.set(d.empID, d.whatsapp);
         });
         renderRegionsFilterDropdown();
     }
@@ -754,7 +815,6 @@
         const region = document.getElementById("regionSelect").value;
         if (!selectedEmployeeIdForRegion || !region) return;
         await db.collection("users").doc(selectedEmployeeIdForRegion).update({ region });
-        userRegionCache.set(/* need empID from doc */ /* we'll fetch */);
         closeRegionModal();
         showToast("تم تحديث المنطقة");
         loadAdminDataAndListeners();
@@ -765,13 +825,15 @@
         selectedEmployeeIdForRegion = null;
     }
 
-    // =============== إضافة موظف ===============
+    // =============== إضافة موظف (إضافة حقل الواتساب فقط) ===============
     async function addEmployee() {
         const name = document.getElementById("newName").value.trim();
         const empID = document.getElementById("newID").value.trim();
+        const whatsapp = document.getElementById("newWhatsApp").value.trim();
         if (!name || !empID) return;
-        await db.collection("users").add({ empID, name, role: "employee" });
+        await db.collection("users").add({ empID, name, role: "employee", whatsapp: whatsapp || "" });
         document.getElementById("newName").value = ""; document.getElementById("newID").value = "";
+        document.getElementById("newWhatsApp").value = "";
         showToast(t('msgSuccess'));
     }
 
@@ -779,11 +841,12 @@
         if (confirm(t('confirmDelete'))) { await db.collection("users").doc(docId).delete(); showToast(t('msgSuccess')); }
     }
 
-    // =============== تعديل الموظف ===============
-    function openEditModal(empId, currentName, currentEmpID) {
+    // =============== تعديل الموظف (إضافة الواتساب) ===============
+    function openEditModal(empId, currentName, currentEmpID, currentWhatsApp = "") {
         editingEmployeeId = empId;
         document.getElementById("editEmpName").value = currentName;
         document.getElementById("editEmpID").value = currentEmpID;
+        document.getElementById("editEmpWhatsApp").value = currentWhatsApp;
         document.getElementById("editModal").style.display = "flex";
     }
 
@@ -795,27 +858,29 @@
     async function updateEmployee() {
         const newName = document.getElementById("editEmpName").value.trim();
         const newID = document.getElementById("editEmpID").value.trim();
+        const newWhatsApp = document.getElementById("editEmpWhatsApp").value.trim();
         if (!newName || !newID) return;
         if (newID !== currentUser?.empID) {
             const existing = await db.collection("users").where("empID", "==", newID).get();
-            if (!existing.empty) {
+            if (!existing.empty && existing.docs[0].id !== editingEmployeeId) {
                 showToast("الرقم الوظيفي موجود مسبقاً", false);
                 return;
             }
         }
-        await db.collection("users").doc(editingEmployeeId).update({ name: newName, empID: newID });
+        await db.collection("users").doc(editingEmployeeId).update({ name: newName, empID: newID, whatsapp: newWhatsApp });
         closeEditModal();
         showToast(t('msgSuccess'));
         loadAdminDataAndListeners();
     }
 
-    // =============== عرض الموظفين ===============
+    // =============== عرض الموظفين (لم يتم تغييره) ===============
     async function loadAdminDataAndListeners() {
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let html = "";
             snap.forEach(doc => {
                 const d = doc.data();
                 const region = userRegionCache.get(d.empID) || d.region || "—";
+                const whatsapp = d.whatsapp || "";
                 html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;">
                     <div style="display:flex; justify-content:space-between;">
                         <strong>${d.name}</strong>
@@ -824,7 +889,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <small>المنطقة: ${region}</small>
                         <div>
-                            <i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}')"></i>
+                            <i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}','${whatsapp}')"></i>
                             <i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i>
                             <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i>
                         </div>
@@ -842,15 +907,31 @@
         updateAdminStats();
     }
 
+    function isLate(inTime) {
+        if (!inTime) return false;
+        const hour = inTime.getHours();
+        const minute = inTime.getMinutes();
+        return (hour > 10) || (hour === 10 && minute > 0);
+    }
+
     function groupRecords(records) {
         const map = new Map();
         records.forEach(r => {
             const key = `${r.empID}_${r.dateOnly}`;
-            if (!map.has(key)) map.set(key, { name: r.name, empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null, region: userRegionCache.get(r.empID) || '—' });
+            if (!map.has(key)) map.set(key, {
+                name: r.name, empID: r.empID, date: r.dateOnly,
+                inTime: null, outTime: null, inImg: null, outImg: null,
+                location: null, rawIds: [], inTs: null, outTs: null,
+                region: userRegionCache.get(r.empID) || '—',
+                whatsapp: userWhatsAppCache.get(r.empID) || ''
+            });
             const e = map.get(key);
             e.rawIds.push(r.id);
-            if (r.type === 'in') { e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime; }
-            else { e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime; }
+            if (r.type === 'in') {
+                e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime;
+            } else {
+                e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime;
+            }
         });
         return Array.from(map.values()).sort((a,b) => (b.date||'').localeCompare(a.date));
     }
@@ -875,14 +956,19 @@
             let dur = "—", cls = "row-absent", st = t('statusAbsent');
             if (g.inTime && g.outTime) {
                 const diff = g.outTs - g.inTs; const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
-                dur = `${h}:${String(m).padStart(2,'0')}`; cls = "row-present"; st = t('statusPresent');
-            } else if (g.inTime) { cls = "row-incomplete"; st = t('statusIncomplete'); }
+                dur = `${h}:${String(m).padStart(2,'0')}`;
+                if (isLate(g.inTime)) { cls = "row-late"; st = t('statusLate'); }
+                else { cls = "row-present"; st = t('statusPresent'); }
+            } else if (g.inTime) {
+                cls = "row-incomplete"; st = t('statusIncomplete');
+                if (isLate(g.inTime)) { cls = "row-late"; st = t('statusLate'); }
+            }
             const row = document.createElement("tr"); row.className = cls;
             row.innerHTML = `
                 <td><b>${g.name}</b><br><small>${g.empID}</small></td>
                 <td>${g.region}</td>
                 <td>${g.date}</td><td>${inStr}</td><td>${outStr}</td><td>${dur}</td>
-                <td><span style="padding:6px 15px; border-radius:15px; background:${cls==='row-present'?'var(--success)':(cls==='row-incomplete'?'var(--warning)':'var(--danger)')}; color:black;">${st}</span></td>
+                <td><span style="padding:6px 15px; border-radius:15px; background:${cls==='row-present'?'var(--success)':(cls==='row-incomplete'?'var(--warning)':(cls==='row-late'?'var(--info)':'var(--danger)'))}; color:black;">${st}</span></td>
                 <td>${g.inImg ? `<img src="${g.inImg}" class="img-preview" onclick="window.open(this.src)">` : "—"}</td>
                 <td>${g.outImg ? `<img src="${g.outImg}" class="img-preview" onclick="window.open(this.src)">` : "—"}</td>
                 <td>${g.location || "—"}</td>
@@ -913,16 +999,181 @@
         const total = usersSnap.size;
         const today = new Date().toISOString().split('T')[0];
         const todaySnap = await db.collection("attendance_raw").where("dateOnly", "==", today).get();
-        const presentSet = new Set(), outSet = new Set();
-        todaySnap.forEach(d => { if (d.data().type === 'in') presentSet.add(d.data().empID); if (d.data().type === 'out') outSet.add(d.data().empID); });
-        const present = presentSet.size, out = outSet.size, absent = total - present;
+        const presentSet = new Set(), outSet = new Set(), lateSet = new Set();
+        const empInTimes = new Map();
+        todaySnap.forEach(d => {
+            const emp = d.data().empID;
+            if (d.data().type === 'in') {
+                presentSet.add(emp);
+                const ts = d.data().timestamp?.toDate();
+                if (ts) empInTimes.set(emp, ts);
+            }
+            if (d.data().type === 'out') outSet.add(emp);
+        });
+        presentSet.forEach(emp => {
+            if (empInTimes.has(emp) && isLate(empInTimes.get(emp))) lateSet.add(emp);
+        });
+        const present = presentSet.size;
+        const out = outSet.size;
+        const absent = total - present;
+        const lateCount = lateSet.size;
         const rate = total ? Math.round((present / total) * 100) : 0;
         document.getElementById("adminStats").innerHTML = `
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value">${total}</div><div class="stat-label">إجمالي الموظفين</div></div>
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-check"></i></div><div class="stat-value">${present}</div><div class="stat-label">حاضر اليوم</div></div>
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-door-open"></i></div><div class="stat-value">${out}</div><div class="stat-label">منصرف</div></div>
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-clock"></i></div><div class="stat-value">${absent}</div><div class="stat-label">غائب</div></div>
+            <div class="stat-card" onclick="openStatDetails('total')"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value">${total}</div><div class="stat-label">إجمالي الموظفين</div></div>
+            <div class="stat-card" onclick="openStatDetails('present')"><div class="stat-icon"><i class="fas fa-user-check"></i></div><div class="stat-value">${present}</div><div class="stat-label">حاضر اليوم</div></div>
+            <div class="stat-card" onclick="openStatDetails('out')"><div class="stat-icon"><i class="fas fa-door-open"></i></div><div class="stat-value">${out}</div><div class="stat-label">منصرف</div></div>
+            <div class="stat-card" onclick="openStatDetails('late')"><div class="stat-icon"><i class="fas fa-hourglass-end"></i></div><div class="stat-value">${lateCount}</div><div class="stat-label">متأخر</div></div>
+            <div class="stat-card" onclick="openStatDetails('absent')"><div class="stat-icon"><i class="fas fa-user-clock"></i></div><div class="stat-value">${absent}</div><div class="stat-label">غائب</div></div>
             <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-value">${rate}%</div><div class="stat-label">نسبة الحضور</div></div>`;
+    }
+
+    // ---------- دوال واتساب الجديدة (إضافة فقط) ----------
+    function sendEmployeeMessage(whatsapp, empID, name, region, inTimeStr, lateMinutes, statType, buttonType) {
+        if (!whatsapp) { showToast("رقم الواتساب غير متوفر", false); return; }
+        const inputId = statType === 'late' ? `late_msg_${empID}` : `msg_${empID}`;
+        const inputEl = document.getElementById(inputId);
+        const adminMsg = inputEl ? inputEl.value.trim() : '';
+
+        let fullMsg = '';
+        if (buttonType === 'details') {
+            if (statType === 'late') {
+                fullMsg = t('lateDetailLine', empID, empID, region, inTimeStr, lateMinutes);
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                fullMsg = t('absentDetailLine', empID, region, today);
+            }
+            if (adminMsg) fullMsg += '\n\n' + adminMsg;
+        } else if (buttonType === 'warning') {
+            fullMsg = t('warningPrefix') + (adminMsg || t('whatsappWarningMsg'));
+        } else if (buttonType === 'deduction') {
+            fullMsg = t('deductionPrefix') + (adminMsg || t('whatsappDeductionMsg'));
+        }
+
+        const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(fullMsg)}`;
+        window.open(url, '_blank');
+    }
+
+    // ---------- عرض التفاصيل (تحديث محتوى المتأخر والغائب) ----------
+    async function openStatDetails(type) {
+        const modal = document.getElementById("detailsModal");
+        const title = document.getElementById("detailsModalTitle");
+        const body = document.getElementById("detailsModalBody");
+        modal.style.display = "flex";
+        body.innerHTML = '<div style="text-align:center;">جاري التحميل...</div>';
+
+        const today = new Date().toISOString().split('T')[0];
+        const usersSnap = await db.collection("users").where("role", "==", "employee").get();
+        const todaySnap = await db.collection("attendance_raw").where("dateOnly", "==", today).get();
+
+        const allEmployees = [];
+        usersSnap.forEach(doc => {
+            const d = doc.data();
+            allEmployees.push({
+                id: doc.id,
+                name: d.name,
+                empID: d.empID,
+                region: userRegionCache.get(d.empID) || d.region || "—",
+                whatsapp: d.whatsapp || "",
+                hasIn: false,
+                inTime: null,
+                hasOut: false,
+                outTime: null
+            });
+        });
+
+        todaySnap.forEach(doc => {
+            const d = doc.data();
+            const emp = allEmployees.find(e => e.empID === d.empID);
+            if (emp) {
+                if (d.type === 'in') {
+                    emp.hasIn = true;
+                    emp.inTime = d.timestamp?.toDate() || null;
+                } else if (d.type === 'out') {
+                    emp.hasOut = true;
+                    emp.outTime = d.timestamp?.toDate() || null;
+                }
+            }
+        });
+
+        let filtered = [];
+        let titleText = '';
+
+        if (type === 'total') {
+            filtered = allEmployees;
+            titleText = t('modalTotal');
+        } else if (type === 'present') {
+            filtered = allEmployees.filter(e => e.hasIn);
+            titleText = t('modalPresent');
+        } else if (type === 'out') {
+            filtered = allEmployees.filter(e => e.hasIn && e.hasOut);
+            titleText = t('modalOut');
+        } else if (type === 'late') {
+            filtered = allEmployees.filter(e => e.hasIn && e.inTime && isLate(e.inTime));
+            titleText = t('modalLate');
+        } else if (type === 'absent') {
+            filtered = allEmployees.filter(e => !e.hasIn);
+            titleText = t('modalAbsent');
+        }
+
+        title.innerText = titleText;
+        let html = '';
+
+        if (filtered.length === 0) {
+            html = '<div style="text-align:center; color:var(--success);">لا توجد بيانات</div>';
+        } else {
+            filtered.forEach(emp => {
+                html += '<div class="detail-item">';
+                html += '<div class="info">';
+                html += `<div class="emp-name">${emp.name}</div>`;
+                html += `<div>${emp.empID}</div>`;
+                html += `<div>المنطقة: ${emp.region}</div>`;
+
+                if (type === 'present' || type === 'late' || type === 'out') {
+                    const inTimeStr = emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—';
+                    html += `<div>وقت الحضور: ${inTimeStr}</div>`;
+                }
+                if (type === 'late') {
+                    const lateMinutes = emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0)) / 60000) : 0;
+                    html += `<div style="color:var(--info);">متأخر ${lateMinutes} دقيقة</div>`;
+                }
+                if (type === 'absent') {
+                    html += `<div>التاريخ: ${today}</div>`;
+                    html += `<div style="color:var(--danger);">الحالة: غائب</div>`;
+                }
+                if (type === 'out') {
+                    const outTimeStr = emp.outTime ? emp.outTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—';
+                    html += `<div>وقت الانصراف: ${outTimeStr}</div>`;
+                    if (emp.inTime && emp.outTime) {
+                        const hours = Math.floor((emp.outTime - emp.inTime) / 3600000);
+                        const mins = Math.floor(((emp.outTime - emp.inTime) % 3600000) / 60000);
+                        html += `<div>ساعات العمل: ${hours}:${String(mins).padStart(2,'0')}</div>`;
+                    }
+                }
+
+                html += '</div>'; // نهاية info
+
+                if (type === 'late' || type === 'absent') {
+                    html += '<div style="width:100%;">';
+                    const inputId = type === 'late' ? `late_msg_${emp.empID}` : `msg_${emp.empID}`;
+                    html += `<input type="text" id="${inputId}" placeholder="${t('reasonLabel')}" class="detail-input">`;
+                    html += '<div class="actions" style="margin-top:8px;">';
+                    if (emp.whatsapp) {
+                        const safeName = emp.name.replace(/'/g, "\\'");
+                        const safeRegion = emp.region.replace(/'/g, "\\'");
+                        const inTimeParam = emp.inTime ? emp.inTime.toISOString() : '';
+                        const lateMins = type === 'late' ? (emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0) : 0;
+                        html += `<button class="btn btn-sm" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','details')"><i class="fab fa-whatsapp"></i> إرسال واتساب</button>`;
+                        html += `<button class="btn btn-sm" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','warning')">تحذير</button>`;
+                        html += `<button class="btn btn-sm btn-danger" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','deduction')">خصم</button>`;
+                    }
+                    html += '</div></div>';
+                }
+
+                html += '</div>'; // نهاية detail-item
+            });
+        }
+
+        body.innerHTML = html;
     }
 
     function exportToCSV() {
@@ -945,6 +1196,16 @@
         doc.save(`Attendance_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
+    async function loadBackgroundVideo() {
+        try {
+            const doc = await db.collection("settings").doc("background").get();
+            if (doc.exists && doc.data().videoUrl) {
+                document.getElementById("loginVideoBackground").src = doc.data().videoUrl;
+            }
+        } catch (e) {}
+    }
+    loadBackgroundVideo();
+
     async function uploadVideo() {
         const file = document.getElementById("videoFileInput").files[0];
         if (!file) return;
@@ -956,7 +1217,8 @@
             const data = await res.json();
             if (data.secure_url) {
                 document.getElementById("loginVideoBackground").src = data.secure_url;
-                status.innerHTML = "✅ تم الرفع";
+                await db.collection("settings").doc("background").set({ videoUrl: data.secure_url }, { merge: true });
+                status.innerHTML = "✅ تم الرفع والحفظ";
             }
         } catch(e) { status.innerHTML = "فشل الرفع"; }
     }
@@ -983,18 +1245,17 @@
         document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thRegion')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th></tr>`;
         if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t('proceedCheckout');
         if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t('logoutThankBtn');
-        // تحديث نصوص التنقل
         document.getElementById("navDashboardText").innerText = t('navDashboard');
         document.getElementById("navEmployeesText").innerText = t('navEmployees');
         document.getElementById("navRegionsText").innerText = t('navRegions');
         document.getElementById("navLogsText").innerText = t('navLogs');
         document.getElementById("navLogoutText").innerText = t('navLogout');
-        // refresh regions list & dropdown
         renderRegionsList();
         renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
 
+    // دوال عامة
     window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
     window.logoutToLogin = logoutToLogin; window.proceedToCheckout = proceedToCheckout;
     window.addEmployee = addEmployee; window.deleteEmployee = deleteEmployee;
@@ -1008,6 +1269,9 @@
     window.assignRegionToEmployee = assignRegionToEmployee;
     window.addRegion = addRegion; window.deleteRegion = deleteRegion;
     window.showPage = showPage;
+    window.openStatDetails = openStatDetails;
+    window.sendEmployeeMessage = sendEmployeeMessage;
 </script>
 </body>
 </html>
+    

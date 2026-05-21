@@ -244,6 +244,41 @@
             color: white;
             font-family: inherit;
         }
+        .action-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .action-menu-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--primary-glow);
+            border-radius: 16px;
+            min-width: 160px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            z-index: 3100;
+            overflow: hidden;
+        }
+        .action-menu-content button {
+            display: block;
+            width: 100%;
+            text-align: right;
+            background: none;
+            border: none;
+            color: var(--text);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: background 0.2s;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .action-menu-content button:hover {
+            background: rgba(20,184,166,0.2);
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -259,14 +294,14 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- شاشة الدخول (لم يتم تغييرها) -->
+    <!-- شاشة الدخول (دون تغيير) -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
         <button class="btn btn-primary" style="width:100%; padding:16px;" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
-    <!-- لوحة الموظف (لم يتم تغييرها) -->
+    <!-- لوحة الموظف (دون تغيير) -->
     <div id="employeePanel" style="display:none;" class="glass">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
             <h3 id="empPanelHeader" style="font-size:1.3rem;"><i class="fas fa-camera-retro"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--primary);"></span></h3>
@@ -297,7 +332,7 @@
         <button class="btn" style="width:100%; margin-top:16px;" onclick="logoutToLogin()"><i class="fas fa-arrow-right"></i> <span id="btnBackText">خروج للرئيسية</span></button>
     </div>
 
-    <!-- شاشة الشكر (لم يتم تغييرها) -->
+    <!-- شاشة الشكر (دون تغيير) -->
     <div id="thankyouPanel" style="display:none;" class="glass" style="text-align:center; padding:40px;">
         <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" style="animation: logoGlow 1.5s infinite alternate;">
         <div style="font-size:2.5rem; color:var(--gold); margin:25px 0;" id="thankyouMsg">شكراً لتسجيل الحضور</div>
@@ -318,7 +353,7 @@
         </div>
 
         <div class="content">
-            <!-- الصفحات الداخلية (لم يتم تغيير المحتوى الأساسي) -->
+            <!-- الصفحات الداخلية (دون تغيير) -->
             <div id="dashboardPage" class="page-section active">
                 <div class="stats-grid" id="adminStats"></div>
                 <div class="glass" style="margin-bottom:25px;">
@@ -380,7 +415,7 @@
                     <div class="table-container">
                         <table id="attendanceTable">
                             <thead id="tableHead">
-                                <tr><th>الموظف</th><th>المنطقة</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th></tr>
+                                <tr><th>الموظف</th><th>المنطقة</th><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>المدة</th><th>الحالة</th><th>صورة الحضور</th><th>صورة الانصراف</th><th>الموقع</th><th>مسح</th><th>إجراءات</th></tr>
                             </thead>
                             <tbody id="logsTable"></tbody>
                         </table>
@@ -392,7 +427,7 @@
     </div>
 </div>
 
-<!-- مودال تعديل الموظف (لم يتم تغييره) -->
+<!-- مودال تعديل الموظف (دون تغيير) -->
 <div id="editModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تعديل بيانات الموظف</h3>
@@ -406,7 +441,7 @@
     </div>
 </div>
 
-<!-- مودال اختيار المنطقة للموظف (لم يتم تغييره) -->
+<!-- مودال اختيار المنطقة للموظف (دون تغيير) -->
 <div id="regionModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تحديد المنطقة</h3>
@@ -418,7 +453,7 @@
     </div>
 </div>
 
-<!-- مودال التفاصيل للإحصائيات (إضافة بسيطة للتنسيق فقط) -->
+<!-- مودال التفاصيل للإحصائيات (دون تغيير) -->
 <div id="detailsModal" class="modal-overlay" style="display:none;">
     <div class="modal-content" style="max-width:750px; text-align:right;">
         <h3 style="color:var(--primary); margin-bottom:20px;" id="detailsModalTitle"></h3>
@@ -455,6 +490,94 @@
     let editingEmployeeId = null;
     let userRegionCache = new Map();
     let userWhatsAppCache = new Map();
+    let userNameCache = new Map(); // تخزين أسماء الموظفين
+
+    const actionDataMap = new Map();
+
+    // تنظيف رقم الهاتف
+    function sanitizePhoneNumber(rawNumber) {
+        if (!rawNumber) return '';
+        let cleaned = rawNumber.replace(/[^\d]/g, '');
+        if (cleaned.startsWith('00')) cleaned = cleaned.substring(2);
+        if (cleaned.startsWith('0')) cleaned = '966' + cleaned.substring(1);
+        if (!cleaned.startsWith('966')) cleaned = '966' + cleaned;
+        if (cleaned.length !== 12) return '';
+        return cleaned;
+    }
+
+    function generateWhatsAppUrl(empData, adminMsg, deductionAmount, actionType) {
+        const phone = sanitizePhoneNumber(empData.whatsapp);
+        if (!phone) {
+            showToast("رقم واتساب غير مضاف للموظف", false);
+            return null;
+        }
+        let baseText = '';
+        if (empData.type === 'late') {
+            const timeStr = empData.inTime ? new Date(empData.inTime).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : '—';
+            const delay = empData.lateMinutes || 0;
+            baseText = `${empData.empID}\nالمنطقة: ${empData.region}\nوقت الحضور: ${timeStr}\nالحالة: متأخر ${delay} دقيقة`;
+        } else if (empData.type === 'absent') {
+            baseText = `${empData.empID}\nالمنطقة: ${empData.region}\nالتاريخ: ${empData.date || new Date().toISOString().split('T')[0]}\nالحالة: غائب`;
+        } else {
+            baseText = `${empData.empID}\nالمنطقة: ${empData.region}`;
+        }
+
+        if (actionType === 'details') {
+            if (adminMsg) baseText += '\n\n' + adminMsg;
+        } else if (actionType === 'warning') {
+            baseText = 'تنبيه إداري بسبب الغياب أو التأخير\n' + baseText + (adminMsg ? '\n' + adminMsg : '');
+        } else if (actionType === 'deduction') {
+            baseText = 'إشعار خصم بسبب الغياب أو التأخير\n' + baseText;
+            if (deductionAmount) baseText += '\nقيمة الخصم: ' + deductionAmount + ' ريال';
+            if (adminMsg) baseText += '\n' + adminMsg;
+        }
+
+        return `https://wa.me/${phone}?text=${encodeURIComponent(baseText)}`;
+    }
+
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('.action-trigger');
+        if (trigger) {
+            e.stopPropagation();
+            const key = trigger.getAttribute('data-action-key');
+            const menu = document.getElementById('actionMenu_' + key);
+            if (menu) {
+                document.querySelectorAll('.action-menu-content').forEach(m => m.style.display = 'none');
+                menu.style.display = 'block';
+            }
+            return;
+        }
+
+        const menuItem = e.target.closest('.action-menu-content button');
+        if (menuItem) {
+            e.stopPropagation();
+            const action = menuItem.getAttribute('data-action');
+            const menu = menuItem.closest('.action-menu-content');
+            const key = menu.getAttribute('data-action-key');
+            const empData = actionDataMap.get(key);
+            if (empData && action) {
+                const inputId = empData.type === 'late' ? `late_msg_${empData.empID}` : `msg_${empData.empID}`;
+                const adminMsg = document.getElementById(inputId)?.value || '';
+                let deductionAmount = '';
+                if (action === 'deduction') {
+                    deductionAmount = prompt('أدخل مبلغ الخصم (اختياري) أو سبب الخصم:');
+                    if (deductionAmount === null) return;
+                }
+                const url = generateWhatsAppUrl(empData, adminMsg, deductionAmount, action);
+                if (url) window.open(url, '_blank');
+            }
+            menu.style.display = 'none';
+            return;
+        }
+
+        if (!e.target.closest('.action-menu')) {
+            document.querySelectorAll('.action-menu-content').forEach(m => m.style.display = 'none');
+        }
+    });
+
+    function registerActionData(key, empData) {
+        actionDataMap.set(key, empData);
+    }
 
     function playSuccessSound() {
         try {
@@ -477,7 +600,7 @@
             logsHeader: "سجل الحضور والانصراف", filterHeader: "فلترة",
             thName: "الموظف", thRegion: "المنطقة", thDate: "التاريخ", thIn: "حضور", thOut: "انصراف",
             thDuration: "المدة", thStatus: "الحالة", thInImg: "صورة الحضور", thOutImg: "صورة الانصراف",
-            thLocation: "الموقع", thAction: "مسح",
+            thLocation: "الموقع", thAction: "مسح", thActions: "إجراءات",
             langBtn: "English", msgSuccess: "تم بنجاح", msgError: "خطأ", confirmDelete: "متأكد من الحذف؟",
             alreadyCheckedIn: "⚠️ تم تسجيل حضورك اليوم!", alreadyCheckedOut: "⚠️ تم تسجيل انصرافك مسبقاً!",
             morningGreeting: "شكراً لتسجيل الحضور", returningGreeting: "مرحباً بعودتك",
@@ -488,17 +611,15 @@
             statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
             statusLate: "متأخر",
             navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل", navLogout: "تسجيل خروج",
-            whatsappWarningMsg: "تنبيه إداري بسبب الغياب أو التأخير",
-            whatsappDeductionMsg: "إشعار خصم بسبب الغياب أو التأخير",
+            reasonLabel: "رسالة للإدارة",
             modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
             modalLate: "المتأخرون", modalAbsent: "الغائبون",
-            reasonLabel: "رسالة للموظف",
-            lateDetailLine: (name, empID, region, time, delay) =>
-                `${empID}\nالمنطقة: ${region}\nوقت الحضور: ${time}\nمتأخر ${delay} دقيقة`,
-            absentDetailLine: (empID, region, date) =>
-                `${empID}\nالمنطقة: ${region}\nالتاريخ: ${date}\nالحالة: غائب`,
-            warningPrefix: "تحذير: ",
-            deductionPrefix: "خصم: "
+            actionsBtn: "الإجراءات",
+            actionDetails: "إرسال واتساب",
+            actionWarning: "تحذير",
+            actionDeduction: "خصم",
+            noWhatsApp: "رقم واتساب غير مضاف للموظف",
+            closeBtn: "إغلاق"
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
@@ -508,7 +629,7 @@
             logsHeader: "Attendance Log", filterHeader: "Filter",
             thName: "Name", thRegion: "Region", thDate: "Date", thIn: "In", thOut: "Out",
             thDuration: "Duration", thStatus: "Status", thInImg: "In Photo", thOutImg: "Out Photo",
-            thLocation: "Location", thAction: "Delete",
+            thLocation: "Location", thAction: "Delete", thActions: "Actions",
             langBtn: "عربي", msgSuccess: "Success", msgError: "Error", confirmDelete: "Delete?",
             alreadyCheckedIn: "⚠️ Already checked in!", alreadyCheckedOut: "⚠️ Already checked out!",
             morningGreeting: "Thank you for check-in", returningGreeting: "Welcome back",
@@ -519,24 +640,18 @@
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
             statusLate: "Late",
             navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs", navLogout: "Logout",
-            whatsappWarningMsg: "Administrative warning due to absence or delay",
-            whatsappDeductionMsg: "Deduction notice due to absence or delay",
+            reasonLabel: "Admin Message",
             modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
             modalLate: "Late Arrivals", modalAbsent: "Absent",
-            reasonLabel: "Message to employee",
-            lateDetailLine: (name, empID, region, time, delay) =>
-                `${empID} - Region: ${region} - Check-in: ${time} - Late ${delay} min`,
-            absentDetailLine: (empID, region, date) =>
-                `${empID} - Region: ${region} - Date: ${date} - Status: Absent`,
-            warningPrefix: "Warning: ",
-            deductionPrefix: "Deduction: "
+            actionsBtn: "Actions",
+            actionDetails: "Send WhatsApp",
+            actionWarning: "Warning",
+            actionDeduction: "Deduction",
+            noWhatsApp: "No WhatsApp number",
+            closeBtn: "Close"
         }
     };
-    const t = (key, ...args) => {
-        let val = translations[currentLang][key];
-        if (typeof val === 'function') return val(...args);
-        return val || key;
-    };
+    const t = (key) => translations[currentLang][key] || key;
 
     function showToast(msg, ok = true) {
         const el = document.createElement("div");
@@ -738,17 +853,20 @@
         document.getElementById("adminPanel").style.display = "none";
         document.getElementById("thankyouPanel").style.display = "none";
         document.getElementById("empID").value = "";
+        document.getElementById("detailsModal").style.display = "none";
     }
 
-    // =============== المناطق (لم يتم تغييرها) ===============
+    // =============== المناطق (دون تغيير) ===============
     async function loadRegionsAndCache() {
         userRegionCache.clear();
         userWhatsAppCache.clear();
+        userNameCache.clear();
         const usersSnap = await db.collection("users").get();
         usersSnap.forEach(doc => {
             const d = doc.data();
             if (d.region) userRegionCache.set(d.empID, d.region);
             if (d.whatsapp) userWhatsAppCache.set(d.empID, d.whatsapp);
+            if (d.name) userNameCache.set(d.empID, d.name);
         });
         renderRegionsFilterDropdown();
     }
@@ -825,7 +943,7 @@
         selectedEmployeeIdForRegion = null;
     }
 
-    // =============== إضافة موظف (إضافة حقل الواتساب فقط) ===============
+    // =============== إضافة موظف ===============
     async function addEmployee() {
         const name = document.getElementById("newName").value.trim();
         const empID = document.getElementById("newID").value.trim();
@@ -841,7 +959,7 @@
         if (confirm(t('confirmDelete'))) { await db.collection("users").doc(docId).delete(); showToast(t('msgSuccess')); }
     }
 
-    // =============== تعديل الموظف (إضافة الواتساب) ===============
+    // =============== تعديل الموظف ===============
     function openEditModal(empId, currentName, currentEmpID, currentWhatsApp = "") {
         editingEmployeeId = empId;
         document.getElementById("editEmpName").value = currentName;
@@ -873,7 +991,7 @@
         loadAdminDataAndListeners();
     }
 
-    // =============== عرض الموظفين (لم يتم تغييره) ===============
+    // =============== عرض الموظفين ===============
     async function loadAdminDataAndListeners() {
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let html = "";
@@ -914,12 +1032,19 @@
         return (hour > 10) || (hour === 10 && minute > 0);
     }
 
+    // دالة مساعدة لإحضار اسم الموظف (من التخزين المؤقت أو من السجل)
+    function getEmployeeName(empID) {
+        return userNameCache.get(empID) || empID;
+    }
+
     function groupRecords(records) {
         const map = new Map();
         records.forEach(r => {
             const key = `${r.empID}_${r.dateOnly}`;
             if (!map.has(key)) map.set(key, {
-                name: r.name, empID: r.empID, date: r.dateOnly,
+                name: r.name || getEmployeeName(r.empID),
+                empID: r.empID,
+                date: r.dateOnly,
                 inTime: null, outTime: null, inImg: null, outImg: null,
                 location: null, rawIds: [], inTs: null, outTs: null,
                 region: userRegionCache.get(r.empID) || '—',
@@ -964,6 +1089,31 @@
                 if (isLate(g.inTime)) { cls = "row-late"; st = t('statusLate'); }
             }
             const row = document.createElement("tr"); row.className = cls;
+            let actionsCell = '';
+            if (cls === 'row-late' || cls === 'row-absent' || cls === 'row-incomplete') {
+                const key = `log_${g.empID}_${g.date}`;
+                const empData = {
+                    empID: g.empID, name: g.name, region: g.region, inTime: g.inTime,
+                    lateMinutes: g.inTime ? Math.round((g.inTime - new Date(g.inTime).setHours(10,0,0,0))/60000) : 0,
+                    type: cls === 'row-absent' ? 'absent' : 'late', date: g.date, whatsapp: g.whatsapp
+                };
+                registerActionData(key, empData);
+                const detailsTxt = t('actionDetails');
+                const warningTxt = t('actionWarning');
+                const deductionTxt = t('actionDeduction');
+                actionsCell = `<td>
+                    <div class="action-menu">
+                        <button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button>
+                        <div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}">
+                            <button data-action="details">${detailsTxt}</button>
+                            <button data-action="warning">${warningTxt}</button>
+                            <button data-action="deduction">${deductionTxt}</button>
+                        </div>
+                    </div>
+                </td>`;
+            } else {
+                actionsCell = '<td></td>';
+            }
             row.innerHTML = `
                 <td><b>${g.name}</b><br><small>${g.empID}</small></td>
                 <td>${g.region}</td>
@@ -972,10 +1122,11 @@
                 <td>${g.inImg ? `<img src="${g.inImg}" class="img-preview" onclick="window.open(this.src)">` : "—"}</td>
                 <td>${g.outImg ? `<img src="${g.outImg}" class="img-preview" onclick="window.open(this.src)">` : "—"}</td>
                 <td>${g.location || "—"}</td>
-                <td><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteGroupRecords(['${g.rawIds.join("','")}'])"></i></td>`;
+                <td><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteGroupRecords(['${g.rawIds.join("','")}'])"></i></td>
+                ${actionsCell}`;
             tbody.appendChild(row);
         });
-        if (paginated.length === 0) tbody.innerHTML = `<tr><td colspan="11">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
+        if (paginated.length === 0) tbody.innerHTML = `<tr><td colspan="12">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
         const pages = Math.ceil(grouped.length / pageSize);
         let pagHtml = '';
         for (let i=0; i<pages; i++) pagHtml += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${i})" ${i===page?'style="background:var(--primary);color:black;"':''}>${i+1}</button>`;
@@ -1027,33 +1178,6 @@
             <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-value">${rate}%</div><div class="stat-label">نسبة الحضور</div></div>`;
     }
 
-    // ---------- دوال واتساب الجديدة (إضافة فقط) ----------
-    function sendEmployeeMessage(whatsapp, empID, name, region, inTimeStr, lateMinutes, statType, buttonType) {
-        if (!whatsapp) { showToast("رقم الواتساب غير متوفر", false); return; }
-        const inputId = statType === 'late' ? `late_msg_${empID}` : `msg_${empID}`;
-        const inputEl = document.getElementById(inputId);
-        const adminMsg = inputEl ? inputEl.value.trim() : '';
-
-        let fullMsg = '';
-        if (buttonType === 'details') {
-            if (statType === 'late') {
-                fullMsg = t('lateDetailLine', empID, empID, region, inTimeStr, lateMinutes);
-            } else {
-                const today = new Date().toISOString().split('T')[0];
-                fullMsg = t('absentDetailLine', empID, region, today);
-            }
-            if (adminMsg) fullMsg += '\n\n' + adminMsg;
-        } else if (buttonType === 'warning') {
-            fullMsg = t('warningPrefix') + (adminMsg || t('whatsappWarningMsg'));
-        } else if (buttonType === 'deduction') {
-            fullMsg = t('deductionPrefix') + (adminMsg || t('whatsappDeductionMsg'));
-        }
-
-        const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(fullMsg)}`;
-        window.open(url, '_blank');
-    }
-
-    // ---------- عرض التفاصيل (تحديث محتوى المتأخر والغائب) ----------
     async function openStatDetails(type) {
         const modal = document.getElementById("detailsModal");
         const title = document.getElementById("detailsModalTitle");
@@ -1062,13 +1186,19 @@
         body.innerHTML = '<div style="text-align:center;">جاري التحميل...</div>';
 
         const today = new Date().toISOString().split('T')[0];
-        const usersSnap = await db.collection("users").where("role", "==", "employee").get();
-        const todaySnap = await db.collection("attendance_raw").where("dateOnly", "==", today).get();
+        const currentHour = new Date().getHours();
+        const workStartHour = 10;
 
-        const allEmployees = [];
+        const [usersSnap, todaySnap] = await Promise.all([
+            db.collection("users").where("role", "==", "employee").get(),
+            db.collection("attendance_raw").where("dateOnly", "==", today).get()
+        ]);
+
+        // بناء قائمة الموظفين الكاملة مع بيانات الحضور
+        const employeeMap = new Map();
         usersSnap.forEach(doc => {
             const d = doc.data();
-            allEmployees.push({
+            employeeMap.set(d.empID, {
                 id: doc.id,
                 name: d.name,
                 empID: d.empID,
@@ -1081,17 +1211,31 @@
             });
         });
 
+        // جلب بيانات الحضور من سجلات اليوم
         todaySnap.forEach(doc => {
             const d = doc.data();
-            const emp = allEmployees.find(e => e.empID === d.empID);
-            if (emp) {
-                if (d.type === 'in') {
-                    emp.hasIn = true;
-                    emp.inTime = d.timestamp?.toDate() || null;
-                } else if (d.type === 'out') {
-                    emp.hasOut = true;
-                    emp.outTime = d.timestamp?.toDate() || null;
-                }
+            const empID = d.empID;
+            if (!employeeMap.has(empID)) {
+                // موظف غير موجود في users ولكن لديه سجل - نضيفه مؤقتاً
+                employeeMap.set(empID, {
+                    id: null,
+                    name: d.name || getEmployeeName(empID),
+                    empID: empID,
+                    region: userRegionCache.get(empID) || d.region || "—",
+                    whatsapp: userWhatsAppCache.get(empID) || d.whatsapp || '',
+                    hasIn: false,
+                    inTime: null,
+                    hasOut: false,
+                    outTime: null
+                });
+            }
+            const emp = employeeMap.get(empID);
+            if (d.type === 'in') {
+                emp.hasIn = true;
+                emp.inTime = d.timestamp?.toDate() || null;
+            } else if (d.type === 'out') {
+                emp.hasOut = true;
+                emp.outTime = d.timestamp?.toDate() || null;
             }
         });
 
@@ -1099,19 +1243,25 @@
         let titleText = '';
 
         if (type === 'total') {
-            filtered = allEmployees;
+            filtered = Array.from(employeeMap.values());
             titleText = t('modalTotal');
         } else if (type === 'present') {
-            filtered = allEmployees.filter(e => e.hasIn);
+            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn);
             titleText = t('modalPresent');
         } else if (type === 'out') {
-            filtered = allEmployees.filter(e => e.hasIn && e.hasOut);
+            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.hasOut);
             titleText = t('modalOut');
         } else if (type === 'late') {
-            filtered = allEmployees.filter(e => e.hasIn && e.inTime && isLate(e.inTime));
+            // جميع من سجل حضور بعد 10 صباحاً (بغض النظر عن وجود انصراف)
+            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.inTime && isLate(e.inTime));
             titleText = t('modalLate');
         } else if (type === 'absent') {
-            filtered = allEmployees.filter(e => !e.hasIn);
+            // يظهر الغائبون فقط بعد الساعة 10 صباحاً
+            if (currentHour < workStartHour) {
+                filtered = [];
+            } else {
+                filtered = Array.from(employeeMap.values()).filter(e => !e.hasIn);
+            }
             titleText = t('modalAbsent');
         }
 
@@ -1156,17 +1306,30 @@
                     html += '<div style="width:100%;">';
                     const inputId = type === 'late' ? `late_msg_${emp.empID}` : `msg_${emp.empID}`;
                     html += `<input type="text" id="${inputId}" placeholder="${t('reasonLabel')}" class="detail-input">`;
-                    html += '<div class="actions" style="margin-top:8px;">';
-                    if (emp.whatsapp) {
-                        const safeName = emp.name.replace(/'/g, "\\'");
-                        const safeRegion = emp.region.replace(/'/g, "\\'");
-                        const inTimeParam = emp.inTime ? emp.inTime.toISOString() : '';
-                        const lateMins = type === 'late' ? (emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0) : 0;
-                        html += `<button class="btn btn-sm" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','details')"><i class="fab fa-whatsapp"></i> إرسال واتساب</button>`;
-                        html += `<button class="btn btn-sm" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','warning')">تحذير</button>`;
-                        html += `<button class="btn btn-sm btn-danger" onclick="sendEmployeeMessage('${emp.whatsapp}','${emp.empID}','${safeName}','${safeRegion}','${emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}',${lateMins},'${type}','deduction')">خصم</button>`;
-                    }
-                    html += '</div></div>';
+                    const key = `modal_${emp.empID}_${today}`;
+                    const empData = {
+                        empID: emp.empID,
+                        name: emp.name,
+                        region: emp.region,
+                        inTime: emp.inTime ? emp.inTime.toISOString() : null,
+                        lateMinutes: type === 'late' ? (emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0) : 0,
+                        type: type,
+                        date: today,
+                        whatsapp: emp.whatsapp
+                    };
+                    registerActionData(key, empData);
+                    const detailsTxt = t('actionDetails');
+                    const warningTxt = t('actionWarning');
+                    const deductionTxt = t('actionDeduction');
+                    html += `<div class="action-menu" style="margin-top:8px;">
+                        <button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button>
+                        <div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}">
+                            <button data-action="details">${detailsTxt}</button>
+                            <button data-action="warning">${warningTxt}</button>
+                            <button data-action="deduction">${deductionTxt}</button>
+                        </div>
+                    </div>`;
+                    html += '</div>';
                 }
 
                 html += '</div>'; // نهاية detail-item
@@ -1242,7 +1405,7 @@
         document.getElementById("staffListHeader").innerHTML = `<i class="fas fa-users-cog"></i> ${t('staffListHeader')}`;
         document.getElementById("logsHeader").innerHTML = `<i class="fas fa-calendar-alt"></i> ${t('logsHeader')}`;
         document.getElementById("filterHeader").innerHTML = `<i class="fas fa-filter"></i> ${t('filterHeader')}`;
-        document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thRegion')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th></tr>`;
+        document.getElementById("tableHead").innerHTML = `<tr><th>${t('thName')}</th><th>${t('thRegion')}</th><th>${t('thDate')}</th><th>${t('thIn')}</th><th>${t('thOut')}</th><th>${t('thDuration')}</th><th>${t('thStatus')}</th><th>${t('thInImg')}</th><th>${t('thOutImg')}</th><th>${t('thLocation')}</th><th>${t('thAction')}</th><th>${t('thActions')}</th></tr>`;
         if (document.getElementById("proceedBtnText")) document.getElementById("proceedBtnText").innerText = t('proceedCheckout');
         if (document.getElementById("logoutThankBtn")) document.getElementById("logoutThankBtn").innerText = t('logoutThankBtn');
         document.getElementById("navDashboardText").innerText = t('navDashboard');
@@ -1250,12 +1413,12 @@
         document.getElementById("navRegionsText").innerText = t('navRegions');
         document.getElementById("navLogsText").innerText = t('navLogs');
         document.getElementById("navLogoutText").innerText = t('navLogout');
+        document.getElementById("detailsModal").style.display = "none";
         renderRegionsList();
         renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
 
-    // دوال عامة
     window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
     window.logoutToLogin = logoutToLogin; window.proceedToCheckout = proceedToCheckout;
     window.addEmployee = addEmployee; window.deleteEmployee = deleteEmployee;
@@ -1270,8 +1433,6 @@
     window.addRegion = addRegion; window.deleteRegion = deleteRegion;
     window.showPage = showPage;
     window.openStatDetails = openStatDetails;
-    window.sendEmployeeMessage = sendEmployeeMessage;
 </script>
 </body>
 </html>
-    

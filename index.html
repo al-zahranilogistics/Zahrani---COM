@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>نظام الحضور والانصراف - Alzahrani ERP</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js">
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
@@ -279,6 +274,22 @@
         .action-menu-content button:hover {
             background: rgba(20,184,166,0.2);
         }
+        /* أنماط صفحة الإعدادات (إضافة فقط) */
+        .settings-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .settings-form input {
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 14px 20px;
+            border-radius: 50px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.1rem;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -294,10 +305,11 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- شاشة الدخول (دون تغيير) -->
+    <!-- شاشة الدخول (إضافة حقل كلمة المرور) -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
+        <input type="password" id="loginPassword" placeholder="كلمة المرور (للمدير)" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
         <button class="btn btn-primary" style="width:100%; padding:16px;" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
@@ -341,19 +353,20 @@
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
 
-    <!-- لوحة المدير (SPA) - التخطيط دون تغيير -->
+    <!-- لوحة المدير (SPA) - إضافة صفحة الإعدادات -->
     <div id="adminPanel">
         <div class="sidebar">
             <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span id="navDashboardText">الرئيسية</span></div>
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
             <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
             <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
+            <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span id="navSettingsText">الإعدادات</span></div>
             <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="content">
-            <!-- الصفحات الداخلية (دون تغيير) -->
+            <!-- الصفحات الداخلية القائمة (دون تغيير) -->
             <div id="dashboardPage" class="page-section active">
                 <div class="stats-grid" id="adminStats"></div>
                 <div class="glass" style="margin-bottom:25px;">
@@ -423,6 +436,19 @@
                     <div id="paginationContainer" style="display:flex; justify-content:center; gap:12px; margin-top:20px;"></div>
                 </div>
             </div>
+
+            <!-- صفحة الإعدادات الجديدة -->
+            <div id="settingsPage" class="page-section">
+                <div class="glass" style="padding:30px;">
+                    <h3 style="margin-bottom:25px;"><i class="fas fa-lock"></i> تغيير كلمة مرور المدير</h3>
+                    <div class="settings-form">
+                        <input type="password" id="currentPassword" placeholder="كلمة المرور الحالية">
+                        <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة">
+                        <input type="password" id="confirmNewPassword" placeholder="تأكيد كلمة المرور الجديدة">
+                        <button class="btn btn-primary" style="width:100%;" onclick="changeAdminPassword()"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -490,11 +516,39 @@
     let editingEmployeeId = null;
     let userRegionCache = new Map();
     let userWhatsAppCache = new Map();
-    let userNameCache = new Map(); // تخزين أسماء الموظفين
+    let userNameCache = new Map();
 
     const actionDataMap = new Map();
 
-    // تنظيف رقم الهاتف
+    // متغيرات المصادقة
+    let adminEmpID = "2029"; // افتراضي
+    let adminPassword = null; // يتم تحميله لاحقاً
+
+    // تحميل بيانات المدير من Firestore مرة واحدة
+    async function loadAdminAuth() {
+        try {
+            const docSnap = await db.collection("settings").doc("adminAuth").get();
+            if (docSnap.exists) {
+                const data = docSnap.data();
+                adminEmpID = data.empID || "2029";
+                adminPassword = data.password || "2029";
+            } else {
+                // إنشاء المستند الافتراضي إذا لم يوجد
+                await db.collection("settings").doc("adminAuth").set({
+                    empID: "2029",
+                    password: "2029"
+                });
+                adminPassword = "2029";
+                adminEmpID = "2029";
+            }
+        } catch (e) {
+            console.warn("تعذر تحميل إعدادات المدير", e);
+        }
+    }
+
+    // استدعاء التحميل فوراً
+    loadAdminAuth();
+
     function sanitizePhoneNumber(rawNumber) {
         if (!rawNumber) return '';
         let cleaned = rawNumber.replace(/[^\d]/g, '');
@@ -594,6 +648,7 @@
     const translations = {
         ar: {
             mainTitle: "نظام الحضور والانصراف", loginHeader: "دخول النظام", empIDPlaceholder: "الرقم الوظيفي",
+            passwordPlaceholder: "كلمة المرور (للمدير)",
             btnLogin: "دخول", empPanelHeader: "بصمة الوجه لـ: ", txtIn: "إثبات حضور", txtOut: "تسجيل انصراف",
             btnBack: "خروج للرئيسية", adminLogout: "خروج", addEmpHeader: "إضافة موظف",
             newNamePlaceholder: "اسم الموظف", btnSaveEmp: "حفظ", staffListHeader: "الموظفين",
@@ -610,19 +665,28 @@
             cameraRequest: "نحتاج للكاميرا", enablePermissions: "اسمح بالكاميرا والموقع",
             statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
             statusLate: "متأخر",
-            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل", navLogout: "تسجيل خروج",
+            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل",
+            navSettings: "الإعدادات", navLogout: "تسجيل خروج",
             reasonLabel: "رسالة للإدارة",
             modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
             modalLate: "المتأخرون", modalAbsent: "الغائبون",
             actionsBtn: "الإجراءات",
-            actionDetails: "إرسال واتساب",
-            actionWarning: "تحذير",
-            actionDeduction: "خصم",
+            actionDetails: "إرسال واتساب", actionWarning: "تحذير", actionDeduction: "خصم",
             noWhatsApp: "رقم واتساب غير مضاف للموظف",
-            closeBtn: "إغلاق"
+            closeBtn: "إغلاق",
+            settingsHeader: "تغيير كلمة مرور المدير",
+            currentPasswordPlaceholder: "كلمة المرور الحالية",
+            newPasswordPlaceholder: "كلمة المرور الجديدة",
+            confirmPasswordPlaceholder: "تأكيد كلمة المرور الجديدة",
+            changePasswordBtn: "حفظ التغييرات",
+            passwordWrong: "كلمة المرور الحالية غير صحيحة",
+            passwordMismatch: "كلمة المرور الجديدة غير متطابقة",
+            passwordChanged: "تم تغيير كلمة المرور بنجاح",
+            passwordEmpty: "يجب ملء جميع الحقول"
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
+            passwordPlaceholder: "Password (for admin)",
             btnLogin: "Login", empPanelHeader: "Face ID: ", txtIn: "Clock In", txtOut: "Clock Out",
             btnBack: "Back", adminLogout: "Logout", addEmpHeader: "Add Employee",
             newNamePlaceholder: "Name", btnSaveEmp: "Save", staffListHeader: "Staff",
@@ -639,16 +703,24 @@
             cameraRequest: "Camera needed", enablePermissions: "Allow camera & location",
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
             statusLate: "Late",
-            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs", navLogout: "Logout",
+            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs",
+            navSettings: "Settings", navLogout: "Logout",
             reasonLabel: "Admin Message",
             modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
             modalLate: "Late Arrivals", modalAbsent: "Absent",
             actionsBtn: "Actions",
-            actionDetails: "Send WhatsApp",
-            actionWarning: "Warning",
-            actionDeduction: "Deduction",
+            actionDetails: "Send WhatsApp", actionWarning: "Warning", actionDeduction: "Deduction",
             noWhatsApp: "No WhatsApp number",
-            closeBtn: "Close"
+            closeBtn: "Close",
+            settingsHeader: "Change Admin Password",
+            currentPasswordPlaceholder: "Current Password",
+            newPasswordPlaceholder: "New Password",
+            confirmPasswordPlaceholder: "Confirm New Password",
+            changePasswordBtn: "Save Changes",
+            passwordWrong: "Current password is incorrect",
+            passwordMismatch: "Passwords do not match",
+            passwordChanged: "Password changed successfully",
+            passwordEmpty: "All fields are required"
         }
     };
     const t = (key) => translations[currentLang][key] || key;
@@ -818,15 +890,36 @@
 
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+
         if (!id) return;
-        if (id === "2029") {
-            currentUser = { empID: "2029", name: "المدير العام", role: "admin", id: "temp_admin" };
+
+        // تسجيل دخول المسؤول باستخدام كلمة المرور
+        if (id === adminEmpID) {
+            if (!password) {
+                showToast("يجب إدخال كلمة المرور للمدير", false);
+                return;
+            }
+            if (adminPassword === null) {
+                showToast("لم يتم تحميل بيانات المدير بعد، حاول مرة أخرى", false);
+                return;
+            }
+            if (password !== adminPassword) {
+                showToast("كلمة المرور غير صحيحة", false);
+                return;
+            }
+            currentUser = { empID: adminEmpID, name: "المدير العام", role: "admin", id: "temp_admin" };
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPanel").style.display = "flex";
             showPage('dashboard');
             await loadRegionsAndCache();
-            loadAdminDataAndListeners(); updateAdminStats(); return;
+            loadAdminDataAndListeners(); updateAdminStats();
+            document.getElementById("loginPassword").value = "";
+            document.getElementById("empID").value = "";
+            return;
         }
+
+        // تسجيل دخول موظف عادي (بدون كلمة مرور)
         const q = await db.collection("users").where("empID", "==", id).get();
         if (q.empty) { showToast("غير موجود", false); return; }
         q.forEach(doc => { currentUser = { ...doc.data(), id: doc.id }; });
@@ -843,6 +936,8 @@
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
         }
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("empID").value = "";
         if (currentLang === 'en') toggleLanguage();
     }
 
@@ -853,7 +948,39 @@
         document.getElementById("adminPanel").style.display = "none";
         document.getElementById("thankyouPanel").style.display = "none";
         document.getElementById("empID").value = "";
+        document.getElementById("loginPassword").value = "";
         document.getElementById("detailsModal").style.display = "none";
+    }
+
+    // تغيير كلمة مرور المدير
+    async function changeAdminPassword() {
+        const currentPwd = document.getElementById("currentPassword").value.trim();
+        const newPwd = document.getElementById("newPassword").value.trim();
+        const confirmPwd = document.getElementById("confirmNewPassword").value.trim();
+
+        if (!currentPwd || !newPwd || !confirmPwd) {
+            showToast(t('passwordEmpty'), false);
+            return;
+        }
+        if (currentPwd !== adminPassword) {
+            showToast(t('passwordWrong'), false);
+            return;
+        }
+        if (newPwd !== confirmPwd) {
+            showToast(t('passwordMismatch'), false);
+            return;
+        }
+
+        try {
+            await db.collection("settings").doc("adminAuth").update({ password: newPwd });
+            adminPassword = newPwd;
+            document.getElementById("currentPassword").value = "";
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmNewPassword").value = "";
+            showToast(t('passwordChanged'), true);
+        } catch (e) {
+            showToast("فشل التحديث", false);
+        }
     }
 
     // =============== المناطق (دون تغيير) ===============
@@ -1032,7 +1159,6 @@
         return (hour > 10) || (hour === 10 && minute > 0);
     }
 
-    // دالة مساعدة لإحضار اسم الموظف (من التخزين المؤقت أو من السجل)
     function getEmployeeName(empID) {
         return userNameCache.get(empID) || empID;
     }
@@ -1194,7 +1320,6 @@
             db.collection("attendance_raw").where("dateOnly", "==", today).get()
         ]);
 
-        // بناء قائمة الموظفين الكاملة مع بيانات الحضور
         const employeeMap = new Map();
         usersSnap.forEach(doc => {
             const d = doc.data();
@@ -1211,12 +1336,10 @@
             });
         });
 
-        // جلب بيانات الحضور من سجلات اليوم
         todaySnap.forEach(doc => {
             const d = doc.data();
             const empID = d.empID;
             if (!employeeMap.has(empID)) {
-                // موظف غير موجود في users ولكن لديه سجل - نضيفه مؤقتاً
                 employeeMap.set(empID, {
                     id: null,
                     name: d.name || getEmployeeName(empID),
@@ -1252,11 +1375,9 @@
             filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.hasOut);
             titleText = t('modalOut');
         } else if (type === 'late') {
-            // جميع من سجل حضور بعد 10 صباحاً (بغض النظر عن وجود انصراف)
             filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.inTime && isLate(e.inTime));
             titleText = t('modalLate');
         } else if (type === 'absent') {
-            // يظهر الغائبون فقط بعد الساعة 10 صباحاً
             if (currentHour < workStartHour) {
                 filtered = [];
             } else {
@@ -1300,7 +1421,7 @@
                     }
                 }
 
-                html += '</div>'; // نهاية info
+                html += '</div>';
 
                 if (type === 'late' || type === 'absent') {
                     html += '<div style="width:100%;">';
@@ -1332,7 +1453,7 @@
                     html += '</div>';
                 }
 
-                html += '</div>'; // نهاية detail-item
+                html += '</div>';
             });
         }
 
@@ -1394,6 +1515,7 @@
         document.getElementById("mainTitle").innerText = t('mainTitle');
         document.getElementById("loginHeader").innerHTML = `<i class="fas fa-fingerprint"></i> ${t('loginHeader')}`;
         document.getElementById("empID").placeholder = t('empIDPlaceholder');
+        document.getElementById("loginPassword").placeholder = t('passwordPlaceholder');
         document.getElementById("btnLoginText").innerText = t('btnLogin');
         if (document.getElementById("txtIn")) document.getElementById("txtIn").innerText = t('txtIn');
         if (document.getElementById("txtOut")) document.getElementById("txtOut").innerText = t('txtOut');
@@ -1412,6 +1534,7 @@
         document.getElementById("navEmployeesText").innerText = t('navEmployees');
         document.getElementById("navRegionsText").innerText = t('navRegions');
         document.getElementById("navLogsText").innerText = t('navLogs');
+        document.getElementById("navSettingsText").innerText = t('navSettings');
         document.getElementById("navLogoutText").innerText = t('navLogout');
         document.getElementById("detailsModal").style.display = "none";
         renderRegionsList();
@@ -1433,6 +1556,7 @@
     window.addRegion = addRegion; window.deleteRegion = deleteRegion;
     window.showPage = showPage;
     window.openStatDetails = openStatDetails;
+    window.changeAdminPassword = changeAdminPassword;
 </script>
 </body>
 </html>

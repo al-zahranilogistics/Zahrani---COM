@@ -360,7 +360,6 @@
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
             <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
             <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
-            <div class="nav-item" data-page="alerts" onclick="showPage('alerts')"><span id="navAlertsText">التنبيهات</span></div>
             <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span id="navSettingsText">الإعدادات</span></div>
             <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
@@ -435,35 +434,6 @@
                         </table>
                     </div>
                     <div id="paginationContainer" style="display:flex; justify-content:center; gap:12px; margin-top:20px;"></div>
-                </div>
-            </div>
-
-            <!-- صفحة التنبيهات (موجودة أصلاً) -->
-            <div id="alertsPage" class="page-section">
-                <div class="glass" style="padding:25px; margin-bottom:25px;">
-                    <h3><i class="fas fa-bell"></i> إنشاء تنبيه</h3>
-                    <div class="alert-form" style="margin-top:20px;">
-                        <input type="text" id="alertMessageAr" placeholder="رسالة التنبيه (عربي)" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
-                        <input type="date" id="alertDate" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
-                        <input type="time" id="alertTime" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
-                        <select id="alertRepeat" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
-                            <option value="once">مرة واحدة</option>
-                            <option value="daily">يوميًا</option>
-                        </select>
-                        <input type="number" id="alertDuration" placeholder="مدة التشغيل (ثوان)" value="10" min="1" max="30" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
-                        <button class="btn btn-primary" onclick="scheduleAlert()" style="width:100%;"><i class="fas fa-paper-plane"></i> إرسال التنبيه</button>
-                    </div>
-                </div>
-                <div class="glass" style="padding:25px;">
-                    <h3><i class="fas fa-history"></i> التنبيهات المجدولة</h3>
-                    <div class="table-container" style="margin-top:15px;">
-                        <table id="alertsTable">
-                            <thead>
-                                <tr><th>الرسالة</th><th>التاريخ</th><th>الوقت</th><th>التكرار</th><th>الحالة</th><th>إجراءات</th></tr>
-                            </thead>
-                            <tbody id="alertsTableBody"></tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
 
@@ -696,7 +666,7 @@
             statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
             statusLate: "متأخر",
             navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل",
-            navAlerts: "التنبيهات", navSettings: "الإعدادات", navLogout: "تسجيل خروج",
+            navSettings: "الإعدادات", navLogout: "تسجيل خروج",
             reasonLabel: "رسالة للإدارة",
             modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
             modalLate: "المتأخرون", modalAbsent: "الغائبون",
@@ -734,7 +704,7 @@
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
             statusLate: "Late",
             navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs",
-            navAlerts: "Alerts", navSettings: "Settings", navLogout: "Logout",
+            navSettings: "Settings", navLogout: "Logout",
             reasonLabel: "Admin Message",
             modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
             modalLate: "Late Arrivals", modalAbsent: "Absent",
@@ -770,7 +740,6 @@
         document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
         const navItem = document.querySelector(`.sidebar .nav-item[data-page="${page}"]`);
         if (navItem) navItem.classList.add('active');
-        if (page === 'alerts') loadAlerts();
     }
 
     async function requestCameraPermission() {
@@ -966,8 +935,6 @@
             startLiveClock();
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
-            // بدء نظام التنبيهات
-            onEmployeeLogin();
         }
         document.getElementById("loginPassword").value = "";
         document.getElementById("empID").value = "";
@@ -1567,7 +1534,6 @@
         document.getElementById("navEmployeesText").innerText = t('navEmployees');
         document.getElementById("navRegionsText").innerText = t('navRegions');
         document.getElementById("navLogsText").innerText = t('navLogs');
-        document.getElementById("navAlertsText").innerText = t('navAlerts');
         document.getElementById("navSettingsText").innerText = t('navSettings');
         document.getElementById("navLogoutText").innerText = t('navLogout');
         document.getElementById("detailsModal").style.display = "none";
@@ -1575,160 +1541,6 @@
         renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
-
-    // ---------- دوال التنبيهات (موجودة) ----------
-    function scheduleAlert() {
-        const msg = document.getElementById('alertMessageAr').value.trim();
-        const date = document.getElementById('alertDate').value;
-        const time = document.getElementById('alertTime').value;
-        const repeat = document.getElementById('alertRepeat').value;
-        const duration = parseInt(document.getElementById('alertDuration').value) || 10;
-        if (!msg || !date || !time) { showToast("يرجى ملء جميع الحقول", false); return; }
-        const scheduled = new Date(`${date}T${time}:00`);
-        if (scheduled <= new Date()) { showToast("الرجاء اختيار وقت مستقبلي", false); return; }
-        db.collection("alerts").add({
-            messageAr: msg, date, time, repeat, duration,
-            status: 'scheduled',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            showToast("تمت جدولة التنبيه بنجاح");
-            document.getElementById('alertMessageAr').value = '';
-            document.getElementById('alertDate').value = '';
-            document.getElementById('alertTime').value = '';
-        }).catch(() => showToast("خطأ في الجدولة", false));
-    }
-
-    function loadAlerts() {
-        db.collection("alerts").orderBy("createdAt", "desc").onSnapshot(snap => {
-            let html = '';
-            snap.forEach(doc => {
-                const a = doc.data();
-                html += `<tr><td>${a.messageAr}</td><td>${a.date}</td><td>${a.time}</td><td>${a.repeat==='daily'?'يومي':'مرة واحدة'}</td><td>${a.status==='sent'?'تم الإرسال':'مجدول'}</td><td>${a.status==='scheduled'?`<button class="btn btn-sm btn-danger" onclick="deleteAlert('${doc.id}')"><i class="fas fa-trash"></i></button>`:''}</td></tr>`;
-            });
-            document.getElementById('alertsTableBody').innerHTML = html || '<tr><td colspan="6">لا توجد تنبيهات</td></tr>';
-        });
-    }
-
-    window.deleteAlert = async (id) => { if (confirm(t('confirmDelete'))) { await db.collection("alerts").doc(id).delete(); } };
-
-    // ====== إضافة نظام التنبيهات الآلية (Patch فقط) ======
-    // Audio Unlock
-    window.audioUnlocked = false;
-    document.addEventListener('click', function unlockAudio() {
-        if (!window.audioUnlocked) {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                gain.gain.value = 0.01;
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(0);
-                osc.stop(0.1);
-                ctx.close();
-            } catch(e) {}
-            window.audioUnlocked = true;
-        }
-    }, { once: false });
-
-    async function translateToEnglish(arabicText) {
-        try {
-            const res = await fetch(
-                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(arabicText)}&langpair=ar|en`
-            );
-            const data = await res.json();
-            if (data.responseData && data.responseData.translatedText) {
-                return data.responseData.translatedText;
-            }
-        } catch (e) {}
-        return null;
-    }
-
-    function playAlertSounds(arabicText, durationSec) {
-        if (!('speechSynthesis' in window)) return;
-        speechSynthesis.cancel();
-        const utterAr = new SpeechSynthesisUtterance(arabicText);
-        utterAr.lang = 'ar-SA';
-        utterAr.rate = 0.9;
-
-        const setVoices = () => {
-            const voices = speechSynthesis.getVoices();
-            const arabicVoice = voices.find(v => v.lang.startsWith('ar') && v.name.includes('male'))
-                            || voices.find(v => v.lang.startsWith('ar'));
-            if (arabicVoice) utterAr.voice = arabicVoice;
-
-            utterAr.onend = async () => {
-                const translated = await translateToEnglish(arabicText);
-                if (translated) {
-                    const utterEn = new SpeechSynthesisUtterance(translated);
-                    utterEn.lang = 'en-US';
-                    utterEn.rate = 0.9;
-                    const femaleVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('female'))
-                                       || voices.find(v => v.lang.startsWith('en'));
-                    if (femaleVoice) utterEn.voice = femaleVoice;
-                    speechSynthesis.speak(utterEn);
-                }
-            };
-            speechSynthesis.speak(utterAr);
-            setTimeout(() => speechSynthesis.cancel(), durationSec * 1000);
-        };
-
-        if (speechSynthesis.getVoices().length) {
-            setVoices();
-        } else {
-            speechSynthesis.onvoiceschanged = () => setVoices();
-        }
-    }
-
-    function listenForAlerts() {
-        db.collection("alerts")
-            .where("status", "==", "scheduled")
-            .onSnapshot(snapshot => {
-                const now = new Date();
-                snapshot.docChanges().forEach(async change => {
-                    if (change.type === "added" || change.type === "modified") {
-                        const alert = change.doc.data();
-                        const alertId = change.doc.id;
-                        if (localStorage.getItem('alert_' + alertId)) return;
-                        if (!alert.date || !alert.time) return;
-                        const scheduledTime = new Date(`${alert.date}T${alert.time}:00`);
-                        if (scheduledTime <= now) {
-                            playAlertSounds(alert.messageAr, alert.duration || 10);
-                            if (Notification.permission === "granted") {
-                                new Notification("تنبيه إداري", { body: alert.messageAr, icon: '/icon.png', vibrate: [200,100,200] });
-                            }
-                            try {
-                                await db.collection("alerts").doc(alertId).update({ status: 'sent' });
-                                localStorage.setItem('alert_' + alertId, '1');
-                            } catch(e) {}
-                            if (alert.repeat === 'daily') {
-                                const nextDate = new Date(scheduledTime);
-                                nextDate.setDate(nextDate.getDate() + 1);
-                                db.collection("alerts").add({
-                                    ...alert,
-                                    date: nextDate.toISOString().split('T')[0],
-                                    time: alert.time,
-                                    status: 'scheduled',
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                        }
-                    }
-                });
-            });
-    }
-
-    // ربط المستمع عند دخول الموظف
-    function onEmployeeLogin() {
-        if (currentUser && currentUser.role === 'employee') {
-            listenForAlerts();
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-    }
-
-    // استدعاء داخل smartLogin (موجود أعلاه)
 
     window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
     window.logoutToLogin = logoutToLogin; window.proceedToCheckout = proceedToCheckout;
@@ -1745,8 +1557,6 @@
     window.showPage = showPage;
     window.openStatDetails = openStatDetails;
     window.changeAdminPassword = changeAdminPassword;
-    window.scheduleAlert = scheduleAlert;
-    window.loadAlerts = loadAlerts;
 </script>
 </body>
 </html>

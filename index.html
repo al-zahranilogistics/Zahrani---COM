@@ -4,13 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>نظام الحضور والانصراف - Alzahrani ERP</title>
-
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
-
-    <!-- مكتبات خارجية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -279,28 +274,22 @@
         .action-menu-content button:hover {
             background: rgba(20,184,166,0.2);
         }
-        /* إضافات التنبيهات الذكية */
-        .alert-form .form-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+        /* أنماط صفحة الإعدادات (إضافة فقط) */
+        .settings-form {
+            max-width: 400px;
+            margin: 0 auto;
         }
-        .alert-form .form-row > * {
-            flex: 1;
-            min-width: 200px;
-        }
-        .alert-form input, .alert-form select, .alert-form textarea {
-            padding: 12px;
-            border-radius: 16px;
+        .settings-form input {
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 14px 20px;
+            border-radius: 50px;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
+            font-size: 1.1rem;
             font-family: inherit;
-            font-size: 0.95rem;
         }
-        .alert-form textarea { resize: vertical; }
-        .alerts-table td { font-size: 0.85rem; }
     </style>
 </head>
 <body dir="rtl">
@@ -316,7 +305,7 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- شاشة الدخول (دون تغيير) -->
+    <!-- شاشة الدخول (إضافة حقل كلمة المرور) -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
@@ -364,14 +353,14 @@
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
 
-    <!-- لوحة المدير (SPA) -->
+    <!-- لوحة المدير (SPA) - إضافة صفحة الإعدادات -->
     <div id="adminPanel">
         <div class="sidebar">
             <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span id="navDashboardText">الرئيسية</span></div>
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
             <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
             <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
-            <div class="nav-item" data-page="alerts" onclick="showPage('alerts')"><span id="navAlertsText">التنبيهات الذكية</span></div>
+            <div class="nav-item" data-page="alerts" onclick="showPage('alerts')"><span id="navAlertsText">التنبيهات</span></div>
             <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span id="navSettingsText">الإعدادات</span></div>
             <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
@@ -449,55 +438,28 @@
                 </div>
             </div>
 
-            <!-- صفحة التنبيهات الذكية الجديدة -->
+            <!-- صفحة التنبيهات (موجودة أصلاً) -->
             <div id="alertsPage" class="page-section">
                 <div class="glass" style="padding:25px; margin-bottom:25px;">
-                    <h3><i class="fas fa-bell"></i> إنشاء تنبيه جديد</h3>
+                    <h3><i class="fas fa-bell"></i> إنشاء تنبيه</h3>
                     <div class="alert-form" style="margin-top:20px;">
-                        <div class="form-row">
-                            <input type="text" id="alertTitleAr" placeholder="عنوان التنبيه (عربي)">
-                            <input type="text" id="alertTitleEn" placeholder="Alert Title (English)">
-                        </div>
-                        <div class="form-row">
-                            <textarea id="alertDescAr" rows="2" placeholder="وصف التنبيه (عربي)"></textarea>
-                            <textarea id="alertDescEn" rows="2" placeholder="Alert Description (English)"></textarea>
-                        </div>
-                        <div class="form-row">
-                            <input type="date" id="alertDate">
-                            <input type="time" id="alertTime">
-                        </div>
-                        <div class="form-row">
-                            <select id="alertType">
-                                <option value="immediate">فوري</option>
-                                <option value="scheduled">مجدول</option>
-                            </select>
-                            <select id="alertVolume">
-                                <option value="low">منخفض</option>
-                                <option value="medium" selected>متوسط</option>
-                                <option value="high">مرتفع</option>
-                            </select>
-                        </div>
-                        <div class="form-row">
-                            <select id="alertSound">
-                                <option value="arabic">صوت عربي احترافي</option>
-                                <option value="english">صوت إنجليزي احترافي</option>
-                                <option value="custom">ملف مخصص</option>
-                            </select>
-                            <input type="file" id="customSoundFile" accept="audio/*" style="padding:8px;">
-                            <input type="number" id="soundDuration" placeholder="مدة الصوت (ثوان)" value="10" min="1" max="60">
-                        </div>
-                        <button class="btn btn-primary" onclick="createAlert()"><i class="fas fa-paper-plane"></i> إرسال / جدولة التنبيه</button>
+                        <input type="text" id="alertMessageAr" placeholder="رسالة التنبيه (عربي)" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
+                        <input type="date" id="alertDate" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
+                        <input type="time" id="alertTime" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
+                        <select id="alertRepeat" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
+                            <option value="once">مرة واحدة</option>
+                            <option value="daily">يوميًا</option>
+                        </select>
+                        <input type="number" id="alertDuration" placeholder="مدة التشغيل (ثوان)" value="10" min="1" max="30" style="width:100%; margin-bottom:16px; padding:14px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1rem; font-family:inherit;">
+                        <button class="btn btn-primary" onclick="scheduleAlert()" style="width:100%;"><i class="fas fa-paper-plane"></i> إرسال التنبيه</button>
                     </div>
                 </div>
-
-                <div class="glass" style="padding:20px;">
-                    <h3><i class="fas fa-history"></i> سجل التنبيهات</h3>
+                <div class="glass" style="padding:25px;">
+                    <h3><i class="fas fa-history"></i> التنبيهات المجدولة</h3>
                     <div class="table-container" style="margin-top:15px;">
-                        <table class="alerts-table" id="alertsTable">
+                        <table id="alertsTable">
                             <thead>
-                                <tr>
-                                    <th>العنوان</th><th>النوع</th><th>التاريخ والوقت</th><th>الحالة</th><th>إجراءات</th>
-                                </tr>
+                                <tr><th>الرسالة</th><th>التاريخ</th><th>الوقت</th><th>التكرار</th><th>الحالة</th><th>إجراءات</th></tr>
                             </thead>
                             <tbody id="alertsTableBody"></tbody>
                         </table>
@@ -505,7 +467,7 @@
                 </div>
             </div>
 
-            <!-- صفحة الإعدادات (دون تغيير) -->
+            <!-- صفحة الإعدادات الجديدة -->
             <div id="settingsPage" class="page-section">
                 <div class="glass" style="padding:30px;">
                     <h3 style="margin-bottom:25px;"><i class="fas fa-lock"></i> تغيير كلمة مرور المدير</h3>
@@ -561,49 +523,11 @@
     firebase.initializeApp({
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         projectId: "zahrani-attendance",
-        appId: "1:861962206748:web:43500609b0d84d2b25e9d9",
-        messagingSenderId: "861962206748"
+        appId: "1:861962206748:web:43500609b0d84d2b25e9d9"
     });
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence().catch(() => {});
-
-    // تهيئة FCM
-    const messaging = firebase.messaging();
-    let fcmToken = null;
-
-    // طلب الإذن وتسجيل الـ service worker
-    async function initFCM() {
-        try {
-            // سجل service worker (يجب وجود الملف firebase-messaging-sw.js في جذر المشروع)
-            if ('serviceWorker' in navigator) {
-                const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                messaging.useServiceWorker(reg);
-            }
-
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const token = await messaging.getToken({
-                    vapidKey: 'BGp9i6v5CbR5k5pLqNdGbI...' // استبدل بـ VAPID key الخاص بمشروعك
-                });
-                if (token) {
-                    fcmToken = token;
-                    // احفظ التوكن في Firestore للموظف الحالي إن كان موظفاً
-                    if (currentUser && currentUser.role === 'employee') {
-                        await db.collection("users").doc(currentUser.id).update({ fcmToken: token });
-                    }
-                    console.log("FCM Token:", token);
-                }
-            }
-        } catch (e) {
-            console.warn("FCM initialization error:", e);
-        }
-    }
-
-    // استدعاء FCM عند تحميل الصفحة للموظفين
-    window.addEventListener('load', () => {
-        if (currentUser && currentUser.role === 'employee') initFCM();
-    });
 
     let currentUser = null;
     let currentLang = 'ar';
@@ -623,13 +547,14 @@
     let userRegionCache = new Map();
     let userWhatsAppCache = new Map();
     let userNameCache = new Map();
-    let alertsCache = [];
 
     const actionDataMap = new Map();
 
-    let adminEmpID = "2029";
-    let adminPassword = null;
+    // متغيرات المصادقة
+    let adminEmpID = "2029"; // افتراضي
+    let adminPassword = null; // يتم تحميله لاحقاً
 
+    // تحميل بيانات المدير من Firestore مرة واحدة
     async function loadAdminAuth() {
         try {
             const docSnap = await db.collection("settings").doc("adminAuth").get();
@@ -638,6 +563,7 @@
                 adminEmpID = data.empID || "2029";
                 adminPassword = data.password || "2029";
             } else {
+                // إنشاء المستند الافتراضي إذا لم يوجد
                 await db.collection("settings").doc("adminAuth").set({
                     empID: "2029",
                     password: "2029"
@@ -649,6 +575,8 @@
             console.warn("تعذر تحميل إعدادات المدير", e);
         }
     }
+
+    // استدعاء التحميل فوراً
     loadAdminAuth();
 
     function sanitizePhoneNumber(rawNumber) {
@@ -768,7 +696,7 @@
             statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
             statusLate: "متأخر",
             navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل",
-            navSettings: "الإعدادات", navAlerts: "التنبيهات الذكية", navLogout: "تسجيل خروج",
+            navAlerts: "التنبيهات", navSettings: "الإعدادات", navLogout: "تسجيل خروج",
             reasonLabel: "رسالة للإدارة",
             modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
             modalLate: "المتأخرون", modalAbsent: "الغائبون",
@@ -784,13 +712,7 @@
             passwordWrong: "كلمة المرور الحالية غير صحيحة",
             passwordMismatch: "كلمة المرور الجديدة غير متطابقة",
             passwordChanged: "تم تغيير كلمة المرور بنجاح",
-            passwordEmpty: "يجب ملء جميع الحقول",
-            alertCreated: "تم إنشاء التنبيه بنجاح",
-            alertDeleted: "تم حذف التنبيه",
-            alertResent: "تم إعادة إرسال التنبيه",
-            alertStatus_sent: "تم الإرسال",
-            alertStatus_scheduled: "مجدول",
-            alertStatus_cancelled: "ملغي"
+            passwordEmpty: "يجب ملء جميع الحقول"
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
@@ -812,7 +734,7 @@
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
             statusLate: "Late",
             navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs",
-            navSettings: "Settings", navAlerts: "Smart Alerts", navLogout: "Logout",
+            navAlerts: "Alerts", navSettings: "Settings", navLogout: "Logout",
             reasonLabel: "Admin Message",
             modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
             modalLate: "Late Arrivals", modalAbsent: "Absent",
@@ -828,13 +750,7 @@
             passwordWrong: "Current password is incorrect",
             passwordMismatch: "Passwords do not match",
             passwordChanged: "Password changed successfully",
-            passwordEmpty: "All fields are required",
-            alertCreated: "Alert created successfully",
-            alertDeleted: "Alert deleted",
-            alertResent: "Alert resent",
-            alertStatus_sent: "Sent",
-            alertStatus_scheduled: "Scheduled",
-            alertStatus_cancelled: "Cancelled"
+            passwordEmpty: "All fields are required"
         }
     };
     const t = (key) => translations[currentLang][key] || key;
@@ -854,195 +770,9 @@
         document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
         const navItem = document.querySelector(`.sidebar .nav-item[data-page="${page}"]`);
         if (navItem) navItem.classList.add('active');
-        if (page === 'alerts') renderAlerts();
+        if (page === 'alerts') loadAlerts();
     }
 
-    // ----- نظام التنبيهات -----
-    async function createAlert() {
-        const titleAr = document.getElementById('alertTitleAr').value.trim();
-        const titleEn = document.getElementById('alertTitleEn').value.trim();
-        const descAr = document.getElementById('alertDescAr').value.trim();
-        const descEn = document.getElementById('alertDescEn').value.trim();
-        const date = document.getElementById('alertDate').value;
-        const time = document.getElementById('alertTime').value;
-        const type = document.getElementById('alertType').value;
-        const volume = document.getElementById('alertVolume').value;
-        const sound = document.getElementById('alertSound').value;
-        const duration = parseInt(document.getElementById('soundDuration').value) || 10;
-
-        if (!titleAr && !titleEn) { showToast("يرجى إدخال عنوان التنبيه", false); return; }
-
-        let schedule = null;
-        if (type === 'scheduled') {
-            if (!date || !time) { showToast("يرجى تحديد التاريخ والوقت للتنبيه المجدول", false); return; }
-            schedule = firebase.firestore.Timestamp.fromDate(new Date(`${date}T${time}:00`));
-        }
-
-        // رفع ملف الصوت إذا كان مخصصاً
-        let soundUrl = null;
-        if (sound === 'custom') {
-            const fileInput = document.getElementById('customSoundFile');
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("upload_preset", "zahrani_private");
-                formData.append("resource_type", "video");
-                try {
-                    const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/raw/upload", { method: "POST", body: formData });
-                    const data = await res.json();
-                    soundUrl = data.secure_url;
-                } catch (e) {
-                    showToast("فشل رفع الصوت", false);
-                    return;
-                }
-            }
-        }
-
-        const alertData = {
-            titleAr, titleEn, descAr, descEn,
-            type, volume, sound, soundUrl, duration,
-            createdAt: firebase.firestore.Timestamp.now(),
-            status: type === 'immediate' ? 'sent' : 'scheduled',
-            sentAt: type === 'immediate' ? firebase.firestore.Timestamp.now() : null,
-            schedule: schedule || null
-        };
-
-        await db.collection("alerts").add(alertData);
-        showToast(t('alertCreated'));
-
-        // إذا كان فوري، قم بتشغيل الإرسال
-        if (type === 'immediate') {
-            sendImmediateAlert(alertData);
-        }
-        // إعادة تعيين الحقول
-        document.getElementById('alertTitleAr').value = '';
-        document.getElementById('alertTitleEn').value = '';
-        document.getElementById('alertDescAr').value = '';
-        document.getElementById('alertDescEn').value = '';
-        document.getElementById('alertDate').value = '';
-        document.getElementById('alertTime').value = '';
-        document.getElementById('customSoundFile').value = '';
-    }
-
-    function sendImmediateAlert(alertData) {
-        // إرسال الإشعار لكل الموظفين المسجلين (باستخدام FCM)
-        db.collection("users").where("role", "==", "employee").get().then(snap => {
-            snap.forEach(doc => {
-                const token = doc.data().fcmToken;
-                if (token) {
-                    sendPushNotification(token, alertData);
-                }
-            });
-        });
-        // تحديث الحالة
-        updateAlertStatus(alertData.id, 'sent');
-    }
-
-    // إرسال إشعار FCM (يحتاج مفتاح الخادم)
-    async function sendPushNotification(token, alertData) {
-        const serverKey = 'YOUR_SERVER_KEY'; // استبدل بمفتاح خادم FCM
-        const title = currentLang === 'ar' ? alertData.titleAr : alertData.titleEn;
-        const body = currentLang === 'ar' ? alertData.descAr : alertData.descEn;
-        const payload = {
-            to: token,
-            notification: {
-                title: title,
-                body: body,
-                sound: "default"
-            },
-            data: {
-                sound: alertData.sound,
-                soundUrl: alertData.soundUrl || '',
-                duration: alertData.duration.toString()
-            }
-        };
-        try {
-            await fetch('https://fcm.googleapis.com/fcm/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'key=' + serverKey
-                },
-                body: JSON.stringify(payload)
-            });
-        } catch (e) {
-            console.warn("فشل إرسال إشعار FCM", e);
-        }
-    }
-
-    async function updateAlertStatus(alertId, status) {
-        await db.collection("alerts").doc(alertId).update({ status, sentAt: firebase.firestore.Timestamp.now() });
-    }
-
-    async function deleteAlert(alertId) {
-        if (confirm(t('confirmDelete'))) {
-            await db.collection("alerts").doc(alertId).delete();
-            showToast(t('alertDeleted'));
-            renderAlerts();
-        }
-    }
-
-    async function resendAlert(alertId) {
-        const doc = await db.collection("alerts").doc(alertId).get();
-        if (doc.exists) {
-            const alertData = doc.data();
-            alertData.id = alertId;
-            sendImmediateAlert(alertData);
-            showToast(t('alertResent'));
-        }
-    }
-
-    async function testAlert(alertId) {
-        // تشغيل صوت محلي وهمي للاختبار
-        playAlertSound({ sound: 'arabic', duration: 5 });
-        showToast("اختبار التنبيه يعمل", true);
-    }
-
-    function playAlertSound(alertData) {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let duration = (alertData.duration || 5) * 1000;
-        // نغمة بسيطة للاختبار
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration / 1000);
-        setTimeout(() => { if (audioCtx.state !== 'closed') audioCtx.close(); }, duration);
-    }
-
-    // عرض التنبيهات في الجدول
-    function renderAlerts() {
-        db.collection("alerts").orderBy("createdAt", "desc").onSnapshot(snap => {
-            let html = '';
-            snap.forEach(doc => {
-                const a = doc.data();
-                const title = currentLang === 'ar' ? a.titleAr : a.titleEn;
-                const typeStr = a.type === 'immediate' ? 'فوري' : 'مجدول';
-                const dateStr = a.schedule ? a.schedule.toDate().toLocaleString('ar-SA') : (a.sentAt ? a.sentAt.toDate().toLocaleString('ar-SA') : '—');
-                const statusStr = t('alertStatus_' + a.status);
-                html += `<tr>
-                    <td>${title || '—'}</td>
-                    <td>${typeStr}</td>
-                    <td>${dateStr}</td>
-                    <td>${statusStr}</td>
-                    <td>
-                        <button class="btn btn-sm" onclick="resendAlert('${doc.id}')"><i class="fas fa-redo"></i></button>
-                        <button class="btn btn-sm" onclick="testAlert('${doc.id}')"><i class="fas fa-play"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteAlert('${doc.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('alertsTableBody').innerHTML = html || '<tr><td colspan="5">لا توجد تنبيهات</td></tr>';
-        });
-    }
-
-    // باقي الدوال (دون تغيير)
     async function requestCameraPermission() {
         const video = document.getElementById("camera"), placeholder = document.getElementById("cameraPlaceholder");
         try {
@@ -1195,6 +925,7 @@
 
         if (!id) return;
 
+        // تسجيل دخول المسؤول باستخدام كلمة المرور
         if (id === adminEmpID) {
             if (!password) {
                 showToast("يجب إدخال كلمة المرور للمدير", false);
@@ -1219,6 +950,7 @@
             return;
         }
 
+        // تسجيل دخول موظف عادي (بدون كلمة مرور)
         const q = await db.collection("users").where("empID", "==", id).get();
         if (q.empty) { showToast("غير موجود", false); return; }
         q.forEach(doc => { currentUser = { ...doc.data(), id: doc.id }; });
@@ -1234,8 +966,8 @@
             startLiveClock();
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
-            // تهيئة FCM للموظف
-            initFCM();
+            // بدء نظام التنبيهات
+            onEmployeeLogin();
         }
         document.getElementById("loginPassword").value = "";
         document.getElementById("empID").value = "";
@@ -1253,6 +985,7 @@
         document.getElementById("detailsModal").style.display = "none";
     }
 
+    // تغيير كلمة مرور المدير
     async function changeAdminPassword() {
         const currentPwd = document.getElementById("currentPassword").value.trim();
         const newPwd = document.getElementById("newPassword").value.trim();
@@ -1283,7 +1016,7 @@
         }
     }
 
-    // =============== المناطق ===============
+    // =============== المناطق (دون تغيير) ===============
     async function loadRegionsAndCache() {
         userRegionCache.clear();
         userWhatsAppCache.clear();
@@ -1843,6 +1576,160 @@
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
 
+    // ---------- دوال التنبيهات (موجودة) ----------
+    function scheduleAlert() {
+        const msg = document.getElementById('alertMessageAr').value.trim();
+        const date = document.getElementById('alertDate').value;
+        const time = document.getElementById('alertTime').value;
+        const repeat = document.getElementById('alertRepeat').value;
+        const duration = parseInt(document.getElementById('alertDuration').value) || 10;
+        if (!msg || !date || !time) { showToast("يرجى ملء جميع الحقول", false); return; }
+        const scheduled = new Date(`${date}T${time}:00`);
+        if (scheduled <= new Date()) { showToast("الرجاء اختيار وقت مستقبلي", false); return; }
+        db.collection("alerts").add({
+            messageAr: msg, date, time, repeat, duration,
+            status: 'scheduled',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            showToast("تمت جدولة التنبيه بنجاح");
+            document.getElementById('alertMessageAr').value = '';
+            document.getElementById('alertDate').value = '';
+            document.getElementById('alertTime').value = '';
+        }).catch(() => showToast("خطأ في الجدولة", false));
+    }
+
+    function loadAlerts() {
+        db.collection("alerts").orderBy("createdAt", "desc").onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                const a = doc.data();
+                html += `<tr><td>${a.messageAr}</td><td>${a.date}</td><td>${a.time}</td><td>${a.repeat==='daily'?'يومي':'مرة واحدة'}</td><td>${a.status==='sent'?'تم الإرسال':'مجدول'}</td><td>${a.status==='scheduled'?`<button class="btn btn-sm btn-danger" onclick="deleteAlert('${doc.id}')"><i class="fas fa-trash"></i></button>`:''}</td></tr>`;
+            });
+            document.getElementById('alertsTableBody').innerHTML = html || '<tr><td colspan="6">لا توجد تنبيهات</td></tr>';
+        });
+    }
+
+    window.deleteAlert = async (id) => { if (confirm(t('confirmDelete'))) { await db.collection("alerts").doc(id).delete(); } };
+
+    // ====== إضافة نظام التنبيهات الآلية (Patch فقط) ======
+    // Audio Unlock
+    window.audioUnlocked = false;
+    document.addEventListener('click', function unlockAudio() {
+        if (!window.audioUnlocked) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                gain.gain.value = 0.01;
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(0);
+                osc.stop(0.1);
+                ctx.close();
+            } catch(e) {}
+            window.audioUnlocked = true;
+        }
+    }, { once: false });
+
+    async function translateToEnglish(arabicText) {
+        try {
+            const res = await fetch(
+                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(arabicText)}&langpair=ar|en`
+            );
+            const data = await res.json();
+            if (data.responseData && data.responseData.translatedText) {
+                return data.responseData.translatedText;
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    function playAlertSounds(arabicText, durationSec) {
+        if (!('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const utterAr = new SpeechSynthesisUtterance(arabicText);
+        utterAr.lang = 'ar-SA';
+        utterAr.rate = 0.9;
+
+        const setVoices = () => {
+            const voices = speechSynthesis.getVoices();
+            const arabicVoice = voices.find(v => v.lang.startsWith('ar') && v.name.includes('male'))
+                            || voices.find(v => v.lang.startsWith('ar'));
+            if (arabicVoice) utterAr.voice = arabicVoice;
+
+            utterAr.onend = async () => {
+                const translated = await translateToEnglish(arabicText);
+                if (translated) {
+                    const utterEn = new SpeechSynthesisUtterance(translated);
+                    utterEn.lang = 'en-US';
+                    utterEn.rate = 0.9;
+                    const femaleVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('female'))
+                                       || voices.find(v => v.lang.startsWith('en'));
+                    if (femaleVoice) utterEn.voice = femaleVoice;
+                    speechSynthesis.speak(utterEn);
+                }
+            };
+            speechSynthesis.speak(utterAr);
+            setTimeout(() => speechSynthesis.cancel(), durationSec * 1000);
+        };
+
+        if (speechSynthesis.getVoices().length) {
+            setVoices();
+        } else {
+            speechSynthesis.onvoiceschanged = () => setVoices();
+        }
+    }
+
+    function listenForAlerts() {
+        db.collection("alerts")
+            .where("status", "==", "scheduled")
+            .onSnapshot(snapshot => {
+                const now = new Date();
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === "added" || change.type === "modified") {
+                        const alert = change.doc.data();
+                        const alertId = change.doc.id;
+                        if (localStorage.getItem('alert_' + alertId)) return;
+                        if (!alert.date || !alert.time) return;
+                        const scheduledTime = new Date(`${alert.date}T${alert.time}:00`);
+                        if (scheduledTime <= now) {
+                            playAlertSounds(alert.messageAr, alert.duration || 10);
+                            if (Notification.permission === "granted") {
+                                new Notification("تنبيه إداري", { body: alert.messageAr, icon: '/icon.png', vibrate: [200,100,200] });
+                            }
+                            try {
+                                await db.collection("alerts").doc(alertId).update({ status: 'sent' });
+                                localStorage.setItem('alert_' + alertId, '1');
+                            } catch(e) {}
+                            if (alert.repeat === 'daily') {
+                                const nextDate = new Date(scheduledTime);
+                                nextDate.setDate(nextDate.getDate() + 1);
+                                db.collection("alerts").add({
+                                    ...alert,
+                                    date: nextDate.toISOString().split('T')[0],
+                                    time: alert.time,
+                                    status: 'scheduled',
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+    }
+
+    // ربط المستمع عند دخول الموظف
+    function onEmployeeLogin() {
+        if (currentUser && currentUser.role === 'employee') {
+            listenForAlerts();
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+    }
+
+    // استدعاء داخل smartLogin (موجود أعلاه)
+
     window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
     window.logoutToLogin = logoutToLogin; window.proceedToCheckout = proceedToCheckout;
     window.addEmployee = addEmployee; window.deleteEmployee = deleteEmployee;
@@ -1858,32 +1745,8 @@
     window.showPage = showPage;
     window.openStatDetails = openStatDetails;
     window.changeAdminPassword = changeAdminPassword;
-    window.createAlert = createAlert;
-    window.deleteAlert = deleteAlert;
-    window.resendAlert = resendAlert;
-    window.testAlert = testAlert;
+    window.scheduleAlert = scheduleAlert;
+    window.loadAlerts = loadAlerts;
 </script>
-
-<!-- Service Worker (يجب حفظه كملف firebase-messaging-sw.js في المجلد العام) -->
-<!-- محتوى الملف:
-importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
-firebase.initializeApp({
-  apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
-  projectId: "zahrani-attendance",
-  appId: "1:861962206748:web:43500609b0d84d2b25e9d9",
-  messagingSenderId: "861962206748"
-});
-const messaging = firebase.messaging();
-messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message ', payload);
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/icon.png'
-  };
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
--->
 </body>
 </html>

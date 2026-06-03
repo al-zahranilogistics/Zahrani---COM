@@ -55,7 +55,13 @@
             backdrop-filter: blur(2px);
             z-index: -1;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 20px;
+            position: relative;
+            z-index: 1;
+        }
         .logo-circle {
             width: 110px; height: 110px; object-fit: cover; border-radius: 50%;
             border: 3px solid var(--primary); background: white; padding: 6px;
@@ -129,7 +135,12 @@
         .stat-value { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, #fff, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .stat-label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 6px; }
         .table-container { overflow-x: auto; border-radius: 24px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            min-width: 0;
+        }
         th, td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 0.9rem; }
         th { background: rgba(20,184,166,0.15); color: var(--primary); font-weight: 700; }
         .row-present { border-right: 5px solid var(--success); }
@@ -163,7 +174,7 @@
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
         .sidebar {
-            width: 220px;
+            width: 200px;
             background: var(--card);
             backdrop-filter: blur(16px);
             border-radius: 24px;
@@ -188,7 +199,7 @@
         }
         .content {
             flex: 1;
-            margin-right: 20px;
+            margin-right: 10px;
             min-width: 0;
         }
         #adminPanel {
@@ -274,7 +285,6 @@
         .action-menu-content button:hover {
             background: rgba(20,184,166,0.2);
         }
-        /* أنماط صفحة الإعدادات (إضافة فقط) */
         .settings-form {
             max-width: 400px;
             margin: 0 auto;
@@ -305,7 +315,7 @@
         <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem; text-shadow: 0 0 15px var(--primary-glow);" id="mainTitle">نظام الحضور والانصراف</h2>
     </div>
 
-    <!-- شاشة الدخول (إضافة حقل كلمة المرور) -->
+    <!-- شاشة الدخول -->
     <div id="loginSection" class="glass" style="max-width: 480px; margin: 0 auto;">
         <h3 style="text-align:center; margin:20px 0; font-size:1.5rem;" id="loginHeader"><i class="fas fa-fingerprint"></i> دخول النظام</h3>
         <input type="text" id="empID" placeholder="الرقم الوظيفي" style="width:100%; margin-bottom:18px; padding:16px 20px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.1rem;">
@@ -313,7 +323,7 @@
         <button class="btn btn-primary" style="width:100%; padding:16px;" onclick="smartLogin()"><i class="fas fa-sign-in-alt"></i> <span id="btnLoginText">دخول</span></button>
     </div>
 
-    <!-- لوحة الموظف (دون تغيير) -->
+    <!-- لوحة الموظف -->
     <div id="employeePanel" style="display:none;" class="glass">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
             <h3 id="empPanelHeader" style="font-size:1.3rem;"><i class="fas fa-camera-retro"></i> بصمة الوجه لـ: <span id="currentUserName" style="color:var(--primary);"></span></h3>
@@ -344,7 +354,7 @@
         <button class="btn" style="width:100%; margin-top:16px;" onclick="logoutToLogin()"><i class="fas fa-arrow-right"></i> <span id="btnBackText">خروج للرئيسية</span></button>
     </div>
 
-    <!-- شاشة الشكر (دون تغيير) -->
+    <!-- شاشة الشكر -->
     <div id="thankyouPanel" style="display:none;" class="glass" style="text-align:center; padding:40px;">
         <img src="https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png" class="logo-circle" style="animation: logoGlow 1.5s infinite alternate;">
         <div style="font-size:2.5rem; color:var(--gold); margin:25px 0;" id="thankyouMsg">شكراً لتسجيل الحضور</div>
@@ -353,7 +363,7 @@
         <button class="btn" style="margin-top:15px;" onclick="logoutToLogin()"><i class="fas fa-sign-out-alt"></i> <span id="logoutThankBtn">خروج</span></button>
     </div>
 
-    <!-- لوحة المدير (SPA) - إضافة صفحة الإعدادات -->
+    <!-- لوحة المدير (SPA) -->
     <div id="adminPanel">
         <div class="sidebar">
             <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span id="navDashboardText">الرئيسية</span></div>
@@ -366,7 +376,6 @@
         </div>
 
         <div class="content">
-            <!-- الصفحات الداخلية القائمة (دون تغيير) -->
             <div id="dashboardPage" class="page-section active">
                 <div class="stats-grid" id="adminStats"></div>
                 <div class="glass" style="margin-bottom:25px;">
@@ -437,7 +446,7 @@
                 </div>
             </div>
 
-            <!-- صفحة الإعدادات الجديدة -->
+            <!-- صفحة الإعدادات -->
             <div id="settingsPage" class="page-section">
                 <div class="glass" style="padding:30px;">
                     <h3 style="margin-bottom:25px;"><i class="fas fa-lock"></i> تغيير كلمة مرور المدير</h3>
@@ -453,7 +462,7 @@
     </div>
 </div>
 
-<!-- مودال تعديل الموظف (دون تغيير) -->
+<!-- مودال تعديل الموظف -->
 <div id="editModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تعديل بيانات الموظف</h3>
@@ -467,7 +476,7 @@
     </div>
 </div>
 
-<!-- مودال اختيار المنطقة للموظف (دون تغيير) -->
+<!-- مودال اختيار المنطقة للموظف -->
 <div id="regionModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <h3 style="color:var(--primary);">تحديد المنطقة</h3>
@@ -479,7 +488,7 @@
     </div>
 </div>
 
-<!-- مودال التفاصيل للإحصائيات (دون تغيير) -->
+<!-- مودال التفاصيل للإحصائيات -->
 <div id="detailsModal" class="modal-overlay" style="display:none;">
     <div class="modal-content" style="max-width:750px; text-align:right;">
         <h3 style="color:var(--primary); margin-bottom:20px;" id="detailsModalTitle"></h3>
@@ -520,33 +529,23 @@
 
     const actionDataMap = new Map();
 
-    // متغيرات المصادقة
-    let adminEmpID = "2029"; // افتراضي
-    let adminPassword = null; // يتم تحميله لاحقاً
+    let adminEmpID = "2029";
+    let adminPassword = null;
 
-    // تحميل بيانات المدير من Firestore مرة واحدة
     async function loadAdminAuth() {
         try {
-            const docSnap = await db.collection("settings").doc("adminAuth").get();
-            if (docSnap.exists) {
-                const data = docSnap.data();
+            const snap = await db.collection("settings").doc("adminAuth").get();
+            if (snap.exists) {
+                const data = snap.data();
                 adminEmpID = data.empID || "2029";
                 adminPassword = data.password || "2029";
             } else {
-                // إنشاء المستند الافتراضي إذا لم يوجد
-                await db.collection("settings").doc("adminAuth").set({
-                    empID: "2029",
-                    password: "2029"
-                });
+                await db.collection("settings").doc("adminAuth").set({ empID: "2029", password: "2029" });
                 adminPassword = "2029";
                 adminEmpID = "2029";
             }
-        } catch (e) {
-            console.warn("تعذر تحميل إعدادات المدير", e);
-        }
+        } catch (e) { console.warn(e); }
     }
-
-    // استدعاء التحميل فوراً
     loadAdminAuth();
 
     function sanitizePhoneNumber(rawNumber) {
@@ -555,16 +554,12 @@
         if (cleaned.startsWith('00')) cleaned = cleaned.substring(2);
         if (cleaned.startsWith('0')) cleaned = '966' + cleaned.substring(1);
         if (!cleaned.startsWith('966')) cleaned = '966' + cleaned;
-        if (cleaned.length !== 12) return '';
-        return cleaned;
+        return cleaned.length === 12 ? cleaned : '';
     }
 
     function generateWhatsAppUrl(empData, adminMsg, deductionAmount, actionType) {
         const phone = sanitizePhoneNumber(empData.whatsapp);
-        if (!phone) {
-            showToast("رقم واتساب غير مضاف للموظف", false);
-            return null;
-        }
+        if (!phone) { showToast("رقم واتساب غير مضاف", false); return null; }
         let baseText = '';
         if (empData.type === 'late') {
             const timeStr = empData.inTime ? new Date(empData.inTime).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : '—';
@@ -575,17 +570,9 @@
         } else {
             baseText = `${empData.empID}\nالمنطقة: ${empData.region}`;
         }
-
-        if (actionType === 'details') {
-            if (adminMsg) baseText += '\n\n' + adminMsg;
-        } else if (actionType === 'warning') {
-            baseText = 'تنبيه إداري بسبب الغياب أو التأخير\n' + baseText + (adminMsg ? '\n' + adminMsg : '');
-        } else if (actionType === 'deduction') {
-            baseText = 'إشعار خصم بسبب الغياب أو التأخير\n' + baseText;
-            if (deductionAmount) baseText += '\nقيمة الخصم: ' + deductionAmount + ' ريال';
-            if (adminMsg) baseText += '\n' + adminMsg;
-        }
-
+        if (actionType === 'details') baseText += adminMsg ? '\n\n' + adminMsg : '';
+        else if (actionType === 'warning') baseText = 'تنبيه إداري\n' + baseText + (adminMsg ? '\n' + adminMsg : '');
+        else if (actionType === 'deduction') baseText = 'إشعار خصم\n' + baseText + (deductionAmount ? '\nقيمة الخصم: ' + deductionAmount + ' ريال' : '') + (adminMsg ? '\n' + adminMsg : '');
         return `https://wa.me/${phone}?text=${encodeURIComponent(baseText)}`;
     }
 
@@ -595,13 +582,9 @@
             e.stopPropagation();
             const key = trigger.getAttribute('data-action-key');
             const menu = document.getElementById('actionMenu_' + key);
-            if (menu) {
-                document.querySelectorAll('.action-menu-content').forEach(m => m.style.display = 'none');
-                menu.style.display = 'block';
-            }
+            if (menu) { document.querySelectorAll('.action-menu-content').forEach(m => m.style.display = 'none'); menu.style.display = 'block'; }
             return;
         }
-
         const menuItem = e.target.closest('.action-menu-content button');
         if (menuItem) {
             e.stopPropagation();
@@ -623,15 +606,12 @@
             menu.style.display = 'none';
             return;
         }
-
         if (!e.target.closest('.action-menu')) {
             document.querySelectorAll('.action-menu-content').forEach(m => m.style.display = 'none');
         }
     });
 
-    function registerActionData(key, empData) {
-        actionDataMap.set(key, empData);
-    }
+    function registerActionData(key, empData) { actionDataMap.set(key, empData); }
 
     function playSuccessSound() {
         try {
@@ -648,89 +628,65 @@
     const translations = {
         ar: {
             mainTitle: "نظام الحضور والانصراف", loginHeader: "دخول النظام", empIDPlaceholder: "الرقم الوظيفي",
-            passwordPlaceholder: "كلمة المرور (للمدير)",
-            btnLogin: "دخول", empPanelHeader: "بصمة الوجه لـ: ", txtIn: "إثبات حضور", txtOut: "تسجيل انصراف",
-            btnBack: "خروج للرئيسية", adminLogout: "خروج", addEmpHeader: "إضافة موظف",
-            newNamePlaceholder: "اسم الموظف", btnSaveEmp: "حفظ", staffListHeader: "الموظفين",
-            logsHeader: "سجل الحضور والانصراف", filterHeader: "فلترة",
+            passwordPlaceholder: "كلمة المرور (للمدير)", btnLogin: "دخول", empPanelHeader: "بصمة الوجه لـ: ",
+            txtIn: "إثبات حضور", txtOut: "تسجيل انصراف", btnBack: "خروج للرئيسية", adminLogout: "خروج",
+            addEmpHeader: "إضافة موظف", newNamePlaceholder: "اسم الموظف", btnSaveEmp: "حفظ",
+            staffListHeader: "الموظفين", logsHeader: "سجل الحضور والانصراف", filterHeader: "فلترة",
             thName: "الموظف", thRegion: "المنطقة", thDate: "التاريخ", thIn: "حضور", thOut: "انصراف",
             thDuration: "المدة", thStatus: "الحالة", thInImg: "صورة الحضور", thOutImg: "صورة الانصراف",
-            thLocation: "الموقع", thAction: "مسح", thActions: "إجراءات",
-            langBtn: "English", msgSuccess: "تم بنجاح", msgError: "خطأ", confirmDelete: "متأكد من الحذف؟",
+            thLocation: "الموقع", thAction: "مسح", thActions: "إجراءات", langBtn: "English",
+            msgSuccess: "تم بنجاح", msgError: "خطأ", confirmDelete: "متأكد من الحذف؟",
             alreadyCheckedIn: "⚠️ تم تسجيل حضورك اليوم!", alreadyCheckedOut: "⚠️ تم تسجيل انصرافك مسبقاً!",
             morningGreeting: "شكراً لتسجيل الحضور", returningGreeting: "مرحباً بعودتك",
-            thankYouMsg: "شكرا لك", dayBlessing: "يومك سعيد",
-            proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج",
-            locationError: "يرجى تفعيل الموقع", locationSuccess: "تم تحديد الموقع",
-            cameraRequest: "نحتاج للكاميرا", enablePermissions: "اسمح بالكاميرا والموقع",
+            thankYouMsg: "شكرا لك", proceedCheckout: "متابعة الانصراف", logoutThankBtn: "خروج",
+            locationError: "يرجى تفعيل الموقع", cameraRequest: "نحتاج للكاميرا",
             statusPresent: "مكتمل", statusIncomplete: "بانتظار الانصراف", statusAbsent: "غائب",
-            statusLate: "متأخر",
-            navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق", navLogs: "السجل",
-            navSettings: "الإعدادات", navLogout: "تسجيل خروج",
-            reasonLabel: "رسالة للإدارة",
+            statusLate: "متأخر", navDashboard: "الرئيسية", navEmployees: "الموظفين", navRegions: "المناطق",
+            navLogs: "السجل", navSettings: "الإعدادات", navLogout: "تسجيل خروج", reasonLabel: "رسالة للإدارة",
             modalTotal: "جميع الموظفين", modalPresent: "الحاضرون اليوم", modalOut: "المنصرفون",
-            modalLate: "المتأخرون", modalAbsent: "الغائبون",
-            actionsBtn: "الإجراءات",
+            modalLate: "المتأخرون", modalAbsent: "الغائبون", actionsBtn: "الإجراءات",
             actionDetails: "إرسال واتساب", actionWarning: "تحذير", actionDeduction: "خصم",
-            noWhatsApp: "رقم واتساب غير مضاف للموظف",
-            closeBtn: "إغلاق",
-            settingsHeader: "تغيير كلمة مرور المدير",
-            currentPasswordPlaceholder: "كلمة المرور الحالية",
-            newPasswordPlaceholder: "كلمة المرور الجديدة",
-            confirmPasswordPlaceholder: "تأكيد كلمة المرور الجديدة",
-            changePasswordBtn: "حفظ التغييرات",
-            passwordWrong: "كلمة المرور الحالية غير صحيحة",
-            passwordMismatch: "كلمة المرور الجديدة غير متطابقة",
-            passwordChanged: "تم تغيير كلمة المرور بنجاح",
+            noWhatsApp: "رقم واتساب غير مضاف للموظف", closeBtn: "إغلاق",
+            settingsHeader: "تغيير كلمة مرور المدير", currentPasswordPlaceholder: "كلمة المرور الحالية",
+            newPasswordPlaceholder: "كلمة المرور الجديدة", confirmPasswordPlaceholder: "تأكيد كلمة المرور الجديدة",
+            changePasswordBtn: "حفظ التغييرات", passwordWrong: "كلمة المرور الحالية غير صحيحة",
+            passwordMismatch: "كلمة المرور الجديدة غير متطابقة", passwordChanged: "تم تغيير كلمة المرور بنجاح",
             passwordEmpty: "يجب ملء جميع الحقول"
         },
         en: {
             mainTitle: "Attendance System", loginHeader: "Login", empIDPlaceholder: "Employee ID",
-            passwordPlaceholder: "Password (for admin)",
-            btnLogin: "Login", empPanelHeader: "Face ID: ", txtIn: "Clock In", txtOut: "Clock Out",
-            btnBack: "Back", adminLogout: "Logout", addEmpHeader: "Add Employee",
-            newNamePlaceholder: "Name", btnSaveEmp: "Save", staffListHeader: "Staff",
-            logsHeader: "Attendance Log", filterHeader: "Filter",
+            passwordPlaceholder: "Password (for admin)", btnLogin: "Login", empPanelHeader: "Face ID: ",
+            txtIn: "Clock In", txtOut: "Clock Out", btnBack: "Back", adminLogout: "Logout",
+            addEmpHeader: "Add Employee", newNamePlaceholder: "Name", btnSaveEmp: "Save",
+            staffListHeader: "Staff", logsHeader: "Attendance Log", filterHeader: "Filter",
             thName: "Name", thRegion: "Region", thDate: "Date", thIn: "In", thOut: "Out",
             thDuration: "Duration", thStatus: "Status", thInImg: "In Photo", thOutImg: "Out Photo",
-            thLocation: "Location", thAction: "Delete", thActions: "Actions",
-            langBtn: "عربي", msgSuccess: "Success", msgError: "Error", confirmDelete: "Delete?",
+            thLocation: "Location", thAction: "Delete", thActions: "Actions", langBtn: "عربي",
+            msgSuccess: "Success", msgError: "Error", confirmDelete: "Delete?",
             alreadyCheckedIn: "⚠️ Already checked in!", alreadyCheckedOut: "⚠️ Already checked out!",
             morningGreeting: "Thank you for check-in", returningGreeting: "Welcome back",
-            thankYouMsg: "Thank you", dayBlessing: "Have a nice day",
-            proceedCheckout: "Checkout", logoutThankBtn: "Exit",
-            locationError: "Enable location", locationSuccess: "Location acquired",
-            cameraRequest: "Camera needed", enablePermissions: "Allow camera & location",
+            thankYouMsg: "Thank you", proceedCheckout: "Checkout", logoutThankBtn: "Exit",
+            locationError: "Enable location", cameraRequest: "Camera needed",
             statusPresent: "Complete", statusIncomplete: "Waiting", statusAbsent: "Absent",
-            statusLate: "Late",
-            navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions", navLogs: "Logs",
-            navSettings: "Settings", navLogout: "Logout",
-            reasonLabel: "Admin Message",
+            statusLate: "Late", navDashboard: "Dashboard", navEmployees: "Employees", navRegions: "Regions",
+            navLogs: "Logs", navSettings: "Settings", navLogout: "Logout", reasonLabel: "Admin Message",
             modalTotal: "All Employees", modalPresent: "Present Today", modalOut: "Checked Out",
-            modalLate: "Late Arrivals", modalAbsent: "Absent",
-            actionsBtn: "Actions",
+            modalLate: "Late Arrivals", modalAbsent: "Absent", actionsBtn: "Actions",
             actionDetails: "Send WhatsApp", actionWarning: "Warning", actionDeduction: "Deduction",
-            noWhatsApp: "No WhatsApp number",
-            closeBtn: "Close",
-            settingsHeader: "Change Admin Password",
-            currentPasswordPlaceholder: "Current Password",
-            newPasswordPlaceholder: "New Password",
-            confirmPasswordPlaceholder: "Confirm New Password",
-            changePasswordBtn: "Save Changes",
-            passwordWrong: "Current password is incorrect",
-            passwordMismatch: "Passwords do not match",
-            passwordChanged: "Password changed successfully",
+            noWhatsApp: "No WhatsApp number", closeBtn: "Close",
+            settingsHeader: "Change Admin Password", currentPasswordPlaceholder: "Current Password",
+            newPasswordPlaceholder: "New Password", confirmPasswordPlaceholder: "Confirm New Password",
+            changePasswordBtn: "Save Changes", passwordWrong: "Current password is incorrect",
+            passwordMismatch: "Passwords do not match", passwordChanged: "Password changed successfully",
             passwordEmpty: "All fields are required"
         }
     };
     const t = (key) => translations[currentLang][key] || key;
 
     function showToast(msg, ok = true) {
-        const el = document.createElement("div");
-        el.className = "toast"; el.innerText = msg;
+        const el = document.createElement("div"); el.className = "toast"; el.innerText = msg;
         el.style.background = ok ? "var(--primary)" : "var(--danger)";
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 3500);
+        document.body.appendChild(el); setTimeout(() => el.remove(), 3500);
     }
 
     function showPage(page) {
@@ -748,23 +704,14 @@
             if (cameraStream) stopCamera();
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } });
             video.srcObject = cameraStream; video.style.display = "block"; placeholder.style.display = "none";
-            await video.play(); cameraEnabled = true; enableButtonsIfReady(); return true;
+            await video.play(); cameraEnabled = true; enableButtonsIfReady();
         } catch (e) {
             placeholder.innerHTML = `<i class="fas fa-ban fa-3x"></i><span>${t('cameraRequest')}</span><button class="btn" onclick="requestCameraPermission()">إعادة</button>`;
-            cameraEnabled = false; showToast(t('cameraRequest'), false); return false;
+            cameraEnabled = false; showToast(t('cameraRequest'), false);
         }
     }
-    function stopCamera() {
-        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-        document.getElementById("camera").srcObject = null; cameraEnabled = false;
-    }
-    function captureWidePhoto() {
-        const video = document.getElementById("camera");
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720;
-        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL("image/jpeg", 0.85);
-    }
+    function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } document.getElementById("camera").srcObject = null; cameraEnabled = false; }
+    function captureWidePhoto() { const video = document.getElementById("camera"); const canvas = document.createElement("canvas"); canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720; canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height); return canvas.toDataURL("image/jpeg", 0.85); }
     function requestLocationPermission() {
         if (!navigator.geolocation) return;
         stopLocationTracking();
@@ -773,18 +720,10 @@
             document.getElementById("locationText").innerHTML = `<i class="fas fa-check-circle"></i> ${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}`;
             document.getElementById("locationAccuracy").innerText = `دقة: ${Math.round(currentLocation.accuracy)}م`;
             locationEnabled = true; enableButtonsIfReady();
-        }, err => {
-            document.getElementById("locationText").innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${t('locationError')}`;
-            locationEnabled = false;
-        }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
+        }, err => { document.getElementById("locationText").innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${t('locationError')}`; locationEnabled = false; }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
     }
-    function stopLocationTracking() {
-        if (locationWatchId) { navigator.geolocation.clearWatch(locationWatchId); locationWatchId = null; }
-        locationEnabled = false;
-    }
-    function enableButtonsIfReady() {
-        if (currentUser && currentUser.role === 'employee') checkTodayStatusAndUpdateUI();
-    }
+    function stopLocationTracking() { if (locationWatchId) { navigator.geolocation.clearWatch(locationWatchId); locationWatchId = null; } locationEnabled = false; }
+    function enableButtonsIfReady() { if (currentUser && currentUser.role === 'employee') checkTodayStatusAndUpdateUI(); }
 
     function startLiveClock() {
         const update = () => {
@@ -794,22 +733,8 @@
         };
         update(); setInterval(update, 1000);
     }
-    function startWorkTimer(start) {
-        if (timerInterval) clearInterval(timerInterval);
-        workStartTime = start;
-        const update = () => {
-            if (!workStartTime) return;
-            const diff = new Date() - workStartTime;
-            const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
-            document.getElementById("timerValue").innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        };
-        update(); timerInterval = setInterval(update, 1000);
-        document.getElementById("workTimer").style.display = 'block';
-    }
-    function stopWorkTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        workStartTime = null; document.getElementById("workTimer").style.display = 'none';
-    }
+    function startWorkTimer(start) { if (timerInterval) clearInterval(timerInterval); workStartTime = start; const update = () => { if (!workStartTime) return; const diff = new Date() - workStartTime; const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000); document.getElementById("timerValue").innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }; update(); timerInterval = setInterval(update, 1000); document.getElementById("workTimer").style.display = 'block'; }
+    function stopWorkTimer() { if (timerInterval) clearInterval(timerInterval); workStartTime = null; document.getElementById("workTimer").style.display = 'none'; }
 
     async function checkTodayStatusAndUpdateUI() {
         if (!currentUser || currentUser.role !== 'employee') return;
@@ -836,10 +761,7 @@
         const today = new Date().toISOString().split('T')[0];
         const dup = await db.collection("attendance_raw").where("empID", "==", currentUser.empID).where("dateOnly", "==", today).where("type", "==", type).get();
         if (!dup.empty) { showToast(type === 'in' ? t('alreadyCheckedIn') : t('alreadyCheckedOut'), false); return; }
-        if (type === 'out') {
-            const inSnap = await db.collection("attendance_raw").where("empID", "==", currentUser.empID).where("dateOnly", "==", today).where("type", "==", "in").get();
-            if (inSnap.empty) { showToast("يجب تسجيل الحضور أولاً", false); return; }
-        }
+        if (type === 'out') { const inSnap = await db.collection("attendance_raw").where("empID", "==", currentUser.empID).where("dateOnly", "==", today).where("type", "==", "in").get(); if (inSnap.empty) { showToast("يجب تسجيل الحضور أولاً", false); return; } }
         isUploading = true;
         const freeze = document.getElementById("freezeOverlay"), img = document.getElementById("freezeImage");
         const base64 = await captureWidePhoto();
@@ -850,64 +772,29 @@
             const data = await res.json();
             const now = firebase.firestore.Timestamp.now();
             const loc = currentLocation ? `${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)}` : "غير متاح";
-            await db.collection("attendance_raw").add({
-                name: currentUser.name, empID: currentUser.empID, type: type, img: data.secure_url,
-                timestamp: now, dateOnly: today, location: loc, locationAccuracy: currentLocation?.accuracy || 0
-            });
+            await db.collection("attendance_raw").add({ name: currentUser.name, empID: currentUser.empID, type: type, img: data.secure_url, timestamp: now, dateOnly: today, location: loc, locationAccuracy: currentLocation?.accuracy || 0 });
             freeze.style.display = 'none'; isUploading = false;
             if (type === 'in') {
                 playSuccessSound();
                 stopCamera(); stopLocationTracking(); stopWorkTimer();
                 document.getElementById("employeePanel").style.display = "none";
                 document.getElementById("thankyouPanel").style.display = "block";
-
-                const previousRecords = await db.collection("attendance_raw")
-                    .where("empID", "==", currentUser.empID)
-                    .where("dateOnly", "<", today)
-                    .limit(1)
-                    .get();
-                if (!previousRecords.empty) {
-                    document.getElementById("thankyouMsg").innerText = `${t('returningGreeting')} ${currentUser.name}`;
-                } else {
-                    document.getElementById("thankyouMsg").innerText = t('morningGreeting');
-                }
+                const previousRecords = await db.collection("attendance_raw").where("empID", "==", currentUser.empID).where("dateOnly", "<", today).limit(1).get();
+                document.getElementById("thankyouMsg").innerText = previousRecords.empty ? t('morningGreeting') : `${t('returningGreeting')} ${currentUser.name}`;
                 document.getElementById("thankyouEmployeeName").innerText = currentUser.name;
-            } else {
-                playSuccessSound();
-                showToast(`${t('thankYouMsg')} ${currentUser.name}`, true);
-                setTimeout(() => logoutToLogin(), 1800);
-            }
-        } catch (e) {
-            freeze.style.display = 'none'; isUploading = false;
-        }
+            } else { playSuccessSound(); showToast(`${t('thankYouMsg')} ${currentUser.name}`, true); setTimeout(() => logoutToLogin(), 1800); }
+        } catch (e) { freeze.style.display = 'none'; isUploading = false; }
     }
-
-    function proceedToCheckout() {
-        document.getElementById("thankyouPanel").style.display = "none";
-        document.getElementById("employeePanel").style.display = "block";
-        requestCameraPermission(); requestLocationPermission();
-    }
+    function proceedToCheckout() { document.getElementById("thankyouPanel").style.display = "none"; document.getElementById("employeePanel").style.display = "block"; requestCameraPermission(); requestLocationPermission(); }
 
     async function smartLogin() {
         const id = document.getElementById("empID").value.trim();
         const password = document.getElementById("loginPassword").value.trim();
-
         if (!id) return;
-
-        // تسجيل دخول المسؤول باستخدام كلمة المرور
         if (id === adminEmpID) {
-            if (!password) {
-                showToast("يجب إدخال كلمة المرور للمدير", false);
-                return;
-            }
-            if (adminPassword === null) {
-                showToast("لم يتم تحميل بيانات المدير بعد، حاول مرة أخرى", false);
-                return;
-            }
-            if (password !== adminPassword) {
-                showToast("كلمة المرور غير صحيحة", false);
-                return;
-            }
+            if (!password) { showToast("يجب إدخال كلمة المرور للمدير", false); return; }
+            if (adminPassword === null) { showToast("لم يتم تحميل بيانات المدير بعد", false); return; }
+            if (password !== adminPassword) { showToast("كلمة المرور غير صحيحة", false); return; }
             currentUser = { empID: adminEmpID, name: "المدير العام", role: "admin", id: "temp_admin" };
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPanel").style.display = "flex";
@@ -918,8 +805,6 @@
             document.getElementById("empID").value = "";
             return;
         }
-
-        // تسجيل دخول موظف عادي (بدون كلمة مرور)
         const q = await db.collection("users").where("empID", "==", id).get();
         if (q.empty) { showToast("غير موجود", false); return; }
         q.forEach(doc => { currentUser = { ...doc.data(), id: doc.id }; });
@@ -941,206 +826,30 @@
         if (currentLang === 'en') toggleLanguage();
     }
 
-    function logoutToLogin() {
-        stopCamera(); stopLocationTracking(); stopWorkTimer(); currentUser = null;
-        document.getElementById("loginSection").style.display = "block";
-        document.getElementById("employeePanel").style.display = "none";
-        document.getElementById("adminPanel").style.display = "none";
-        document.getElementById("thankyouPanel").style.display = "none";
-        document.getElementById("empID").value = "";
-        document.getElementById("loginPassword").value = "";
-        document.getElementById("detailsModal").style.display = "none";
-    }
+    function logoutToLogin() { stopCamera(); stopLocationTracking(); stopWorkTimer(); currentUser = null; document.getElementById("loginSection").style.display = "block"; document.getElementById("employeePanel").style.display = "none"; document.getElementById("adminPanel").style.display = "none"; document.getElementById("thankyouPanel").style.display = "none"; document.getElementById("empID").value = ""; document.getElementById("loginPassword").value = ""; document.getElementById("detailsModal").style.display = "none"; }
 
-    // تغيير كلمة مرور المدير
-    async function changeAdminPassword() {
-        const currentPwd = document.getElementById("currentPassword").value.trim();
-        const newPwd = document.getElementById("newPassword").value.trim();
-        const confirmPwd = document.getElementById("confirmNewPassword").value.trim();
+    async function changeAdminPassword() { const currentPwd = document.getElementById("currentPassword").value.trim(); const newPwd = document.getElementById("newPassword").value.trim(); const confirmPwd = document.getElementById("confirmNewPassword").value.trim(); if (!currentPwd || !newPwd || !confirmPwd) { showToast(t('passwordEmpty'), false); return; } if (currentPwd !== adminPassword) { showToast(t('passwordWrong'), false); return; } if (newPwd !== confirmPwd) { showToast(t('passwordMismatch'), false); return; } try { await db.collection("settings").doc("adminAuth").update({ password: newPwd }); adminPassword = newPwd; document.getElementById("currentPassword").value = ""; document.getElementById("newPassword").value = ""; document.getElementById("confirmNewPassword").value = ""; showToast(t('passwordChanged'), true); } catch (e) { showToast("فشل التحديث", false); } }
 
-        if (!currentPwd || !newPwd || !confirmPwd) {
-            showToast(t('passwordEmpty'), false);
-            return;
-        }
-        if (currentPwd !== adminPassword) {
-            showToast(t('passwordWrong'), false);
-            return;
-        }
-        if (newPwd !== confirmPwd) {
-            showToast(t('passwordMismatch'), false);
-            return;
-        }
+    async function loadRegionsAndCache() { userRegionCache.clear(); userWhatsAppCache.clear(); userNameCache.clear(); const usersSnap = await db.collection("users").get(); usersSnap.forEach(doc => { const d = doc.data(); if (d.region) userRegionCache.set(d.empID, d.region); if (d.whatsapp) userWhatsAppCache.set(d.empID, d.whatsapp); if (d.name) userNameCache.set(d.empID, d.name); }); renderRegionsFilterDropdown(); }
+    async function addRegion() { const nameAr = document.getElementById("newRegionNameAr").value.trim(); const nameEn = document.getElementById("newRegionNameEn").value.trim(); if (!nameAr && !nameEn) return; await db.collection("regions").add({ nameAr, nameEn }); document.getElementById("newRegionNameAr").value = ""; document.getElementById("newRegionNameEn").value = ""; showToast("تمت إضافة المنطقة"); renderRegionsList(); }
+    async function deleteRegion(regionId) { if (confirm("حذف المنطقة؟")) { await db.collection("regions").doc(regionId).delete(); showToast("تم الحذف"); renderRegionsList(); } }
+    async function renderRegionsList() { const container = document.getElementById("regionsList"); const snap = await db.collection("regions").get(); container.innerHTML = ""; snap.forEach(doc => { const d = doc.data(); const display = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr; container.innerHTML += `<span class="btn btn-sm" style="gap:5px;">${display} <i class="fas fa-trash" onclick="deleteRegion('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></span>`; }); }
+    async function renderRegionsFilterDropdown() { const select = document.getElementById("filterRegion"); const snap = await db.collection("regions").get(); select.innerHTML = `<option value="">جميع المناطق</option>`; snap.forEach(doc => { const d = doc.data(); const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr; select.innerHTML += `<option value="${name}">${name}</option>`; }); }
+    function openRegionModal(empId) { selectedEmployeeIdForRegion = empId; document.getElementById("regionModal").style.display = "flex"; populateRegionSelect(); }
+    async function populateRegionSelect() { const select = document.getElementById("regionSelect"); select.innerHTML = ""; const snap = await db.collection("regions").get(); snap.forEach(doc => { const d = doc.data(); const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr; select.innerHTML += `<option value="${name}">${name}</option>`; }); }
+    async function assignRegionToEmployee() { const region = document.getElementById("regionSelect").value; if (!selectedEmployeeIdForRegion || !region) return; await db.collection("users").doc(selectedEmployeeIdForRegion).update({ region }); closeRegionModal(); showToast("تم تحديث المنطقة"); loadAdminDataAndListeners(); }
+    function closeRegionModal() { document.getElementById("regionModal").style.display = "none"; selectedEmployeeIdForRegion = null; }
 
-        try {
-            await db.collection("settings").doc("adminAuth").update({ password: newPwd });
-            adminPassword = newPwd;
-            document.getElementById("currentPassword").value = "";
-            document.getElementById("newPassword").value = "";
-            document.getElementById("confirmNewPassword").value = "";
-            showToast(t('passwordChanged'), true);
-        } catch (e) {
-            showToast("فشل التحديث", false);
-        }
-    }
+    async function addEmployee() { const name = document.getElementById("newName").value.trim(); const empID = document.getElementById("newID").value.trim(); const whatsapp = document.getElementById("newWhatsApp").value.trim(); if (!name || !empID) return; await db.collection("users").add({ empID, name, role: "employee", whatsapp: whatsapp || "" }); document.getElementById("newName").value = ""; document.getElementById("newID").value = ""; document.getElementById("newWhatsApp").value = ""; showToast(t('msgSuccess')); }
+    async function deleteEmployee(docId) { if (confirm(t('confirmDelete'))) { await db.collection("users").doc(docId).delete(); showToast(t('msgSuccess')); } }
+    function openEditModal(empId, currentName, currentEmpID, currentWhatsApp = "") { editingEmployeeId = empId; document.getElementById("editEmpName").value = currentName; document.getElementById("editEmpID").value = currentEmpID; document.getElementById("editEmpWhatsApp").value = currentWhatsApp; document.getElementById("editModal").style.display = "flex"; }
+    function closeEditModal() { document.getElementById("editModal").style.display = "none"; editingEmployeeId = null; }
+    async function updateEmployee() { const newName = document.getElementById("editEmpName").value.trim(); const newID = document.getElementById("editEmpID").value.trim(); const newWhatsApp = document.getElementById("editEmpWhatsApp").value.trim(); if (!newName || !newID) return; if (newID !== currentUser?.empID) { const existing = await db.collection("users").where("empID", "==", newID).get(); if (!existing.empty && existing.docs[0].id !== editingEmployeeId) { showToast("الرقم الوظيفي موجود مسبقاً", false); return; } } await db.collection("users").doc(editingEmployeeId).update({ name: newName, empID: newID, whatsapp: newWhatsApp }); closeEditModal(); showToast(t('msgSuccess')); loadAdminDataAndListeners(); }
 
-    // =============== المناطق (دون تغيير) ===============
-    async function loadRegionsAndCache() {
-        userRegionCache.clear();
-        userWhatsAppCache.clear();
-        userNameCache.clear();
-        const usersSnap = await db.collection("users").get();
-        usersSnap.forEach(doc => {
-            const d = doc.data();
-            if (d.region) userRegionCache.set(d.empID, d.region);
-            if (d.whatsapp) userWhatsAppCache.set(d.empID, d.whatsapp);
-            if (d.name) userNameCache.set(d.empID, d.name);
-        });
-        renderRegionsFilterDropdown();
-    }
-
-    async function addRegion() {
-        const nameAr = document.getElementById("newRegionNameAr").value.trim();
-        const nameEn = document.getElementById("newRegionNameEn").value.trim();
-        if (!nameAr && !nameEn) return;
-        await db.collection("regions").add({ nameAr, nameEn });
-        document.getElementById("newRegionNameAr").value = "";
-        document.getElementById("newRegionNameEn").value = "";
-        showToast("تمت إضافة المنطقة");
-        renderRegionsList();
-    }
-
-    async function deleteRegion(regionId) {
-        if (confirm("حذف المنطقة؟")) {
-            await db.collection("regions").doc(regionId).delete();
-            showToast("تم الحذف");
-            renderRegionsList();
-        }
-    }
-
-    async function renderRegionsList() {
-        const container = document.getElementById("regionsList");
-        const snap = await db.collection("regions").get();
-        container.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            const display = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
-            container.innerHTML += `<span class="btn btn-sm" style="gap:5px;">${display} <i class="fas fa-trash" onclick="deleteRegion('${doc.id}')" style="color:var(--danger); cursor:pointer;"></i></span>`;
-        });
-    }
-
-    async function renderRegionsFilterDropdown() {
-        const select = document.getElementById("filterRegion");
-        const snap = await db.collection("regions").get();
-        select.innerHTML = `<option value="">جميع المناطق</option>`;
-        snap.forEach(doc => {
-            const d = doc.data();
-            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
-            select.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-
-    function openRegionModal(empId) {
-        selectedEmployeeIdForRegion = empId;
-        document.getElementById("regionModal").style.display = "flex";
-        populateRegionSelect();
-    }
-
-    async function populateRegionSelect() {
-        const select = document.getElementById("regionSelect");
-        select.innerHTML = "";
-        const snap = await db.collection("regions").get();
-        snap.forEach(doc => {
-            const d = doc.data();
-            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
-            select.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-
-    async function assignRegionToEmployee() {
-        const region = document.getElementById("regionSelect").value;
-        if (!selectedEmployeeIdForRegion || !region) return;
-        await db.collection("users").doc(selectedEmployeeIdForRegion).update({ region });
-        closeRegionModal();
-        showToast("تم تحديث المنطقة");
-        loadAdminDataAndListeners();
-    }
-
-    function closeRegionModal() {
-        document.getElementById("regionModal").style.display = "none";
-        selectedEmployeeIdForRegion = null;
-    }
-
-    // =============== إضافة موظف ===============
-    async function addEmployee() {
-        const name = document.getElementById("newName").value.trim();
-        const empID = document.getElementById("newID").value.trim();
-        const whatsapp = document.getElementById("newWhatsApp").value.trim();
-        if (!name || !empID) return;
-        await db.collection("users").add({ empID, name, role: "employee", whatsapp: whatsapp || "" });
-        document.getElementById("newName").value = ""; document.getElementById("newID").value = "";
-        document.getElementById("newWhatsApp").value = "";
-        showToast(t('msgSuccess'));
-    }
-
-    async function deleteEmployee(docId) {
-        if (confirm(t('confirmDelete'))) { await db.collection("users").doc(docId).delete(); showToast(t('msgSuccess')); }
-    }
-
-    // =============== تعديل الموظف ===============
-    function openEditModal(empId, currentName, currentEmpID, currentWhatsApp = "") {
-        editingEmployeeId = empId;
-        document.getElementById("editEmpName").value = currentName;
-        document.getElementById("editEmpID").value = currentEmpID;
-        document.getElementById("editEmpWhatsApp").value = currentWhatsApp;
-        document.getElementById("editModal").style.display = "flex";
-    }
-
-    function closeEditModal() {
-        document.getElementById("editModal").style.display = "none";
-        editingEmployeeId = null;
-    }
-
-    async function updateEmployee() {
-        const newName = document.getElementById("editEmpName").value.trim();
-        const newID = document.getElementById("editEmpID").value.trim();
-        const newWhatsApp = document.getElementById("editEmpWhatsApp").value.trim();
-        if (!newName || !newID) return;
-        if (newID !== currentUser?.empID) {
-            const existing = await db.collection("users").where("empID", "==", newID).get();
-            if (!existing.empty && existing.docs[0].id !== editingEmployeeId) {
-                showToast("الرقم الوظيفي موجود مسبقاً", false);
-                return;
-            }
-        }
-        await db.collection("users").doc(editingEmployeeId).update({ name: newName, empID: newID, whatsapp: newWhatsApp });
-        closeEditModal();
-        showToast(t('msgSuccess'));
-        loadAdminDataAndListeners();
-    }
-
-    // =============== عرض الموظفين ===============
     async function loadAdminDataAndListeners() {
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let html = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                const region = userRegionCache.get(d.empID) || d.region || "—";
-                const whatsapp = d.whatsapp || "";
-                html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${d.name}</strong>
-                        <span style="font-size:0.8rem;">${d.empID}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <small>المنطقة: ${region}</small>
-                        <div>
-                            <i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}','${whatsapp}')"></i>
-                            <i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i>
-                            <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i>
-                        </div>
-                    </div>
-                </div>`;
-            });
+            snap.forEach(doc => { const d = doc.data(); const region = userRegionCache.get(d.empID) || d.region || "—"; const whatsapp = d.whatsapp || ""; html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;"><div style="display:flex; justify-content:space-between;"><strong>${d.name}</strong><span style="font-size:0.8rem;">${d.empID}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><small>المنطقة: ${region}</small><div><i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}','${whatsapp}')"></i><i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i></div></div></div>`; });
             document.getElementById("staffList").innerHTML = html || "<div>لا يوجد موظفون</div>";
         });
 
@@ -1152,40 +861,9 @@
         updateAdminStats();
     }
 
-    function isLate(inTime) {
-        if (!inTime) return false;
-        const hour = inTime.getHours();
-        const minute = inTime.getMinutes();
-        return (hour > 10) || (hour === 10 && minute > 0);
-    }
-
-    function getEmployeeName(empID) {
-        return userNameCache.get(empID) || empID;
-    }
-
-    function groupRecords(records) {
-        const map = new Map();
-        records.forEach(r => {
-            const key = `${r.empID}_${r.dateOnly}`;
-            if (!map.has(key)) map.set(key, {
-                name: r.name || getEmployeeName(r.empID),
-                empID: r.empID,
-                date: r.dateOnly,
-                inTime: null, outTime: null, inImg: null, outImg: null,
-                location: null, rawIds: [], inTs: null, outTs: null,
-                region: userRegionCache.get(r.empID) || '—',
-                whatsapp: userWhatsAppCache.get(r.empID) || ''
-            });
-            const e = map.get(key);
-            e.rawIds.push(r.id);
-            if (r.type === 'in') {
-                e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime;
-            } else {
-                e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime;
-            }
-        });
-        return Array.from(map.values()).sort((a,b) => (b.date||'').localeCompare(a.date));
-    }
+    function isLate(inTime) { if (!inTime) return false; const hour = inTime.getHours(); const minute = inTime.getMinutes(); return (hour > 10) || (hour === 10 && minute > 0); }
+    function getEmployeeName(empID) { return userNameCache.get(empID) || empID; }
+    function groupRecords(records) { const map = new Map(); records.forEach(r => { const key = `${r.empID}_${r.dateOnly}`; if (!map.has(key)) map.set(key, { name: r.name || getEmployeeName(r.empID), empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null, region: userRegionCache.get(r.empID) || '—', whatsapp: userWhatsAppCache.get(r.empID) || '' }); const e = map.get(key); e.rawIds.push(r.id); if (r.type === 'in') { e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime; } else { e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime; } }); return Array.from(map.values()).sort((a,b) => (b.date||'').localeCompare(a.date)); }
 
     async function applyFiltersAndRenderLogs(page = 0) {
         paginationPage = page;
@@ -1202,8 +880,8 @@
         const tbody = document.getElementById("logsTable");
         tbody.innerHTML = "";
         paginated.forEach(g => {
-            const inStr = g.inTime ? g.inTime.toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : "—";
-            const outStr = g.outTime ? g.outTime.toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : "—";
+            const inStr = g.inTime ? g.inTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : "—";
+            const outStr = g.outTime ? g.outTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : "—";
             let dur = "—", cls = "row-absent", st = t('statusAbsent');
             if (g.inTime && g.outTime) {
                 const diff = g.outTs - g.inTs; const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
@@ -1218,25 +896,9 @@
             let actionsCell = '';
             if (cls === 'row-late' || cls === 'row-absent' || cls === 'row-incomplete') {
                 const key = `log_${g.empID}_${g.date}`;
-                const empData = {
-                    empID: g.empID, name: g.name, region: g.region, inTime: g.inTime,
-                    lateMinutes: g.inTime ? Math.round((g.inTime - new Date(g.inTime).setHours(10,0,0,0))/60000) : 0,
-                    type: cls === 'row-absent' ? 'absent' : 'late', date: g.date, whatsapp: g.whatsapp
-                };
+                const empData = { empID: g.empID, name: g.name, region: g.region, inTime: g.inTime, lateMinutes: g.inTime ? Math.round((g.inTime - new Date(g.inTime).setHours(10,0,0,0))/60000) : 0, type: cls === 'row-absent' ? 'absent' : 'late', date: g.date, whatsapp: g.whatsapp };
                 registerActionData(key, empData);
-                const detailsTxt = t('actionDetails');
-                const warningTxt = t('actionWarning');
-                const deductionTxt = t('actionDeduction');
-                actionsCell = `<td>
-                    <div class="action-menu">
-                        <button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button>
-                        <div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}">
-                            <button data-action="details">${detailsTxt}</button>
-                            <button data-action="warning">${warningTxt}</button>
-                            <button data-action="deduction">${deductionTxt}</button>
-                        </div>
-                    </div>
-                </td>`;
+                actionsCell = `<td><div class="action-menu"><button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button><div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}"><button data-action="details">${t('actionDetails')}</button><button data-action="warning">${t('actionWarning')}</button><button data-action="deduction">${t('actionDeduction')}</button></div></div></td>`;
             } else {
                 actionsCell = '<td></td>';
             }
@@ -1259,17 +921,8 @@
         document.getElementById("paginationContainer").innerHTML = pagHtml;
     }
 
-    window.deleteGroupRecords = async (ids) => {
-        if (confirm(t('confirmDelete'))) { for (const id of ids) if (id) await db.collection("attendance_raw").doc(id).delete(); applyFiltersAndRenderLogs(paginationPage); }
-    };
-
-    function resetFilters() {
-        document.getElementById("filterEmployeeName").value = "";
-        document.getElementById("filterRegion").value = "";
-        document.getElementById("filterDateFrom").value = "";
-        document.getElementById("filterDateTo").value = "";
-        applyFiltersAndRenderLogs(0);
-    }
+    window.deleteGroupRecords = async (ids) => { if (confirm(t('confirmDelete'))) { for (const id of ids) if (id) await db.collection("attendance_raw").doc(id).delete(); applyFiltersAndRenderLogs(paginationPage); } };
+    function resetFilters() { document.getElementById("filterEmployeeName").value = ""; document.getElementById("filterRegion").value = ""; document.getElementById("filterDateFrom").value = ""; document.getElementById("filterDateTo").value = ""; applyFiltersAndRenderLogs(0); }
 
     async function updateAdminStats() {
         const usersSnap = await db.collection("users").where("role", "==", "employee").get();
@@ -1323,189 +976,60 @@
         const employeeMap = new Map();
         usersSnap.forEach(doc => {
             const d = doc.data();
-            employeeMap.set(d.empID, {
-                id: doc.id,
-                name: d.name,
-                empID: d.empID,
-                region: userRegionCache.get(d.empID) || d.region || "—",
-                whatsapp: d.whatsapp || "",
-                hasIn: false,
-                inTime: null,
-                hasOut: false,
-                outTime: null
-            });
+            employeeMap.set(d.empID, { id: doc.id, name: d.name, empID: d.empID, region: userRegionCache.get(d.empID) || d.region || "—", whatsapp: d.whatsapp || "", hasIn: false, inTime: null, hasOut: false, outTime: null });
         });
-
         todaySnap.forEach(doc => {
             const d = doc.data();
             const empID = d.empID;
-            if (!employeeMap.has(empID)) {
-                employeeMap.set(empID, {
-                    id: null,
-                    name: d.name || getEmployeeName(empID),
-                    empID: empID,
-                    region: userRegionCache.get(empID) || d.region || "—",
-                    whatsapp: userWhatsAppCache.get(empID) || d.whatsapp || '',
-                    hasIn: false,
-                    inTime: null,
-                    hasOut: false,
-                    outTime: null
-                });
-            }
+            if (!employeeMap.has(empID)) { employeeMap.set(empID, { id: null, name: d.name || getEmployeeName(empID), empID: empID, region: userRegionCache.get(empID) || d.region || "—", whatsapp: userWhatsAppCache.get(empID) || d.whatsapp || '', hasIn: false, inTime: null, hasOut: false, outTime: null }); }
             const emp = employeeMap.get(empID);
-            if (d.type === 'in') {
-                emp.hasIn = true;
-                emp.inTime = d.timestamp?.toDate() || null;
-            } else if (d.type === 'out') {
-                emp.hasOut = true;
-                emp.outTime = d.timestamp?.toDate() || null;
-            }
+            if (d.type === 'in') { emp.hasIn = true; emp.inTime = d.timestamp?.toDate() || null; }
+            else if (d.type === 'out') { emp.hasOut = true; emp.outTime = d.timestamp?.toDate() || null; }
         });
 
         let filtered = [];
         let titleText = '';
-
-        if (type === 'total') {
-            filtered = Array.from(employeeMap.values());
-            titleText = t('modalTotal');
-        } else if (type === 'present') {
-            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn);
-            titleText = t('modalPresent');
-        } else if (type === 'out') {
-            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.hasOut);
-            titleText = t('modalOut');
-        } else if (type === 'late') {
-            filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.inTime && isLate(e.inTime));
-            titleText = t('modalLate');
-        } else if (type === 'absent') {
-            if (currentHour < workStartHour) {
-                filtered = [];
-            } else {
-                filtered = Array.from(employeeMap.values()).filter(e => !e.hasIn);
-            }
-            titleText = t('modalAbsent');
-        }
+        if (type === 'total') { filtered = Array.from(employeeMap.values()); titleText = t('modalTotal'); }
+        else if (type === 'present') { filtered = Array.from(employeeMap.values()).filter(e => e.hasIn); titleText = t('modalPresent'); }
+        else if (type === 'out') { filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.hasOut); titleText = t('modalOut'); }
+        else if (type === 'late') { filtered = Array.from(employeeMap.values()).filter(e => e.hasIn && e.inTime && isLate(e.inTime)); titleText = t('modalLate'); }
+        else if (type === 'absent') { if (currentHour < workStartHour) { filtered = []; } else { filtered = Array.from(employeeMap.values()).filter(e => !e.hasIn); } titleText = t('modalAbsent'); }
 
         title.innerText = titleText;
         let html = '';
-
-        if (filtered.length === 0) {
-            html = '<div style="text-align:center; color:var(--success);">لا توجد بيانات</div>';
-        } else {
+        if (filtered.length === 0) { html = '<div style="text-align:center; color:var(--success);">لا توجد بيانات</div>'; }
+        else {
             filtered.forEach(emp => {
-                html += '<div class="detail-item">';
-                html += '<div class="info">';
-                html += `<div class="emp-name">${emp.name}</div>`;
-                html += `<div>${emp.empID}</div>`;
-                html += `<div>المنطقة: ${emp.region}</div>`;
-
-                if (type === 'present' || type === 'late' || type === 'out') {
-                    const inTimeStr = emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—';
-                    html += `<div>وقت الحضور: ${inTimeStr}</div>`;
-                }
-                if (type === 'late') {
-                    const lateMinutes = emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0)) / 60000) : 0;
-                    html += `<div style="color:var(--info);">متأخر ${lateMinutes} دقيقة</div>`;
-                }
-                if (type === 'absent') {
-                    html += `<div>التاريخ: ${today}</div>`;
-                    html += `<div style="color:var(--danger);">الحالة: غائب</div>`;
-                }
-                if (type === 'out') {
-                    const outTimeStr = emp.outTime ? emp.outTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—';
-                    html += `<div>وقت الانصراف: ${outTimeStr}</div>`;
-                    if (emp.inTime && emp.outTime) {
-                        const hours = Math.floor((emp.outTime - emp.inTime) / 3600000);
-                        const mins = Math.floor(((emp.outTime - emp.inTime) % 3600000) / 60000);
-                        html += `<div>ساعات العمل: ${hours}:${String(mins).padStart(2,'0')}</div>`;
-                    }
-                }
-
+                html += '<div class="detail-item"><div class="info">';
+                html += `<div class="emp-name">${emp.name}</div><div>${emp.empID}</div><div>المنطقة: ${emp.region}</div>`;
+                if (type === 'present' || type === 'late' || type === 'out') { const inTimeStr = emp.inTime ? emp.inTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—'; html += `<div>وقت الحضور: ${inTimeStr}</div>`; }
+                if (type === 'late') { const lateMinutes = emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0; html += `<div style="color:var(--info);">متأخر ${lateMinutes} دقيقة</div>`; }
+                if (type === 'absent') { html += `<div>التاريخ: ${today}</div><div style="color:var(--danger);">الحالة: غائب</div>`; }
+                if (type === 'out') { const outTimeStr = emp.outTime ? emp.outTime.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' }) : '—'; html += `<div>وقت الانصراف: ${outTimeStr}</div>`; if (emp.inTime && emp.outTime) { const hours = Math.floor((emp.outTime - emp.inTime) / 3600000); const mins = Math.floor(((emp.outTime - emp.inTime) % 3600000) / 60000); html += `<div>ساعات العمل: ${hours}:${String(mins).padStart(2,'0')}</div>`; } }
                 html += '</div>';
-
                 if (type === 'late' || type === 'absent') {
                     html += '<div style="width:100%;">';
                     const inputId = type === 'late' ? `late_msg_${emp.empID}` : `msg_${emp.empID}`;
                     html += `<input type="text" id="${inputId}" placeholder="${t('reasonLabel')}" class="detail-input">`;
                     const key = `modal_${emp.empID}_${today}`;
-                    const empData = {
-                        empID: emp.empID,
-                        name: emp.name,
-                        region: emp.region,
-                        inTime: emp.inTime ? emp.inTime.toISOString() : null,
-                        lateMinutes: type === 'late' ? (emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0) : 0,
-                        type: type,
-                        date: today,
-                        whatsapp: emp.whatsapp
-                    };
+                    const empData = { empID: emp.empID, name: emp.name, region: emp.region, inTime: emp.inTime ? emp.inTime.toISOString() : null, lateMinutes: type === 'late' ? (emp.inTime ? Math.round((emp.inTime - new Date(emp.inTime).setHours(10,0,0,0))/60000) : 0) : 0, type: type, date: today, whatsapp: emp.whatsapp };
                     registerActionData(key, empData);
-                    const detailsTxt = t('actionDetails');
-                    const warningTxt = t('actionWarning');
-                    const deductionTxt = t('actionDeduction');
-                    html += `<div class="action-menu" style="margin-top:8px;">
-                        <button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button>
-                        <div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}">
-                            <button data-action="details">${detailsTxt}</button>
-                            <button data-action="warning">${warningTxt}</button>
-                            <button data-action="deduction">${deductionTxt}</button>
-                        </div>
-                    </div>`;
+                    html += `<div class="action-menu" style="margin-top:8px;"><button class="btn btn-sm action-trigger" data-action-key="${key}"><i class="fas fa-cog"></i> ${t('actionsBtn')}</button><div class="action-menu-content" id="actionMenu_${key}" data-action-key="${key}"><button data-action="details">${t('actionDetails')}</button><button data-action="warning">${t('actionWarning')}</button><button data-action="deduction">${t('actionDeduction')}</button></div></div>`;
                     html += '</div>';
                 }
-
                 html += '</div>';
             });
         }
-
         body.innerHTML = html;
     }
 
-    function exportToCSV() {
-        const table = document.getElementById("attendanceTable");
-        let csv = []; table.querySelectorAll("tr").forEach(row => { let r = []; row.querySelectorAll("th,td").forEach(c => r.push(`"${c.innerText.replace(/\n/g," ").trim()}"`)); csv.push(r.join(",")); });
-        const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `Attendance_${new Date().toISOString().slice(0,10)}.csv`; a.click();
-    }
+    function exportToCSV() { const table = document.getElementById("attendanceTable"); let csv = []; table.querySelectorAll("tr").forEach(row => { let r = []; row.querySelectorAll("th,td").forEach(c => r.push(`"${c.innerText.replace(/\n/g," ").trim()}"`)); csv.push(r.join(",")); }); const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `Attendance_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
+    function exportToExcel() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("attendanceTable")), "Attendance"); XLSX.writeFile(wb, `Attendance_${new Date().toISOString().slice(0,10)}.xlsx`); }
+    function exportToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF({ orientation: 'landscape' }); doc.autoTable({ html: '#attendanceTable', theme: 'grid', styles: { halign: 'center' } }); doc.save(`Attendance_${new Date().toISOString().slice(0,10)}.pdf`); }
 
-    function exportToExcel() {
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("attendanceTable")), "Attendance");
-        XLSX.writeFile(wb, `Attendance_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    function exportToPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape' });
-        doc.autoTable({ html: '#attendanceTable', theme: 'grid', styles: { halign: 'center' } });
-        doc.save(`Attendance_${new Date().toISOString().slice(0,10)}.pdf`);
-    }
-
-    async function loadBackgroundVideo() {
-        try {
-            const doc = await db.collection("settings").doc("background").get();
-            if (doc.exists && doc.data().videoUrl) {
-                document.getElementById("loginVideoBackground").src = doc.data().videoUrl;
-            }
-        } catch (e) {}
-    }
+    async function loadBackgroundVideo() { try { const doc = await db.collection("settings").doc("background").get(); if (doc.exists && doc.data().videoUrl) { document.getElementById("loginVideoBackground").src = doc.data().videoUrl; } } catch (e) {} }
     loadBackgroundVideo();
-
-    async function uploadVideo() {
-        const file = document.getElementById("videoFileInput").files[0];
-        if (!file) return;
-        const status = document.getElementById("videoUploadStatus");
-        status.innerHTML = '<div class="loading-spinner"></div> جاري الرفع...';
-        const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", "zahrani_private"); fd.append("resource_type", "video");
-        try {
-            const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/video/upload", { method: "POST", body: fd });
-            const data = await res.json();
-            if (data.secure_url) {
-                document.getElementById("loginVideoBackground").src = data.secure_url;
-                await db.collection("settings").doc("background").set({ videoUrl: data.secure_url }, { merge: true });
-                status.innerHTML = "✅ تم الرفع والحفظ";
-            }
-        } catch(e) { status.innerHTML = "فشل الرفع"; }
-    }
+    async function uploadVideo() { const file = document.getElementById("videoFileInput").files[0]; if (!file) return; const status = document.getElementById("videoUploadStatus"); status.innerHTML = '<div class="loading-spinner"></div> جاري الرفع...'; const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", "zahrani_private"); fd.append("resource_type", "video"); try { const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/video/upload", { method: "POST", body: fd }); const data = await res.json(); if (data.secure_url) { document.getElementById("loginVideoBackground").src = data.secure_url; await db.collection("settings").doc("background").set({ videoUrl: data.secure_url }, { merge: true }); status.innerHTML = "✅ تم الرفع والحفظ"; } } catch(e) { status.innerHTML = "فشل الرفع"; } }
     document.getElementById("videoUploadArea").addEventListener("click", ()=> document.getElementById("videoFileInput").click());
 
     function toggleLanguage() {
@@ -1537,8 +1061,7 @@
         document.getElementById("navSettingsText").innerText = t('navSettings');
         document.getElementById("navLogoutText").innerText = t('navLogout');
         document.getElementById("detailsModal").style.display = "none";
-        renderRegionsList();
-        renderRegionsFilterDropdown();
+        renderRegionsList(); renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
     }
 

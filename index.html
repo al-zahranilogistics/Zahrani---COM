@@ -865,6 +865,58 @@
     function getEmployeeName(empID) { return userNameCache.get(empID) || empID; }
     function groupRecords(records) { const map = new Map(); records.forEach(r => { const key = `${r.empID}_${r.dateOnly}`; if (!map.has(key)) map.set(key, { name: r.name || getEmployeeName(r.empID), empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null, region: userRegionCache.get(r.empID) || '—', whatsapp: userWhatsAppCache.get(r.empID) || '' }); const e = map.get(key); e.rawIds.push(r.id); if (r.type === 'in') { e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime; } else { e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime; } }); return Array.from(map.values()).sort((a,b) => (b.date||'').localeCompare(a.date)); }
 
+    // دالة توليد شريط التنقل المحسّن
+    function renderPagination(currentPage, totalPages) {
+        if (totalPages <= 1) return '';
+        let html = '';
+        const maxVisible = 5; // أقصى عدد للأزرار المرئية
+        const half = Math.floor(maxVisible / 2);
+        let startPage, endPage;
+
+        if (totalPages <= maxVisible + 2) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            if (currentPage <= half + 1) {
+                startPage = 1;
+                endPage = maxVisible;
+            } else if (currentPage + half >= totalPages) {
+                startPage = totalPages - maxVisible + 1;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - half;
+                endPage = currentPage + half;
+            }
+        }
+
+        // زر الأول
+        html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(0)" ${currentPage === 0 ? 'disabled' : ''} title="الصفحة الأولى">« الأولى</button>`;
+        // زر السابق
+        html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>‹ السابق</button>`;
+
+        if (startPage > 1) {
+            html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(0)">1</button>`;
+            if (startPage > 2) html += `<span class="btn btn-sm" style="pointer-events:none;">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const isActive = (i - 1) === currentPage;
+            html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${i - 1})" ${isActive ? 'style="background:var(--primary);color:black;"' : ''}>${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="btn btn-sm" style="pointer-events:none;">...</span>`;
+            html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${totalPages - 1})">${totalPages}</button>`;
+        }
+
+        // زر التالي
+        html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>التالي ›</button>`;
+        // زر الأخير
+        html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${totalPages - 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''} title="الصفحة الأخيرة">الأخيرة »</button>`;
+
+        return html;
+    }
+
     async function applyFiltersAndRenderLogs(page = 0) {
         paginationPage = page;
         let recs = [...allAttendanceRecords];
@@ -915,9 +967,9 @@
             tbody.appendChild(row);
         });
         if (paginated.length === 0) tbody.innerHTML = `<tr><td colspan="12">${currentLang === 'ar' ? 'لا توجد سجلات' : 'No records'}</td></tr>`;
+
         const pages = Math.ceil(grouped.length / pageSize);
-        let pagHtml = '';
-        for (let i=0; i<pages; i++) pagHtml += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${i})" ${i===page?'style="background:var(--primary);color:black;"':''}>${i+1}</button>`;
+        const pagHtml = renderPagination(page, pages);
         document.getElementById("paginationContainer").innerHTML = pagHtml;
     }
 

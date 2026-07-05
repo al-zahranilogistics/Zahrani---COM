@@ -300,6 +300,63 @@
             font-size: 1.1rem;
             font-family: inherit;
         }
+
+        /* إضافات لنظام التنبيه */
+        #alertOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: alertFlash 0.5s infinite alternate;
+        }
+        @keyframes alertFlash {
+            from { background-color: rgba(255,0,0,0.7); }
+            to { background-color: rgba(139,0,0,0.9); }
+        }
+
+        /* أنماط تنبيهات المدير */
+        .alert-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+        }
+        .alert-type-normal { border-right: 5px solid var(--primary); }
+        .alert-type-urgent { border-right: 5px solid var(--warning); }
+        .alert-type-emergency { border-right: 5px solid var(--danger); }
+        body[dir="ltr"] .alert-type-normal, 
+        body[dir="ltr"] .alert-type-urgent, 
+        body[dir="ltr"] .alert-type-emergency { border-right: none; border-left: 5px solid; }
+
+        /* مودال تنبيه الموظف */
+        #employeeAlertModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        #employeeAlertModal .alert-popup {
+            background: white;
+            color: #0f172a;
+            border-radius: 28px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+        .alert-popup h2 { margin-bottom: 15px; }
+        .alert-popup p { margin: 10px 0; }
+        .alert-popup .meta { font-size: 0.85rem; color: #475569; }
     </style>
 </head>
 <body dir="rtl">
@@ -370,6 +427,7 @@
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
             <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
             <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
+            <div class="nav-item" data-page="alerts" onclick="showPage('alerts')"><span id="navAlertsText">التنبيهات</span></div>
             <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span id="navSettingsText">الإعدادات</span></div>
             <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
             <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
@@ -446,6 +504,38 @@
                 </div>
             </div>
 
+            <!-- صفحة التنبيهات (جديدة) -->
+            <div id="alertsPage" class="page-section">
+                <div class="glass" style="margin-bottom:25px;">
+                    <h3><i class="fas fa-bell"></i> <span id="sendAlertHeader">إرسال تنبيه</span></h3>
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <input type="text" id="alertTitle" placeholder="عنوان التنبيه" style="padding:12px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+                        <textarea id="alertMessage" rows="3" placeholder="نص الرسالة" style="padding:12px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;"></textarea>
+                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                            <label><input type="radio" name="alertType" value="normal" checked> <span id="alertTypeNormal">عادي</span></label>
+                            <label><input type="radio" name="alertType" value="urgent"> <span id="alertTypeUrgent">عاجل</span></label>
+                            <label><input type="radio" name="alertType" value="emergency"> <span id="alertTypeEmergency">طوارئ</span></label>
+                        </div>
+                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                            <label><input type="radio" name="alertTarget" value="all" checked onchange="toggleAlertRegionSelect()"> <span id="targetAll">جميع الموظفين</span></label>
+                            <label><input type="radio" name="alertTarget" value="region" onchange="toggleAlertRegionSelect()"> <span id="targetByRegion">حسب المنطقة</span></label>
+                        </div>
+                        <select id="alertRegionSelect" style="display:none; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+                            <!-- تملأ بالمناطق -->
+                        </select>
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn btn-primary" onclick="sendAlert()"><i class="fas fa-paper-plane"></i> <span id="sendAlertBtn">إرسال التنبيه</span></button>
+                            <button class="btn btn-danger" onclick="cancelCurrentAlert()"><span id="cancelAlertBtn">إلغاء التنبيه الحالي</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass">
+                    <h3><i class="fas fa-history"></i> <span id="alertLogHeader">سجل التنبيهات</span></h3>
+                    <div id="alertLogContainer"></div>
+                </div>
+            </div>
+
             <!-- صفحة الإعدادات -->
             <div id="settingsPage" class="page-section">
                 <div class="glass" style="padding:30px;">
@@ -494,6 +584,65 @@
         <h3 style="color:var(--primary); margin-bottom:20px;" id="detailsModalTitle"></h3>
         <div id="detailsModalBody"></div>
         <button class="btn" onclick="document.getElementById('detailsModal').style.display='none'" style="margin-top:20px;">إغلاق</button>
+    </div>
+</div>
+
+<!-- مودال تصدير Excel -->
+<div id="exportModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="text-align:right;">
+        <h3 style="color:var(--primary); margin-bottom:20px;">تصدير Excel مخصص</h3>
+        <div style="margin-bottom:15px;">
+            <label style="margin-left:15px;"><input type="radio" name="exportFilterType" value="specific" checked onchange="toggleExportDateFields()"> تاريخ محدد</label>
+            <label style="margin-left:15px;"><input type="radio" name="exportFilterType" value="range" onchange="toggleExportDateFields()"> فترة من تاريخ إلى تاريخ</label>
+            <label><input type="radio" name="exportFilterType" value="month" onchange="toggleExportDateFields()"> شهر كامل</label>
+        </div>
+        <div id="exportDateSpecific" style="margin-bottom:15px;">
+            <input type="date" id="exportDate" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        </div>
+        <div id="exportDateRange" style="display:none; margin-bottom:15px; gap:10px;">
+            <input type="date" id="exportDateFrom" placeholder="من" style="width:48%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+            <input type="date" id="exportDateTo" placeholder="إلى" style="width:48%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        </div>
+        <div id="exportDateMonth" style="display:none; margin-bottom:15px;">
+            <input type="month" id="exportMonth" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+        </div>
+        <div style="margin-bottom:20px;">
+            <label>المنطقة:</label>
+            <select id="exportRegionFilter" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+                <option value="">جميع المناطق</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn btn-primary" onclick="generateFilteredExcel()">تصدير Excel</button>
+            <button class="btn" onclick="document.getElementById('exportModal').style.display='none'">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- طبقة التنبيه للساعة 6 مساءً -->
+<div id="alertOverlay" style="display:none;">
+    <div style="background:white; padding:30px; border-radius:20px; text-align:center; box-shadow:0 0 30px red;">
+        <i class="fas fa-exclamation-triangle" style="font-size:4rem; color:red;"></i>
+        <h2 style="color:red; margin:10px 0;">تنبيه! لم يتم تسجيل الانصراف</h2>
+        <p style="color:black;">يرجى تسجيل الانصراف فوراً</p>
+    </div>
+</div>
+
+<!-- مودال تنبيه الموظف (جديد) -->
+<div id="employeeAlertModal">
+    <div class="alert-popup">
+        <i class="fas fa-bell" style="font-size:3rem; margin-bottom:15px;" id="alertIcon"></i>
+        <h2 id="alertPopupTitle"></h2>
+        <p id="alertPopupMessage"></p>
+        <div class="meta">
+            <span id="alertPopupTime"></span> - <span id="alertPopupSender"></span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="dismissEmployeeAlert()">
+            <span id="alertDismissBtn">تمت القراءة</span>
+        </button>
+        <button class="btn btn-danger" style="margin-top:10px;" onclick="stopEmergencyAlert()" id="stopEmergencyBtn" style="display:none;">
+            إيقاف التنبيه
+        </button>
     </div>
 </div>
 
@@ -681,7 +830,7 @@
             passwordEmpty: "All fields are required"
         }
     };
-    const t = (key) => translations[currentLang][key] || key;
+    const t = (key) => translations[currentLang]?.[key] || key;
 
     function showToast(msg, ok = true) {
         const el = document.createElement("div"); el.className = "toast"; el.innerText = msg;
@@ -820,13 +969,14 @@
             startLiveClock();
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
+            startEmployeeAlertListener(); // إضافة جديدة
         }
         document.getElementById("loginPassword").value = "";
         document.getElementById("empID").value = "";
         if (currentLang === 'en') toggleLanguage();
     }
 
-    function logoutToLogin() { stopCamera(); stopLocationTracking(); stopWorkTimer(); currentUser = null; document.getElementById("loginSection").style.display = "block"; document.getElementById("employeePanel").style.display = "none"; document.getElementById("adminPanel").style.display = "none"; document.getElementById("thankyouPanel").style.display = "none"; document.getElementById("empID").value = ""; document.getElementById("loginPassword").value = ""; document.getElementById("detailsModal").style.display = "none"; }
+    function logoutToLogin() { stopCamera(); stopLocationTracking(); stopWorkTimer(); currentUser = null; document.getElementById("loginSection").style.display = "block"; document.getElementById("employeePanel").style.display = "none"; document.getElementById("adminPanel").style.display = "none"; document.getElementById("thankyouPanel").style.display = "none"; document.getElementById("empID").value = ""; document.getElementById("loginPassword").value = ""; document.getElementById("detailsModal").style.display = "none"; stopEmployeeAlertListener(); }
 
     async function changeAdminPassword() { const currentPwd = document.getElementById("currentPassword").value.trim(); const newPwd = document.getElementById("newPassword").value.trim(); const confirmPwd = document.getElementById("confirmNewPassword").value.trim(); if (!currentPwd || !newPwd || !confirmPwd) { showToast(t('passwordEmpty'), false); return; } if (currentPwd !== adminPassword) { showToast(t('passwordWrong'), false); return; } if (newPwd !== confirmPwd) { showToast(t('passwordMismatch'), false); return; } try { await db.collection("settings").doc("adminAuth").update({ password: newPwd }); adminPassword = newPwd; document.getElementById("currentPassword").value = ""; document.getElementById("newPassword").value = ""; document.getElementById("confirmNewPassword").value = ""; showToast(t('passwordChanged'), true); } catch (e) { showToast("فشل التحديث", false); } }
 
@@ -1110,6 +1260,7 @@
         document.getElementById("navEmployeesText").innerText = t('navEmployees');
         document.getElementById("navRegionsText").innerText = t('navRegions');
         document.getElementById("navLogsText").innerText = t('navLogs');
+        document.getElementById("navAlertsText").innerText = t('navAlerts');
         document.getElementById("navSettingsText").innerText = t('navSettings');
         document.getElementById("navLogoutText").innerText = t('navLogout');
         document.getElementById("detailsModal").style.display = "none";
@@ -1132,6 +1283,284 @@
     window.showPage = showPage;
     window.openStatDetails = openStatDetails;
     window.changeAdminPassword = changeAdminPassword;
+
+    // ================== الإضافات الجديدة لنظام التنبيهات ==================
+    // إضافة مفاتيح الترجمة الجديدة
+    if (!translations.ar.navAlerts) {
+        translations.ar.navAlerts = "التنبيهات";
+        translations.en.navAlerts = "Alerts";
+        translations.ar.sendAlertHeader = "إرسال تنبيه";
+        translations.en.sendAlertHeader = "Send Alert";
+        translations.ar.alertTitlePlaceholder = "عنوان التنبيه";
+        translations.en.alertTitlePlaceholder = "Alert Title";
+        translations.ar.alertMessagePlaceholder = "نص الرسالة";
+        translations.en.alertMessagePlaceholder = "Message";
+        translations.ar.alertTypeNormal = "عادي";
+        translations.en.alertTypeNormal = "Normal";
+        translations.ar.alertTypeUrgent = "عاجل";
+        translations.en.alertTypeUrgent = "Urgent";
+        translations.ar.alertTypeEmergency = "طوارئ";
+        translations.en.alertTypeEmergency = "Emergency";
+        translations.ar.targetAll = "جميع الموظفين";
+        translations.en.targetAll = "All Employees";
+        translations.ar.targetByRegion = "حسب المنطقة";
+        translations.en.targetByRegion = "By Region";
+        translations.ar.sendAlertBtn = "إرسال التنبيه";
+        translations.en.sendAlertBtn = "Send Alert";
+        translations.ar.cancelAlertBtn = "إلغاء التنبيه الحالي";
+        translations.en.cancelAlertBtn = "Cancel Active Alert";
+        translations.ar.alertLogHeader = "سجل التنبيهات";
+        translations.en.alertLogHeader = "Alert History";
+        translations.ar.alertDismiss = "تمت القراءة";
+        translations.en.alertDismiss = "Read";
+        translations.ar.alertStop = "إيقاف التنبيه";
+        translations.en.alertStop = "Stop Alert";
+    }
+
+    let currentEmployeeAlertId = null;
+    let alertSoundCtx = null;
+    let alertSoundTimer = null;
+    let employeeAlertListenerUnsubscribe = null;
+
+    function playAlertSoundByType(type) {
+        try {
+            if (alertSoundCtx) alertSoundCtx.close();
+            alertSoundCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const now = alertSoundCtx.currentTime;
+            if (type === 'normal') {
+                const osc = alertSoundCtx.createOscillator();
+                const gain = alertSoundCtx.createGain();
+                osc.type = 'sine'; osc.frequency.value = 660;
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain); gain.connect(alertSoundCtx.destination);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'urgent') {
+                for (let i = 0; i < 3; i++) {
+                    const osc = alertSoundCtx.createOscillator();
+                    const gain = alertSoundCtx.createGain();
+                    osc.type = 'square'; osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.5, now + i * 0.5);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.5 + 0.3);
+                    osc.connect(gain); gain.connect(alertSoundCtx.destination);
+                    osc.start(now + i * 0.5); osc.stop(now + i * 0.5 + 0.3);
+                }
+            } else if (type === 'emergency') {
+                const playBeep = () => {
+                    const osc = alertSoundCtx.createOscillator();
+                    const gain = alertSoundCtx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.value = 1000;
+                    gain.gain.setValueAtTime(0.7, alertSoundCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, alertSoundCtx.currentTime + 0.4);
+                    osc.connect(gain); gain.connect(alertSoundCtx.destination);
+                    osc.start(); osc.stop(alertSoundCtx.currentTime + 0.4);
+                };
+                playBeep();
+                alertSoundTimer = setInterval(playBeep, 1000);
+            }
+        } catch (e) { console.warn("Sound error", e); }
+    }
+
+    function stopAlertSound() {
+        if (alertSoundTimer) { clearInterval(alertSoundTimer); alertSoundTimer = null; }
+        if (alertSoundCtx) { alertSoundCtx.close(); alertSoundCtx = null; }
+    }
+
+    function showEmployeeAlert(alertData) {
+        currentEmployeeAlertId = alertData.id;
+        const modal = document.getElementById("employeeAlertModal");
+        document.getElementById("alertPopupTitle").innerText = alertData.title;
+        document.getElementById("alertPopupMessage").innerText = alertData.message;
+        document.getElementById("alertPopupTime").innerText = new Date(alertData.createdAt?.toDate()).toLocaleString();
+        document.getElementById("alertPopupSender").innerText = alertData.createdBy || "الإدارة";
+        const icon = document.getElementById("alertIcon");
+        icon.className = "fas fa-bell";
+        if (alertData.type === 'urgent') icon.style.color = "var(--warning)";
+        else if (alertData.type === 'emergency') icon.style.color = "var(--danger)";
+        else icon.style.color = "var(--primary)";
+        document.getElementById("alertDismissBtn").style.display = "";
+        const stopBtn = document.getElementById("stopEmergencyBtn");
+        if (alertData.type === 'emergency') {
+            stopBtn.style.display = "inline-block";
+        } else {
+            stopBtn.style.display = "none";
+        }
+        modal.style.display = "flex";
+        playAlertSoundByType(alertData.type);
+    }
+
+    function dismissEmployeeAlert() {
+        stopAlertSound();
+        document.getElementById("employeeAlertModal").style.display = "none";
+        if (currentEmployeeAlertId && currentUser) {
+            db.collection("alerts").doc(currentEmployeeAlertId).collection("reads").doc(currentUser.empID).set({
+                empID: currentUser.empID,
+                readAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(() => {});
+        }
+        currentEmployeeAlertId = null;
+    }
+
+    function stopEmergencyAlert() {
+        stopAlertSound();
+        document.getElementById("employeeAlertModal").style.display = "none";
+        if (currentEmployeeAlertId && currentUser) {
+            db.collection("alerts").doc(currentEmployeeAlertId).collection("reads").doc(currentUser.empID).set({
+                empID: currentUser.empID,
+                readAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(() => {});
+        }
+        currentEmployeeAlertId = null;
+    }
+
+    function startEmployeeAlertListener() {
+        if (!currentUser || currentUser.role !== 'employee') return;
+        stopEmployeeAlertListener();
+        const userRegion = userRegionCache.get(currentUser.empID) || '';
+        employeeAlertListenerUnsubscribe = db.collection("alerts")
+            .where("status", "==", "active")
+            .onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === "added") {
+                        const alertData = change.doc.data();
+                        alertData.id = change.doc.id;
+                        if (alertData.target === 'all' || (alertData.target === 'region' && alertData.region === userRegion)) {
+                            showEmployeeAlert(alertData);
+                        }
+                    }
+                });
+            });
+    }
+
+    function stopEmployeeAlertListener() {
+        if (employeeAlertListenerUnsubscribe) {
+            employeeAlertListenerUnsubscribe();
+            employeeAlertListenerUnsubscribe = null;
+        }
+        stopAlertSound();
+        document.getElementById("employeeAlertModal").style.display = "none";
+    }
+
+    // دوال المدير
+    function toggleAlertRegionSelect() {
+        const targetVal = document.querySelector('input[name="alertTarget"]:checked').value;
+        document.getElementById("alertRegionSelect").style.display = targetVal === 'region' ? 'block' : 'none';
+    }
+
+    async function populateAlertRegionSelect() {
+        const select = document.getElementById("alertRegionSelect");
+        select.innerHTML = '';
+        const snap = await db.collection("regions").get();
+        snap.forEach(doc => {
+            const d = doc.data();
+            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    }
+
+    async function sendAlert() {
+        const title = document.getElementById("alertTitle").value.trim();
+        const message = document.getElementById("alertMessage").value.trim();
+        if (!title || !message) { showToast("املأ العنوان والرسالة", false); return; }
+        const type = document.querySelector('input[name="alertType"]:checked').value;
+        const target = document.querySelector('input[name="alertTarget"]:checked').value;
+        let region = null;
+        if (target === 'region') {
+            region = document.getElementById("alertRegionSelect").value;
+            if (!region) { showToast("اختر المنطقة", false); return; }
+        }
+        try {
+            await db.collection("alerts").add({
+                title,
+                message,
+                type,
+                target,
+                region: region || null,
+                createdBy: currentUser.name || "المدير",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: "active"
+            });
+            showToast("تم إرسال التنبيه", true);
+            document.getElementById("alertTitle").value = "";
+            document.getElementById("alertMessage").value = "";
+        } catch (e) { showToast("فشل الإرسال", false); }
+    }
+
+    async function cancelCurrentAlert() {
+        if (!confirm("هل تريد إنهاء التنبيه النشط الحالي؟")) return;
+        const snap = await db.collection("alerts").where("status", "==", "active").get();
+        const batch = db.batch();
+        snap.forEach(doc => batch.update(doc.ref, { status: "ended" }));
+        await batch.commit();
+        showToast("تم إنهاء التنبيه النشط");
+    }
+
+    function loadAlertLog() {
+        db.collection("alerts").orderBy("createdAt", "desc").onSnapshot(async snap => {
+            const container = document.getElementById("alertLogContainer");
+            let html = '';
+            for (const doc of snap.docs) {
+                const d = doc.data();
+                const readsSnap = await db.collection("alerts").doc(doc.id).collection("reads").get();
+                const readersCount = readsSnap.size;
+                const typeClass = `alert-type-${d.type}`;
+                html += `
+                <div class="alert-card ${typeClass}">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${d.title}</strong>
+                        <span>${new Date(d.createdAt?.toDate()).toLocaleString()}</span>
+                    </div>
+                    <p>${d.message}</p>
+                    <div style="font-size:0.85rem;">
+                        النوع: ${d.type} | المنطقة: ${d.region || 'الكل'} | الحالة: ${d.status}
+                        | قرأه: ${readersCount}
+                    </div>
+                    ${d.status === 'active' ? `<button class="btn btn-sm btn-danger" onclick="endAlertById('${doc.id}')">إنهاء</button>` : ''}
+                </div>`;
+            }
+            container.innerHTML = html || "<div>لا توجد تنبيهات سابقة</div>";
+        });
+    }
+
+    async function endAlertById(alertId) {
+        await db.collection("alerts").doc(alertId).update({ status: "ended" });
+    }
+
+    // تهيئة إضافية عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+        populateAlertRegionSelect();
+        // ربط زر Excel
+        const btn = document.querySelector('.sidebar .btn-primary.btn-sm');
+        if (btn && btn.innerText.includes('Excel')) {
+            btn.onclick = showExportModal;
+        }
+        startAlertMonitoring();
+        // تحميل سجل التنبيهات عند دخول المدير (نستمع للتغيير عبر showPage)
+    });
+
+    // ربط عرض صفحة التنبيهات بتحميل السجل
+    const originalShowPage = showPage;
+    window.showPage = function(page) {
+        originalShowPage(page);
+        if (page === 'alerts') {
+            populateAlertRegionSelect();
+            loadAlertLog();
+        }
+    };
+
+    // ربط تسجيل خروج الموظف بإيقاف المستمع
+    const originalLogoutToLogin = logoutToLogin;
+    window.logoutToLogin = function() {
+        stopEmployeeAlertListener();
+        originalLogoutToLogin();
+    };
+
+    // إتاحة الدوال الجديدة للنافذة
+    window.sendAlert = sendAlert;
+    window.cancelCurrentAlert = cancelCurrentAlert;
+    window.dismissEmployeeAlert = dismissEmployeeAlert;
+    window.stopEmergencyAlert = stopEmergencyAlert;
+    window.toggleAlertRegionSelect = toggleAlertRegionSelect;
 </script>
 </body>
 </html>

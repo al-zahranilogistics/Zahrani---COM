@@ -301,37 +301,6 @@
             font-family: inherit;
         }
     </style>
-
-    <!-- أنماط الميزات الجديدة -->
-    <style>
-        .flash-bg {
-            animation: flashAlert 0.5s infinite;
-        }
-        @keyframes flashAlert {
-            0% { background-color: #ff0000; }
-            50% { background-color: #cc0000; }
-            100% { background-color: #ff0000; }
-        }
-        #topUrgentBar {
-            position: fixed; top:0; left:0; right:0; background: red; color: white; text-align: center; padding: 12px; font-weight: bold; z-index: 5000; display:none; font-size: 1.2rem;
-        }
-        .urgent-modal-content {
-            background: #b91c1c !important;
-            border: 3px solid #ffff00 !important;
-            color: white;
-            animation: pulse 0.8s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        #notificationModal .modal-content {
-            background: var(--card);
-        }
-        .notif-urgent { border-left: 8px solid #f59e0b; }
-        .notif-emergency { border-left: 8px solid #ef4444; animation: flashAlert 0.5s infinite; }
-    </style>
 </head>
 <body dir="rtl">
 
@@ -401,10 +370,9 @@
             <div class="nav-item" data-page="employees" onclick="showPage('employees')"><span id="navEmployeesText">الموظفين</span></div>
             <div class="nav-item" data-page="regions" onclick="showPage('regions')"><span id="navRegionsText">المناطق</span></div>
             <div class="nav-item" data-page="logs" onclick="showPage('logs')"><span id="navLogsText">السجل</span></div>
-            <div class="nav-item" data-page="notifications" onclick="showPage('notifications')"><span id="navNotificationsText">التنبيهات</span></div>
             <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span id="navSettingsText">الإعدادات</span></div>
             <div class="nav-item" onclick="logoutToLogin()"><span id="navLogoutText">تسجيل خروج</span></div>
-            <button class="btn btn-primary btn-sm" onclick="openExportModal()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="exportToExcel()" style="margin-top:auto;"><i class="fas fa-file-excel"></i> Excel</button>
         </div>
 
         <div class="content">
@@ -478,29 +446,6 @@
                 </div>
             </div>
 
-            <!-- صفحة التنبيهات (المدير) -->
-            <div id="notificationsPage" class="page-section">
-                <div class="glass" style="padding:20px;">
-                    <h3><i class="fas fa-bell"></i> إرسال تنبيه للموظفين</h3>
-                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-                        <input type="text" id="notifTitle" placeholder="عنوان التنبيه" style="padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                        <textarea id="notifMessage" placeholder="نص الرسالة" rows="3" style="padding:12px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; resize:vertical;"></textarea>
-                        <select id="notifType" style="padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                            <option value="normal">عادي</option>
-                            <option value="urgent">عاجل</option>
-                            <option value="emergency">طوارئ</option>
-                        </select>
-                        <select id="notifTarget" style="padding:12px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                            <option value="all">جميع الموظفين</option>
-                        </select>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn btn-primary" onclick="sendAdminNotification()"><i class="fas fa-paper-plane"></i> إرسال</button>
-                            <button class="btn" onclick="clearNotificationForm()">إلغاء</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- صفحة الإعدادات -->
             <div id="settingsPage" class="page-section">
                 <div class="glass" style="padding:30px;">
@@ -549,75 +494,6 @@
         <h3 style="color:var(--primary); margin-bottom:20px;" id="detailsModalTitle"></h3>
         <div id="detailsModalBody"></div>
         <button class="btn" onclick="document.getElementById('detailsModal').style.display='none'" style="margin-top:20px;">إغلاق</button>
-    </div>
-</div>
-
-<!-- مودال تصدير Excel المتقدم (الميزة الجديدة) -->
-<div id="exportModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content" style="max-width:550px; text-align:right;">
-        <h3 style="color:var(--primary); margin-bottom:20px;"><i class="fas fa-file-excel"></i> تصدير Excel - فلترة متقدمة</h3>
-        <div style="display:flex; flex-direction:column; gap:14px;">
-            <div>
-                <label style="display:block; margin-bottom:4px;">تاريخ محدد</label>
-                <input type="date" id="exportSpecificDate" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:4px;">من تاريخ</label>
-                    <input type="date" id="exportDateFrom" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                </div>
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:4px;">إلى تاريخ</label>
-                    <input type="date" id="exportDateTo" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                </div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:4px;">شهر كامل</label>
-                    <select id="exportMonth" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                        <option value="">اختر الشهر</option>
-                        <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option><option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option><option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option><option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
-                    </select>
-                </div>
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:4px;">السنة</label>
-                    <input type="number" id="exportYear" min="2020" max="2030" value="2026" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                </div>
-            </div>
-            <div>
-                <label style="display:block; margin-bottom:4px;">فلتر المنطقة</label>
-                <select id="exportRegion" style="width:100%; padding:10px; border-radius:30px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                    <option value="">جميع المناطق</option>
-                </select>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn btn-primary" onclick="executeExport()"><i class="fas fa-download"></i> تصدير</button>
-                <button class="btn" onclick="document.getElementById('exportModal').style.display='none'">إلغاء</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- شريط التنبيه العاجل (أعلى الصفحة) -->
-<div id="topUrgentBar">
-    <i class="fas fa-exclamation-triangle"></i> <span id="topUrgentMsg">يجب تسجيل الانصراف فوراً!</span>
-</div>
-
-<!-- مودال التنبيه التلقائي عند عدم الانصراف -->
-<div id="urgentCheckoutModal" class="modal-overlay" style="display:none; background: rgba(180,0,0,0.85);">
-    <div class="modal-content urgent-modal-content" style="max-width:450px;">
-        <h2 style="color:#fff;"><i class="fas fa-clock"></i> تنبيه انصراف!</h2>
-        <p style="margin:20px 0; font-size:1.2rem;">لم تقم بتسجيل الانصراف حتى الآن. يرجى تسجيل الانصراف فوراً.</p>
-        <div style="font-size:3rem;">⏰</div>
-    </div>
-</div>
-
-<!-- مودال عرض التنبيهات للموظف (من المدير) -->
-<div id="notificationModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content" id="notificationModalContent" style="max-width:500px; text-align:right;">
-        <h3 id="notificationTitle" style="color:var(--primary);"></h3>
-        <p id="notificationBody" style="margin:15px 0;"></p>
-        <div id="notificationActions" style="display:flex; gap:10px; justify-content:center;"></div>
     </div>
 </div>
 
@@ -870,7 +746,6 @@
         if (hasIn && hasOut) {
             status.innerHTML = `<span style="background:var(--success); padding:8px 20px; border-radius:20px;">✅ تم الحضور والانصراف</span>`;
             inBtn.disabled = outBtn.disabled = true; stopWorkTimer();
-            stopUrgentAlert();
         } else if (hasIn) {
             status.innerHTML = `<span style="background:var(--warning); color:#000; padding:8px 20px; border-radius:20px;">🟢 تم الحضور، بإمكانك الانصراف</span>`;
             inBtn.disabled = true; outBtn.disabled = !(cameraEnabled && locationEnabled);
@@ -879,7 +754,6 @@
             status.innerHTML = `<span style="background:rgba(255,255,255,0.1); padding:8px 20px; border-radius:20px;">⏳ لم تسجل حضوراً بعد</span>`;
             inBtn.disabled = !(cameraEnabled && locationEnabled); outBtn.disabled = true; stopWorkTimer();
         }
-        checkLateCheckoutAlert(hasIn, hasOut);
     }
 
     async function takeAction(type) {
@@ -946,30 +820,13 @@
             startLiveClock();
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
-            startNotificationListener();
-            startAutoAlertMonitor();
         }
         document.getElementById("loginPassword").value = "";
         document.getElementById("empID").value = "";
         if (currentLang === 'en') toggleLanguage();
     }
 
-    function logoutToLogin() { 
-        stopCamera(); stopLocationTracking(); stopWorkTimer(); 
-        stopUrgentAlert(); stopAlertMonitoring(); stopNotificationListener();
-        currentUser = null; 
-        document.getElementById("loginSection").style.display = "block"; 
-        document.getElementById("employeePanel").style.display = "none"; 
-        document.getElementById("adminPanel").style.display = "none"; 
-        document.getElementById("thankyouPanel").style.display = "none"; 
-        document.getElementById("empID").value = ""; 
-        document.getElementById("loginPassword").value = ""; 
-        document.getElementById("detailsModal").style.display = "none"; 
-        document.getElementById("urgentCheckoutModal").style.display = "none";
-        document.getElementById("topUrgentBar").style.display = "none";
-        document.getElementById("notificationModal").style.display = "none";
-        stopEmergencySound();
-    }
+    function logoutToLogin() { stopCamera(); stopLocationTracking(); stopWorkTimer(); currentUser = null; document.getElementById("loginSection").style.display = "block"; document.getElementById("employeePanel").style.display = "none"; document.getElementById("adminPanel").style.display = "none"; document.getElementById("thankyouPanel").style.display = "none"; document.getElementById("empID").value = ""; document.getElementById("loginPassword").value = ""; document.getElementById("detailsModal").style.display = "none"; }
 
     async function changeAdminPassword() { const currentPwd = document.getElementById("currentPassword").value.trim(); const newPwd = document.getElementById("newPassword").value.trim(); const confirmPwd = document.getElementById("confirmNewPassword").value.trim(); if (!currentPwd || !newPwd || !confirmPwd) { showToast(t('passwordEmpty'), false); return; } if (currentPwd !== adminPassword) { showToast(t('passwordWrong'), false); return; } if (newPwd !== confirmPwd) { showToast(t('passwordMismatch'), false); return; } try { await db.collection("settings").doc("adminAuth").update({ password: newPwd }); adminPassword = newPwd; document.getElementById("currentPassword").value = ""; document.getElementById("newPassword").value = ""; document.getElementById("confirmNewPassword").value = ""; showToast(t('passwordChanged'), true); } catch (e) { showToast("فشل التحديث", false); } }
 
@@ -1008,10 +865,11 @@
     function getEmployeeName(empID) { return userNameCache.get(empID) || empID; }
     function groupRecords(records) { const map = new Map(); records.forEach(r => { const key = `${r.empID}_${r.dateOnly}`; if (!map.has(key)) map.set(key, { name: r.name || getEmployeeName(r.empID), empID: r.empID, date: r.dateOnly, inTime: null, outTime: null, inImg: null, outImg: null, location: null, rawIds: [], inTs: null, outTs: null, region: userRegionCache.get(r.empID) || '—', whatsapp: userWhatsAppCache.get(r.empID) || '' }); const e = map.get(key); e.rawIds.push(r.id); if (r.type === 'in') { e.inTime = r.timestamp?.toDate(); e.inImg = r.img; e.location = r.location; e.inTs = e.inTime; } else { e.outTime = r.timestamp?.toDate(); e.outImg = r.img; e.outTs = e.outTime; } }); return Array.from(map.values()).sort((a,b) => (b.date||'').localeCompare(a.date)); }
 
+    // دالة توليد شريط التنقل المحسّن
     function renderPagination(currentPage, totalPages) {
         if (totalPages <= 1) return '';
         let html = '';
-        const maxVisible = 5;
+        const maxVisible = 5; // أقصى عدد للأزرار المرئية
         const half = Math.floor(maxVisible / 2);
         let startPage, endPage;
 
@@ -1031,7 +889,9 @@
             }
         }
 
+        // زر الأول
         html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(0)" ${currentPage === 0 ? 'disabled' : ''} title="الصفحة الأولى">« الأولى</button>`;
+        // زر السابق
         html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>‹ السابق</button>`;
 
         if (startPage > 1) {
@@ -1049,7 +909,9 @@
             html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${totalPages - 1})">${totalPages}</button>`;
         }
 
+        // زر التالي
         html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>التالي ›</button>`;
+        // زر الأخير
         html += `<button class="btn btn-sm" onclick="applyFiltersAndRenderLogs(${totalPages - 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''} title="الصفحة الأخيرة">الأخيرة »</button>`;
 
         return html;
@@ -1253,7 +1115,6 @@
         document.getElementById("detailsModal").style.display = "none";
         renderRegionsList(); renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
-        updateNewLangElements();
     }
 
     window.smartLogin = smartLogin; window.toggleLanguage = toggleLanguage;
@@ -1272,399 +1133,5 @@
     window.openStatDetails = openStatDetails;
     window.changeAdminPassword = changeAdminPassword;
 </script>
-
-<!-- كود الميزات الجديدة -->
-<script>
-    // ========== الميزة 1: تصدير Excel متقدم ==========
-    async function openExportModal() {
-        document.getElementById("exportModal").style.display = "flex";
-        const regionSelect = document.getElementById("exportRegion");
-        regionSelect.innerHTML = `<option value="">جميع المناطق</option>`;
-        const snap = await db.collection("regions").get();
-        snap.forEach(doc => {
-            const d = doc.data();
-            const name = currentLang === 'ar' ? d.nameAr || d.nameEn : d.nameEn || d.nameAr;
-            regionSelect.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-
-    function executeExport() {
-        const specificDate = document.getElementById("exportSpecificDate").value;
-        const dateFrom = document.getElementById("exportDateFrom").value;
-        const dateTo = document.getElementById("exportDateTo").value;
-        const month = document.getElementById("exportMonth").value;
-        const year = document.getElementById("exportYear").value;
-        const region = document.getElementById("exportRegion").value;
-
-        let fromDate = null, toDate = null;
-
-        if (specificDate) {
-            fromDate = specificDate;
-            toDate = specificDate;
-        } else {
-            if (dateFrom) fromDate = dateFrom;
-            if (dateTo) toDate = dateTo;
-        }
-
-        if (month && year) {
-            const m = parseInt(month);
-            const y = parseInt(year);
-            const firstDay = new Date(y, m-1, 1);
-            const lastDay = new Date(y, m, 0);
-            fromDate = firstDay.toISOString().split('T')[0];
-            toDate = lastDay.toISOString().split('T')[0];
-        } else if (year && !month && !specificDate && !dateFrom && !dateTo) {
-            fromDate = `${year}-01-01`;
-            toDate = `${year}-12-31`;
-        }
-
-        let recs = [...allAttendanceRecords];
-
-        if (fromDate) recs = recs.filter(r => r.dateOnly >= fromDate);
-        if (toDate) recs = recs.filter(r => r.dateOnly <= toDate);
-        if (region) recs = recs.filter(r => (userRegionCache.get(r.empID) || '—') === region);
-
-        if (recs.length === 0) {
-            showToast("لا توجد سجلات مطابقة للفلتر", false);
-            return;
-        }
-
-        const grouped = groupRecords(recs);
-        const excelData = [];
-        excelData.push(["الموظف", "الرقم الوظيفي", "المنطقة", "التاريخ", "وقت الحضور", "وقت الانصراف", "مدة العمل", "الحالة", "صورة الحضور", "صورة الانصراف", "الموقع"]);
-
-        grouped.forEach(g => {
-            const inStr = g.inTime ? g.inTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : "";
-            const outStr = g.outTime ? g.outTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : "";
-            let dur = "", status = "غائب";
-            if (g.inTime && g.outTime) {
-                const diff = g.outTs - g.inTs;
-                const h = Math.floor(diff/3600000);
-                const m = Math.floor((diff%3600000)/60000);
-                dur = `${h}:${String(m).padStart(2,'0')}`;
-                status = isLate(g.inTime) ? "متأخر" : "مكتمل";
-            } else if (g.inTime) {
-                status = isLate(g.inTime) ? "متأخر (بانتظار الانصراف)" : "بانتظار الانصراف";
-            }
-            excelData.push([
-                g.name, g.empID, g.region, g.date,
-                inStr, outStr, dur, status,
-                g.inImg || "", g.outImg || "",
-                g.location || ""
-            ]);
-        });
-
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-        XLSX.utils.book_append_sheet(wb, ws, "سجل الحضور");
-        XLSX.writeFile(wb, `تصدير_الحضور_${new Date().toISOString().slice(0,10)}.xlsx`);
-        document.getElementById("exportModal").style.display = "none";
-        showToast("تم تصدير الملف بنجاح");
-    }
-
-    // ========== الميزة 2: التنبيه التلقائي عند عدم تسجيل الانصراف ==========
-    let urgentAlertActive = false;
-    let alertAudioCtx = null;
-    let alertInterval = null;
-    let urgentCheckoutUnsubscribe = null;
-
-    function startAlertSound(repeat = true) {
-        try {
-            if (alertAudioCtx) stopAlertSound();
-            alertAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const playBeep = () => {
-                if (!alertAudioCtx) return;
-                const osc = alertAudioCtx.createOscillator();
-                const gain = alertAudioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(alertAudioCtx.destination);
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(800, alertAudioCtx.currentTime);
-                gain.gain.setValueAtTime(0.5, alertAudioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, alertAudioCtx.currentTime + 0.5);
-                osc.start();
-                osc.stop(alertAudioCtx.currentTime + 0.5);
-            };
-            playBeep();
-            if (repeat) {
-                alertInterval = setInterval(playBeep, 1000);
-            }
-        } catch (e) {}
-    }
-
-    function stopAlertSound() {
-        if (alertInterval) { clearInterval(alertInterval); alertInterval = null; }
-        if (alertAudioCtx) { alertAudioCtx.close().catch(()=>{}); alertAudioCtx = null; }
-    }
-
-    function startUrgentCheckoutAlert() {
-        if (urgentAlertActive) return;
-        urgentAlertActive = true;
-        document.getElementById("urgentCheckoutModal").style.display = "flex";
-        document.getElementById("topUrgentBar").style.display = "block";
-        startAlertSound(true);
-        const today = new Date().toISOString().split('T')[0];
-        urgentCheckoutUnsubscribe = db.collection("attendance_raw")
-            .where("empID", "==", currentUser.empID)
-            .where("dateOnly", "==", today)
-            .where("type", "==", "out")
-            .onSnapshot(snap => {
-                if (!snap.empty) {
-                    stopUrgentAlert();
-                }
-            });
-    }
-
-    function stopUrgentAlert() {
-        if (!urgentAlertActive) return;
-        urgentAlertActive = false;
-        document.getElementById("urgentCheckoutModal").style.display = "none";
-        document.getElementById("topUrgentBar").style.display = "none";
-        stopAlertSound();
-        if (urgentCheckoutUnsubscribe) {
-            urgentCheckoutUnsubscribe();
-            urgentCheckoutUnsubscribe = null;
-        }
-    }
-
-    function checkLateCheckoutAlert(hasIn, hasOut) {
-        if (!currentUser || currentUser.role !== 'employee') return;
-        const now = new Date();
-        const hour = now.getHours();
-        if (hour >= 18 && hasIn && !hasOut) {
-            startUrgentCheckoutAlert();
-        } else {
-            stopUrgentAlert();
-        }
-    }
-
-    let autoAlertMonitorInterval = null;
-    function startAutoAlertMonitor() {
-        if (autoAlertMonitorInterval) clearInterval(autoAlertMonitorInterval);
-        autoAlertMonitorInterval = setInterval(async () => {
-            if (!currentUser || currentUser.role !== 'employee') return;
-            const today = new Date().toISOString().split('T')[0];
-            const snap = await db.collection("attendance_raw")
-                .where("empID", "==", currentUser.empID)
-                .where("dateOnly", "==", today).get();
-            let hasIn = false, hasOut = false;
-            snap.forEach(doc => {
-                if (doc.data().type === 'in') hasIn = true;
-                if (doc.data().type === 'out') hasOut = true;
-            });
-            checkLateCheckoutAlert(hasIn, hasOut);
-        }, 60000);
-    }
-    function stopAlertMonitoring() {
-        if (autoAlertMonitorInterval) { clearInterval(autoAlertMonitorInterval); autoAlertMonitorInterval = null; }
-    }
-
-    // ========== الميزة 3: التنبيهات اليدوية من المدير ==========
-    async function sendAdminNotification() {
-        const title = document.getElementById("notifTitle").value.trim();
-        const message = document.getElementById("notifMessage").value.trim();
-        const type = document.getElementById("notifType").value;
-        const target = document.getElementById("notifTarget").value;
-        if (!title || !message) {
-            showToast("يرجى ملء العنوان والرسالة", false);
-            return;
-        }
-        const payload = {
-            title,
-            message,
-            type,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            sentBy: currentUser.name || "المدير",
-            acknowledgedBy: []
-        };
-        if (target === "all") {
-            payload.targetAll = true;
-            payload.targetRegions = [];
-        }
-        await db.collection("notifications").add(payload);
-        showToast("تم إرسال التنبيه");
-        clearNotificationForm();
-    }
-
-    function clearNotificationForm() {
-        document.getElementById("notifTitle").value = "";
-        document.getElementById("notifMessage").value = "";
-        document.getElementById("notifType").value = "normal";
-        document.getElementById("notifTarget").value = "all";
-    }
-
-    let notificationUnsubscribe = null;
-    let activeEmergencyNotif = null;
-
-    function startNotificationListener() {
-        if (notificationUnsubscribe) notificationUnsubscribe();
-        notificationUnsubscribe = db.collection("notifications")
-            .orderBy("timestamp", "desc")
-            .onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === "added") {
-                        const notif = change.doc.data();
-                        const docId = change.doc.id;
-                        if (shouldShowNotification(notif)) {
-                            showNotificationToEmployee(notif, docId);
-                        }
-                    }
-                });
-            });
-    }
-
-    function stopNotificationListener() {
-        if (notificationUnsubscribe) { notificationUnsubscribe(); notificationUnsubscribe = null; }
-    }
-
-    function shouldShowNotification(notif) {
-        if (!currentUser || currentUser.role !== 'employee') return false;
-        if (notif.targetAll) return true;
-        const userRegion = userRegionCache.get(currentUser.empID);
-        if (notif.targetRegions && Array.isArray(notif.targetRegions) && notif.targetRegions.includes(userRegion)) return true;
-        return false;
-    }
-
-    function showNotificationToEmployee(notif, docId) {
-        if (notif.type === "emergency") {
-            activeEmergencyNotif = { notif, docId };
-        }
-        displayNotificationModal(notif, docId);
-        // إرسال إشعار للخدمة العاملة في الخلفية
-        if (document.visibilityState === "hidden" && navigator.serviceWorker && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-                type: "SHOW_NOTIFICATION",
-                title: notif.title,
-                body: notif.message,
-                url: window.location.origin
-            });
-        }
-    }
-
-    function displayNotificationModal(notif, docId) {
-        const modal = document.getElementById("notificationModal");
-        const content = document.getElementById("notificationModalContent");
-        const titleEl = document.getElementById("notificationTitle");
-        const bodyEl = document.getElementById("notificationBody");
-        const actionsDiv = document.getElementById("notificationActions");
-
-        titleEl.innerText = notif.title;
-        bodyEl.innerText = notif.message;
-
-        content.classList.remove("notif-urgent", "notif-emergency");
-        if (notif.type === "urgent") content.classList.add("notif-urgent");
-        if (notif.type === "emergency") content.classList.add("notif-emergency");
-
-        actionsDiv.innerHTML = "";
-        if (notif.type === "emergency") {
-            actionsDiv.innerHTML = `<button class="btn btn-danger" onclick="acknowledgeNotification('${docId}')">تأكيد القراءة وإيقاف التنبيه</button>`;
-            startEmergencySound();
-        } else {
-            actionsDiv.innerHTML = `<button class="btn btn-primary" onclick="closeNotificationModal()">حسناً</button>`;
-            playNotificationSound(notif.type);
-        }
-
-        modal.style.display = "flex";
-    }
-
-    function closeNotificationModal() {
-        document.getElementById("notificationModal").style.display = "none";
-        stopEmergencySound();
-    }
-
-    async function acknowledgeNotification(docId) {
-        if (!currentUser) return;
-        await db.collection("notifications").doc(docId).update({
-            acknowledgedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.empID)
-        });
-        closeNotificationModal();
-        activeEmergencyNotif = null;
-    }
-
-    let emergencySoundActive = false;
-    let emergencyAudioCtx = null;
-    let emergencyInterval = null;
-
-    function startEmergencySound() {
-        if (emergencySoundActive) return;
-        emergencySoundActive = true;
-        try {
-            emergencyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const playSiren = () => {
-                if (!emergencyAudioCtx) return;
-                const now = emergencyAudioCtx.currentTime;
-                const osc = emergencyAudioCtx.createOscillator();
-                const gain = emergencyAudioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(emergencyAudioCtx.destination);
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.linearRampToValueAtTime(900, now + 0.5);
-                gain.gain.setValueAtTime(0.4, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
-            };
-            playSiren();
-            emergencyInterval = setInterval(playSiren, 800);
-        } catch (e) {}
-    }
-
-    function stopEmergencySound() {
-        if (emergencyInterval) { clearInterval(emergencyInterval); emergencyInterval = null; }
-        if (emergencyAudioCtx) { emergencyAudioCtx.close().catch(()=>{}); emergencyAudioCtx = null; }
-        emergencySoundActive = false;
-    }
-
-    function playNotificationSound(type) {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            if (type === 'urgent') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(1000, ctx.currentTime);
-                gain.gain.setValueAtTime(0.4, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-            } else {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, ctx.currentTime);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-            }
-            osc.start();
-            osc.stop(ctx.currentTime + 0.6);
-        } catch (e) {}
-    }
-
-    function updateNewLangElements() {
-        const isAr = currentLang === 'ar';
-        document.getElementById("navNotificationsText").innerText = isAr ? "التنبيهات" : "Notifications";
-    }
-
-    // Service Worker Registration for background notifications
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, function(err) {
-                console.log('ServiceWorker registration failed: ', err);
-            });
-        });
-    }
-
-    window.openExportModal = openExportModal;
-    window.executeExport = executeExport;
-    window.sendAdminNotification = sendAdminNotification;
-    window.clearNotificationForm = clearNotificationForm;
-    window.closeNotificationModal = closeNotificationModal;
-    window.acknowledgeNotification = acknowledgeNotification;
-    window.startUrgentCheckoutAlert = startUrgentCheckoutAlert;
-    window.stopUrgentAlert = stopUrgentAlert;
-    window.updateNewLangElements = updateNewLangElements;
-</script>
-
 </body>
 </html>

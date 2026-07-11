@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>نظام الحضور والانصراف - Alzahrani ERP</title>
-    <!-- السكربتات والأنماط الأصلية (دون تغيير) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- الأنماط الأصلية كاملة (دون تغيير) -->
+
     <style>
+        /* ========== الأنماط الأصلية كاملة ========== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --primary: #14b8a6;
@@ -1087,7 +1087,7 @@
             startLiveClock();
             await requestCameraPermission(); requestLocationPermission();
             await checkTodayStatusAndUpdateUI();
-            addProfileButton(); // إضافة زر الملف الشخصي
+            addProfileButton();
         }
         document.getElementById("loginPassword").value = "";
         document.getElementById("empID").value = "";
@@ -1292,17 +1292,109 @@
         const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet(excelData); XLSX.utils.book_append_sheet(wb, ws, t('logsHeader')); XLSX.writeFile(wb, `Attendance_Export_${new Date().toISOString().slice(0,10)}.xlsx`); document.getElementById("exportModal").style.display = "none"; showToast(t('msgSuccess'));
     }
 
-    // ========== طلبات الموظفين للمدير (بدون تغيير) ==========
+    // ========== طلبات الموظفين للمدير ==========
     async function renderEmployeeRequests() {
         const container = document.getElementById("requestsList"); container.innerHTML = "جاري التحميل...";
         const snap = await db.collection("employee_requests").orderBy("timestamp", "desc").get();
         let html = ''; if (snap.empty) { container.innerHTML = `<p>${t('noRequests')}</p>`; return; }
-        for (const doc of snap.docs) { const req = doc.data(); const reqId = doc.id; const empName = userNameCache.get(req.empID) || req.empID; const typeText = req.type === "sick_leave" ? t('sickLeave') : t('remoteWork'); let statusText = '', statusColor = ''; if (req.status === 'pending') { statusText = t('pending'); statusColor = 'var(--warning)'; } else if (req.status === 'approved') { statusText = t('approved'); statusColor = 'var(--success)'; } else if (req.status === 'rejected') { statusText = t('rejected'); statusColor = 'var(--danger)'; } html += `<div class="glass" style="padding:15px; margin-bottom:10px;"><strong>${typeText}</strong> - ${empName} <span style="color:${statusColor}">(${statusText})</span><p>${req.title || req.reason || ''}</p>${req.requestDate ? `<p>التاريخ: ${req.requestDate}</p>` : ''}${req.fileUrl ? `<a href="${req.fileUrl}" target="_blank" style="color:var(--primary);">عرض المرفق</a>` : ''}<div style="margin-top:10px;">`; if (req.status === 'pending') { html += `<input type="text" id="reqNote_${reqId}" placeholder="ملاحظة" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; width:60%; margin-right:10px;">`; html += `<button class="btn btn-sm btn-primary" onclick="approveRequest('${reqId}')">${t('approve')}</button>`; html += `<button class="btn btn-sm btn-danger" onclick="rejectRequest('${reqId}')" style="margin-right:5px;">${t('reject')}</button>`; } html += `</div></div>`; }
+        for (const doc of snap.docs) { 
+            const req = doc.data(); const reqId = doc.id; 
+            const empName = userNameCache.get(req.empID) || req.empID; 
+            const typeText = req.type === "sick_leave" ? t('sickLeave') : t('remoteWork'); 
+            let statusText = '', statusColor = ''; 
+            if (req.status === 'pending') { statusText = t('pending'); statusColor = 'var(--warning)'; } 
+            else if (req.status === 'approved') { statusText = t('approved'); statusColor = 'var(--success)'; } 
+            else { statusText = t('rejected'); statusColor = 'var(--danger)'; } 
+            html += `<div class="glass" style="padding:15px; margin-bottom:10px;">
+                <strong>${typeText}</strong> - ${empName} <span style="color:${statusColor}">(${statusText})</span>
+                <p>${req.title || req.reason || ''}</p>
+                ${req.requestDate ? `<p>التاريخ: ${req.requestDate}</p>` : ''}
+                ${req.fileUrl ? `<a href="${req.fileUrl}" target="_blank" style="color:var(--primary);">عرض المرفق</a>` : ''}
+                <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px; align-items:center;">
+                    ${req.status === 'pending' ? `<input type="text" id="reqNote_${reqId}" placeholder="ملاحظة" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; width:150px;">` : ''}
+                    <button class="btn btn-sm btn-primary" onclick="viewRequestAsAdmin('${reqId}')"><i class="fas fa-eye"></i> عرض</button>
+                    <button class="btn btn-sm" style="background:var(--info);" onclick="openAdminEditRequest('${reqId}')"><i class="fas fa-edit"></i> تعديل</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteAdminRequest('${reqId}')"><i class="fas fa-trash"></i> حذف</button>
+                    ${req.status === 'pending' ? `
+                        <button class="btn btn-sm btn-primary" onclick="approveRequest('${reqId}')">${t('approve')}</button>
+                        <button class="btn btn-sm btn-danger" onclick="rejectRequest('${reqId}')">${t('reject')}</button>
+                    ` : ''}
+                </div>
+            </div>`; 
+        }
         container.innerHTML = html;
         enhanceAdminRequestsDisplay();
     }
     async function approveRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "approved", adminNote: note }); showToast(t('approved')); renderEmployeeRequests(); }
     async function rejectRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "rejected", adminNote: note }); showToast(t('rejected')); renderEmployeeRequests(); }
+
+    // دوال المدير الجديدة
+    async function viewRequestAsAdmin(reqId) {
+        const doc = await db.collection("employee_requests").doc(reqId).get();
+        if (!doc.exists) return;
+        const req = doc.data();
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3600';
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+        <div class="modal-content" style="max-width:500px; text-align:right;">
+            <h3 style="color:var(--primary);">تفاصيل الطلب</h3>
+            <div style="text-align:right; margin:15px 0;">
+                <p><strong>الموظف:</strong> ${userNameCache.get(req.empID) || req.empID} (${req.empID})</p>
+                <p><strong>النوع:</strong> ${req.type === 'sick_leave' ? 'مرضي' : 'عمل خارج المكتب'}</p>
+                <p><strong>التاريخ:</strong> ${req.requestDate || '—'}</p>
+                <p><strong>السبب:</strong> ${req.title || req.reason || '—'}</p>
+                <p><strong>الحالة:</strong> ${req.status === 'pending' ? 'قيد المراجعة' : (req.status === 'approved' ? 'تمت الموافقة' : 'مرفوض')}</p>
+                <p><strong>ملاحظات المدير:</strong> ${req.adminNote || '—'}</p>
+            </div>
+            <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()">إغلاق</button>
+        </div>`;
+        document.body.appendChild(modal);
+    }
+
+    async function openAdminEditRequest(reqId) {
+        const doc = await db.collection("employee_requests").doc(reqId).get();
+        if (!doc.exists) return;
+        const req = doc.data();
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3600';
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+        <div class="modal-content" style="max-width:600px; text-align:right;" onclick="event.stopPropagation()">
+            <h3 style="color:var(--primary);">تعديل الطلب</h3>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                <label>الحالة</label>
+                <select id="adminEditStatus_${reqId}" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+                    <option value="pending" ${req.status==='pending'?'selected':''}>قيد المراجعة</option>
+                    <option value="approved" ${req.status==='approved'?'selected':''}>تمت الموافقة</option>
+                    <option value="rejected" ${req.status==='rejected'?'selected':''}>مرفوض</option>
+                </select>
+                <label>ملاحظات المدير</label>
+                <textarea id="adminEditNote_${reqId}" rows="2" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">${req.adminNote || ''}</textarea>
+                <button class="btn btn-primary" onclick="saveAdminEdit('${reqId}')">حفظ</button>
+                <button class="btn" onclick="this.closest('.modal-overlay').remove()">إلغاء</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+    }
+
+    async function saveAdminEdit(reqId) {
+        const status = document.getElementById(`adminEditStatus_${reqId}`).value;
+        const note = document.getElementById(`adminEditNote_${reqId}`).value;
+        await db.collection("employee_requests").doc(reqId).update({ status, adminNote: note });
+        showToast('تم التحديث');
+        document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+        renderEmployeeRequests();
+    }
+
+    async function deleteAdminRequest(reqId) {
+        if (!confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) return;
+        await db.collection("employee_requests").doc(reqId).delete();
+        showToast('تم الحذف');
+        renderEmployeeRequests();
+    }
 
     function enhanceAdminRequestsDisplay() {
         setTimeout(() => {
@@ -1312,7 +1404,6 @@
             fileLinks.forEach(a => {
                 const url = a.href;
                 const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(url);
-                const isPDF = /\.pdf/i.test(url);
                 if (isImage) {
                     a.setAttribute('data-attachment', 'true');
                     a.setAttribute('data-type', 'image');
@@ -1320,12 +1411,6 @@
                     a.style.color = "var(--primary)";
                     a.style.cursor = "pointer";
                     a.removeAttribute('target');
-                } else if (isPDF) {
-                    a.setAttribute('data-attachment', 'true');
-                    a.setAttribute('data-type', 'pdf');
-                    a.innerHTML = '<i class="fas fa-file-pdf"></i> تنزيل المرفق';
-                    a.setAttribute('download', '');
-                    a.style.color = "var(--warning)";
                 }
             });
         }, 500);
@@ -1336,21 +1421,16 @@
         if (link) {
             e.preventDefault();
             const url = link.getAttribute('href');
-            const type = link.getAttribute('data-type');
-            if (type === 'image') {
-                if (!document.getElementById("attachmentLightbox")) {
-                    const lb = document.createElement('div');
-                    lb.id = "attachmentLightbox";
-                    lb.className = "lightbox";
-                    lb.style.zIndex = "5000";
-                    lb.innerHTML = '<span class="lightbox-close" onclick="this.parentNode.style.display=\'none\'">&times;</span><img id="attachmentLightboxImg" src="" style="max-width:90%; max-height:80%;">';
-                    document.body.appendChild(lb);
-                }
-                document.getElementById("attachmentLightboxImg").src = url;
-                document.getElementById("attachmentLightbox").style.display = 'flex';
-            } else {
-                window.open(url, '_blank');
+            if (!document.getElementById("attachmentLightbox")) {
+                const lb = document.createElement('div');
+                lb.id = "attachmentLightbox";
+                lb.className = "lightbox";
+                lb.style.zIndex = "5000";
+                lb.innerHTML = '<span class="lightbox-close" onclick="this.parentNode.style.display=\'none\'">&times;</span><img id="attachmentLightboxImg" src="" style="max-width:90%; max-height:80%;">';
+                document.body.appendChild(lb);
             }
+            document.getElementById("attachmentLightboxImg").src = url;
+            document.getElementById("attachmentLightbox").style.display = 'flex';
         }
     });
 
@@ -1406,25 +1486,18 @@
         container.style.margin = "10px 0";
         container.innerHTML = `<button class="btn btn-gold" id="profileBtn" onclick="openProfileModal()"><i class="fas fa-id-card"></i> <span>${t('profile')}</span></button>`;
         const attMsg = document.getElementById("attStatusMsg");
-        if (attMsg) {
-            attMsg.parentNode.insertBefore(container, attMsg);
-        } else {
-            document.getElementById("employeePanel").appendChild(container);
-        }
+        if (attMsg) { attMsg.parentNode.insertBefore(container, attMsg); }
+        else { document.getElementById("employeePanel").appendChild(container); }
     }
 
     async function openProfileModal() {
         if (!currentUser || !currentUser.empID) return;
-        if (!document.getElementById("employeeSelfProfileModal")) {
-            createProfileModalElement();
-        }
+        if (!document.getElementById("employeeSelfProfileModal")) createProfileModalElement();
         const modal = document.getElementById("employeeSelfProfileModal");
         modal.style.display = "flex";
         document.getElementById("profileLoadingIndicator").style.display = "block";
         document.getElementById("profileMainContent").style.display = "none";
-
         const empID = currentUser.empID;
-
         try {
             const userSnap = await db.collection("users").where("empID", "==", empID).get();
             if (userSnap.empty) {
@@ -1433,45 +1506,29 @@
             }
             const userData = userSnap.docs[0].data();
             userData.docId = userSnap.docs[0].id;
-
             const attSnap = await db.collection("attendance_raw").where("empID", "==", empID).get();
             _profileAllAttendance = [];
             attSnap.forEach(doc => {
-                const d = doc.data();
-                d.id = doc.id;
+                const d = doc.data(); d.id = doc.id;
                 if (!d.dateOnly && d.timestamp) d.dateOnly = d.timestamp.toDate().toISOString().split('T')[0];
                 _profileAllAttendance.push(d);
             });
-            _profileAllAttendance.sort((a, b) => {
-                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
-                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
-                return tb - ta;
-            });
-
+            _profileAllAttendance.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
             _profileGallery = [];
             _profileAllAttendance.forEach(d => { if (d.img && d.type === 'in') _profileGallery.push({ src: d.img, date: d.dateOnly }); });
-
             const reqSnap = await db.collection("employee_requests").where("empID", "==", empID).get();
             const requests = [];
             reqSnap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
-            requests.sort((a, b) => {
-                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
-                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
-                return tb - ta;
-            });
-
+            requests.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
             let photo = userData.profilePhoto || null;
             if (!photo) {
                 const firstPhoto = _profileAllAttendance.find(d => d.img && d.type === 'in');
                 photo = firstPhoto ? firstPhoto.img : null;
             }
             if (!photo) photo = "https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png";
-
             _profileCache = { userData, requests, region: userRegionCache.get(empID) || userData.region || "—", photo };
-
             buildProfileHeader(userData, photo);
             await loadProfileTabContent('info');
-
             document.getElementById("profileLoadingIndicator").style.display = "none";
             document.getElementById("profileMainContent").style.display = "block";
         } catch (error) {
@@ -1488,10 +1545,7 @@
                     <h3 style="color:var(--primary); margin:0;"><i class="fas fa-id-card"></i> الملف الشخصي</h3>
                     <button class="btn btn-sm" onclick="closeProfileModal()" style="background:var(--danger);"><i class="fas fa-times"></i> إغلاق</button>
                 </div>
-                <div id="profileLoadingIndicator" style="text-align:center; padding:40px;">
-                    <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary);"></i>
-                    <p style="margin-top:15px;">جاري تحميل بياناتك...</p>
-                </div>
+                <div id="profileLoadingIndicator" style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary);"></i><p style="margin-top:15px;">جاري تحميل بياناتك...</p></div>
                 <div id="profileMainContent" style="display:none;">
                     <div id="profileHeaderArea" style="margin-bottom:25px;"></div>
                     <div class="tab-nav" id="profileTabNav">
@@ -1521,11 +1575,9 @@
         let status = "لم يسجل", statusColor = "var(--text-secondary)";
         if (todayRecs.some(d=>d.type==='in') && todayRecs.some(d=>d.type==='out')) { status = "مكتمل"; statusColor = "var(--success)"; }
         else if (todayRecs.some(d=>d.type==='in')) { status = "بانتظار الانصراف"; statusColor = "var(--warning)"; }
-
-        const html = `
+        document.getElementById("profileHeaderArea").innerHTML = `
         <div class="profile-header-card">
-            <div>
-                <img src="${photo}" class="profile-avatar-large" onclick="openProfileLightbox('${photo}')">
+            <div><img src="${photo}" class="profile-avatar-large" onclick="openProfileLightbox('${photo}')">
                 <div style="text-align:center; margin-top:8px;">
                     <button class="btn btn-sm btn-primary" onclick="changeProfilePhoto()"><i class="fas fa-camera"></i> تغيير</button>
                     <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="uploadProfilePhoto()">
@@ -1544,7 +1596,6 @@
                 </div>
             </div>
         </div>`;
-        document.getElementById("profileHeaderArea").innerHTML = html;
     }
 
     async function loadProfileTabContent(tab) {
@@ -1552,7 +1603,6 @@
         document.querySelector(`#profileTabNav .tab-btn[data-tab="${tab}"]`).classList.add('active');
         const container = document.getElementById("profileTabBody");
         container.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>';
-
         switch(tab) {
             case 'info': await loadInfoTab(); break;
             case 'attendance': await loadAttendanceTabContent(); break;
@@ -1580,17 +1630,14 @@
         }
         let effDays=0; for(let i=1;i<=lastDay;i++){ const d=new Date(year,month-1,i); if(d.getDay()!==5&&d.getDay()!==6){ const ds=`${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`; if(ds<=todayStr) effDays++; } }
         const rate=effDays>0?Math.round((present/effDays)*100):0;
-        document.getElementById("profileTabBody").innerHTML = `
-        <h4>إحصائيات ${month}/${year}</h4>
-        <div class="profile-stats-grid">
+        document.getElementById("profileTabBody").innerHTML = `<h4>إحصائيات ${month}/${year}</h4><div class="profile-stats-grid">
             <div class="profile-stat-card"><i class="fas fa-calendar-check"></i><div class="profile-stat-value">${present}</div><div class="profile-stat-label">أيام الحضور</div></div>
             <div class="profile-stat-card"><i class="fas fa-calendar-times"></i><div class="profile-stat-value">${absent}</div><div class="profile-stat-label">أيام الغياب</div></div>
             <div class="profile-stat-card"><i class="fas fa-clock"></i><div class="profile-stat-value">${late}</div><div class="profile-stat-label">أيام التأخير</div></div>
             <div class="profile-stat-card"><i class="fas fa-sign-out-alt"></i><div class="profile-stat-value">${missing}</div><div class="profile-stat-label">نسيان الانصراف</div></div>
             <div class="profile-stat-card"><i class="fas fa-hourglass-half"></i><div class="profile-stat-value">${(workMin/60).toFixed(1)}</div><div class="profile-stat-label">ساعات العمل</div></div>
             <div class="profile-stat-card"><i class="fas fa-chart-line"></i><div class="profile-stat-value">${present>0?(workMin/60/present).toFixed(1):0}</div><div class="profile-stat-label">متوسط الساعات</div></div>
-            <div class="profile-stat-card"><i class="fas fa-percent"></i><div class="profile-stat-value">${rate}%</div><div class="profile-stat-label">نسبة الالتزام</div></div>
-        </div>`;
+            <div class="profile-stat-card"><i class="fas fa-percent"></i><div class="profile-stat-value">${rate}%</div><div class="profile-stat-label">نسبة الالتزام</div></div></div>`;
     }
 
     async function loadAttendanceTabContent(period = 'thisMonth') {
@@ -1621,11 +1668,9 @@
         const monthData=_profileAllAttendance.filter(d=>d.dateOnly>=from&&d.dateOnly<=to);
         const dayMap=new Map(); monthData.forEach(d=>{ if(!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly,{in:null,out:null,inImg:null}); const e=dayMap.get(d.dateOnly); if(d.type==='in'){ e.in=d.timestamp?.toDate(); e.inImg=d.img; } if(d.type==='out') e.out=d.timestamp?.toDate(); });
         let html=`<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(-1)">السابق</button>
-            <span>${firstDay.toLocaleDateString('ar-SA',{month:'long',year:'numeric'})}</span>
-            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(1)">التالي</button>
-        </div><div class="calendar-grid">
-        <div class="calendar-weekday">أحد</div><div class="calendar-weekday">إثنين</div><div class="calendar-weekday">ثلاثاء</div><div class="calendar-weekday">أربعاء</div><div class="calendar-weekday">خميس</div><div class="calendar-weekday">جمعة</div><div class="calendar-weekday">سبت</div>`;
+            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(-1)">السابق</button><span>${firstDay.toLocaleDateString('ar-SA',{month:'long',year:'numeric'})}</span>
+            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(1)">التالي</button></div>
+        <div class="calendar-grid"><div class="calendar-weekday">أحد</div><div class="calendar-weekday">إثنين</div><div class="calendar-weekday">ثلاثاء</div><div class="calendar-weekday">أربعاء</div><div class="calendar-weekday">خميس</div><div class="calendar-weekday">جمعة</div><div class="calendar-weekday">سبت</div>`;
         for(let i=0;i<firstDay.getDay();i++) html+='<div></div>';
         for(let i=1;i<=lastDay.getDate();i++){
             const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
@@ -1640,6 +1685,7 @@
         html+='</div><div id="calendarDayDetailBox" style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; display:none;"></div>';
         document.getElementById("profileTabBody").innerHTML=html;
     }
+
     function changeProfileCalendarMonth(delta) { _profileCalendarDate.setMonth(_profileCalendarDate.getMonth()+delta); loadCalendarTabContent(); }
     function showProfileCalendarDayDetail(dateStr) {
         const dayData=_profileAllAttendance.filter(d=>d.dateOnly===dateStr);
@@ -1648,8 +1694,8 @@
         let h=`<h4>${dateStr}</h4><p>حضور: ${inTime?inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p><p>انصراف: ${outTime?outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p>`;
         if(inTime&&outTime){ const diff=(outTime-inTime)/60000; h+=`<p>ساعات: ${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}</p>`; }
         if(inImg) h+=`<img src="${inImg}" style="max-width:150px; border-radius:8px; cursor:pointer;" onclick="openProfileLightbox('${inImg}')">`;
-        document.getElementById("calendarDayDetailBox").innerHTML=h;
-        document.getElementById("calendarDayDetailBox").style.display='block';
+        const box = document.getElementById("calendarDayDetailBox");
+        box.innerHTML=h; box.style.display='block';
     }
 
     async function loadGalleryTabContent() {
@@ -1663,7 +1709,6 @@
     async function loadRequestsTabContent() {
         const container = document.getElementById("profileTabBody");
         container.innerHTML = `<div style="text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>`;
-
         let html = `
         <div class="request-form-section">
             <h4><i class="fas fa-notes-medical"></i> طلب مرضي جديد</h4>
@@ -1690,7 +1735,7 @@
     async function submitSickLeaveFromProfile() {
         const title = document.getElementById("sickTitle").value.trim();
         const desc = document.getElementById("sickDesc").value.trim();
-        const date = document.getElementById("sickDate").value; // YYYY-MM-DD
+        const date = document.getElementById("sickDate").value;
         const fileInput = document.getElementById("sickFile");
         const file = fileInput.files[0];
         if (!title) { showToast("يرجى إدخال عنوان الطلب", false); return; }
@@ -1705,9 +1750,8 @@
             } catch (e) { showToast("فشل رفع المرفق", false); return; }
         }
         await db.collection("employee_requests").add({
-            empID: currentUser.empID, type: "sick_leave", title, description: desc,
-            requestDate: date, fileUrl, status: "pending",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            empID: currentUser.empID, type: "sick_leave", title, description: desc, requestDate: date,
+            fileUrl, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         showToast("تم إرسال الطلب بنجاح");
         document.getElementById("sickTitle").value = "";
@@ -1719,13 +1763,12 @@
 
     async function submitRemoteWorkFromProfile() {
         const reason = document.getElementById("remoteReason").value.trim();
-        const date = document.getElementById("remoteDate").value; // YYYY-MM-DD
+        const date = document.getElementById("remoteDate").value;
         const notes = document.getElementById("remoteNotes").value.trim();
         if (!reason || !date) { showToast("يرجى إدخال السبب والتاريخ", false); return; }
         await db.collection("employee_requests").add({
-            empID: currentUser.empID, type: "remote_work", reason,
-            requestDate: date, notes, status: "pending",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            empID: currentUser.empID, type: "remote_work", reason, requestDate: date, notes,
+            status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         showToast("تم إرسال الطلب بنجاح");
         document.getElementById("remoteReason").value = "";
@@ -1742,11 +1785,7 @@
             const snap = await db.collection("employee_requests").where("empID", "==", currentUser.empID).get();
             const requests = [];
             snap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
-            requests.sort((a, b) => {
-                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
-                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
-                return tb - ta;
-            });
+            requests.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
             if (requests.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">لا توجد طلبات حتى الآن</p>';
                 return;
@@ -1758,245 +1797,163 @@
                 let statusText = '', statusColor = '';
                 if (r.status === 'pending') { statusText = 'قيد المراجعة'; statusColor = '#f59e0b'; }
                 else if (r.status === 'approved') { statusText = 'تمت الموافقة'; statusColor = '#10b981'; }
-                else if (r.status === 'rejected') { statusText = 'مرفوض'; statusColor = '#ef4444'; }
+                else { statusText = 'مرفوض'; statusColor = '#ef4444'; }
                 let actionsHtml = '';
                 if (r.status === 'pending') {
                     actionsHtml = `
-                        <button class="btn btn-sm" onclick="openEditRequestModal('${r.id}')" style="background:var(--info); margin:2px;" title="تعديل">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm" onclick="deleteEmployeeRequest('${r.id}')" style="background:var(--danger); margin:2px;" title="حذف">
-                            <i class="fas fa-trash"></i>
-                        </button>`;
+                        <button class="btn btn-sm" onclick="viewMyRequest('${r.id}')" style="background:var(--info); margin:2px;" title="عرض"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm" onclick="editMyRequest('${r.id}')" style="background:var(--warning); margin:2px;" title="تعديل"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm" onclick="deleteMyRequest('${r.id}')" style="background:var(--danger); margin:2px;" title="حذف"><i class="fas fa-trash"></i></button>`;
                 } else {
-                    actionsHtml = '<span style="font-size:0.75rem; color:var(--text-secondary);">لا يمكن التعديل بعد الاعتماد</span>';
+                    actionsHtml = `<button class="btn btn-sm" onclick="viewMyRequest('${r.id}')" style="background:var(--info); margin:2px;" title="عرض"><i class="fas fa-eye"></i></button><span style="font-size:0.75rem; color:var(--text-secondary);">لا يمكن التعديل/الحذف</span>`;
                 }
-                html += `<tr>
-                    <td><i class="fas ${typeIcon}"></i> ${typeText}</td>
-                    <td>${r.requestDate || '—'}</td>
-                    <td><span style="background:${statusColor}; padding:5px 12px; border-radius:12px; color:white; font-size:0.8rem;">${statusText}</span></td>
-                    <td>${r.adminNote || '—'}</td>
-                    <td>${actionsHtml}</td>
-                </tr>`;
+                html += `<tr><td><i class="fas ${typeIcon}"></i> ${typeText}</td><td>${r.requestDate || '—'}</td><td><span style="background:${statusColor}; padding:5px 12px; border-radius:12px; color:white; font-size:0.8rem;">${statusText}</span></td><td>${r.adminNote || '—'}</td><td>${actionsHtml}</td></tr>`;
             });
             html += '</tbody></table></div>';
             container.innerHTML = html;
-        } catch (e) {
-            console.error("خطأ في تحميل الطلبات:", e);
-            container.innerHTML = '<p style="color:var(--danger);">تعذر تحميل الطلبات</p>';
-        }
+        } catch (e) { console.error("خطأ في تحميل الطلبات:", e); container.innerHTML = '<p style="color:var(--danger);">تعذر تحميل الطلبات</p>'; }
     }
 
-    // ========== دوال تعديل/حذف الطلبات (بدون تغيير أي دالة أصلية) ==========
-    function openEditRequestModal(reqId) {
+    // دوال الموظف الجديدة للطلبات
+    function viewMyRequest(reqId) {
         const req = _profileCache.requests.find(r => r.id === reqId);
         if (!req) return;
-        if (!document.getElementById("editRequestModal")) {
-            const modalHTML = `
-            <div id="editRequestModal" class="modal-overlay" style="display:none; z-index:3600;">
-                <div class="modal-content" style="max-width:600px; text-align:right;">
-                    <h3 style="color:var(--primary); margin-bottom:20px;">تعديل الطلب</h3>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <label>نوع الطلب</label>
-                        <select id="editReqType" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                            <option value="sick_leave">طلب مرضي</option>
-                            <option value="remote_work">عمل خارج المكتب</option>
-                        </select>
-                        <label>التاريخ</label>
-                        <input type="date" id="editReqDate" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                        <label>السبب / الوصف</label>
-                        <textarea id="editReqReason" rows="3" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; resize:vertical;"></textarea>
-                        <label>ملاحظات</label>
-                        <textarea id="editReqNotes" rows="2" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; resize:vertical;"></textarea>
-                        <label>المرفق (اختياري - اتركه فارغاً للإبقاء على الحالي)</label>
-                        <input type="file" id="editReqFile" accept=".pdf,.jpg,.jpeg,.png" style="color:white;">
-                        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-                            <button class="btn btn-primary" id="saveEditRequestBtn">حفظ التعديلات</button>
-                            <button class="btn" onclick="closeEditRequestModal()">إلغاء</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-        // ملء الحقول
-        document.getElementById('editReqType').value = req.type || 'sick_leave';
-        document.getElementById('editReqDate').value = req.requestDate || '';
-        document.getElementById('editReqReason').value = req.type === 'sick_leave' ? (req.title || '') : (req.reason || '');
-        document.getElementById('editReqNotes').value = req.notes || req.description || '';
-        const saveBtn = document.getElementById('saveEditRequestBtn');
-        saveBtn.setAttribute('data-req-id', reqId);
-        saveBtn.onclick = function() { saveEditedRequest(reqId); };
-        document.getElementById('editRequestModal').style.display = 'flex';
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3600';
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+        <div class="modal-content" style="max-width:500px; text-align:right;">
+            <h3 style="color:var(--primary);">تفاصيل الطلب</h3>
+            <div style="text-align:right; margin:15px 0;">
+                <p><strong>النوع:</strong> ${req.type === 'sick_leave' ? 'مرضي' : 'عمل خارج المكتب'}</p>
+                <p><strong>التاريخ:</strong> ${req.requestDate || '—'}</p>
+                <p><strong>السبب:</strong> ${req.title || req.reason || '—'}</p>
+                <p><strong>الحالة:</strong> ${req.status === 'pending' ? 'قيد المراجعة' : (req.status === 'approved' ? 'تمت الموافقة' : 'مرفوض')}</p>
+                <p><strong>ملاحظات المدير:</strong> ${req.adminNote || '—'}</p>
+            </div>
+            <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()">إغلاق</button>
+        </div>`;
+        document.body.appendChild(modal);
     }
 
-    function closeEditRequestModal() {
-        document.getElementById('editRequestModal').style.display = 'none';
+    function editMyRequest(reqId) {
+        const req = _profileCache.requests.find(r => r.id === reqId);
+        if (!req) return;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3600';
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+        <div class="modal-content" style="max-width:600px; text-align:right;" onclick="event.stopPropagation()">
+            <h3 style="color:var(--primary);">تعديل الطلب</h3>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                <label>التاريخ</label>
+                <input type="date" id="editMyReqDate_${reqId}" value="${req.requestDate || ''}" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
+                <label>السبب</label>
+                <textarea id="editMyReqReason_${reqId}" rows="3" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">${req.type==='sick_leave' ? (req.title||'') : (req.reason||'')}</textarea>
+                <button class="btn btn-primary" onclick="saveMyRequestEdit('${reqId}')">حفظ</button>
+                <button class="btn" onclick="this.closest('.modal-overlay').remove()">إلغاء</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
     }
 
-    async function saveEditedRequest(reqId) {
-        const type = document.getElementById('editReqType').value;
-        const requestDate = document.getElementById('editReqDate').value;
-        const reason = document.getElementById('editReqReason').value.trim();
-        const notes = document.getElementById('editReqNotes').value.trim();
-        const fileInput = document.getElementById('editReqFile');
-        const file = fileInput.files[0];
-        if (!requestDate) { showToast('يرجى تحديد التاريخ', false); return; }
-        const updateData = { type: type, requestDate: requestDate, notes: notes };
-        if (type === 'sick_leave') { updateData.title = reason; updateData.description = notes; }
-        else { updateData.reason = reason; }
-        if (file) {
-            const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'zahrani_private');
-            try {
-                const res = await fetch('https://api.cloudinary.com/v1_1/dzukfybwr/upload', { method: 'POST', body: fd });
-                const data = await res.json();
-                if (data.secure_url) updateData.fileUrl = data.secure_url;
-            } catch (e) { showToast('فشل رفع المرفق', false); return; }
-        }
-        try {
-            await db.collection('employee_requests').doc(reqId).update(updateData);
-            showToast('تم تحديث الطلب');
-            closeEditRequestModal();
-            loadMyRequests(); // إعادة تحميل القائمة
-        } catch (e) { console.error(e); showToast('فشل التحديث', false); }
+    async function saveMyRequestEdit(reqId) {
+        const date = document.getElementById(`editMyReqDate_${reqId}`).value;
+        const reason = document.getElementById(`editMyReqReason_${reqId}`).value;
+        await db.collection("employee_requests").doc(reqId).update({ requestDate: date, title: reason, reason: reason });
+        showToast('تم التحديث');
+        document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+        loadMyRequests();
+        openProfileModal(); // تحديث الملف الشخصي
     }
 
-    async function deleteEmployeeRequest(reqId) {
+    async function deleteMyRequest(reqId) {
         if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
-        try {
-            await db.collection('employee_requests').doc(reqId).delete();
-            showToast('تم حذف الطلب');
-            loadMyRequests();
-        } catch (e) { console.error(e); showToast('فشل الحذف', false); }
+        await db.collection("employee_requests").doc(reqId).delete();
+        showToast('تم الحذف');
+        loadMyRequests();
     }
 
-    // دوال لوحة المدير (بدون تعديل الدوال الأصلية)
-    function openAdminEditRequestModal(reqId) {
-        // جلب البيانات من الـ DOM (سنقوم بتمرير المعطيات عند إنشاء الزر)
-        if (!document.getElementById("adminEditRequestModal")) {
-            const modalHTML = `
-            <div id="adminEditRequestModal" class="modal-overlay" style="display:none; z-index:3600;">
-                <div class="modal-content" style="max-width:650px; text-align:right;">
-                    <h3 style="color:var(--primary); margin-bottom:20px;">تعديل الطلب (مدير)</h3>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <label>نوع الطلب</label>
-                        <select id="adminEditReqType" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                            <option value="sick_leave">طلب مرضي</option>
-                            <option value="remote_work">عمل خارج المكتب</option>
-                        </select>
-                        <label>الحالة</label>
-                        <select id="adminEditReqStatus" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                            <option value="pending">قيد المراجعة</option>
-                            <option value="approved">تمت الموافقة</option>
-                            <option value="rejected">مرفوض</option>
-                        </select>
-                        <label>التاريخ</label>
-                        <input type="date" id="adminEditReqDate" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                        <label>السبب / الوصف</label>
-                        <textarea id="adminEditReqReason" rows="2" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; resize:vertical;"></textarea>
-                        <label>ملاحظات المدير</label>
-                        <textarea id="adminEditReqNote" rows="2" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; resize:vertical;"></textarea>
-                        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-                            <button class="btn btn-primary" id="saveAdminEditRequestBtn">حفظ التعديلات</button>
-                            <button class="btn" onclick="closeAdminEditRequestModal()">إلغاء</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
+    function openProfileLightbox(src) {
+        if (!document.getElementById("profileLightbox")) {
+            document.body.insertAdjacentHTML('beforeend', `<div id="profileLightbox" class="lightbox" style="display:none; z-index:5000;" onclick="this.style.display='none'"><span class="lightbox-close">&times;</span><img id="profileLightboxImg" src=""></div>`);
         }
-        // سنعتمد على data-attributes المضافة في enhanceAdminRequestsDisplay
-        // هنا نقوم بجلب البيانات من Firestore مباشرة
-        db.collection("employee_requests").doc(reqId).get().then(doc => {
-            if (!doc.exists) return;
-            const req = doc.data();
-            document.getElementById('adminEditReqType').value = req.type || 'sick_leave';
-            document.getElementById('adminEditReqStatus').value = req.status || 'pending';
-            document.getElementById('adminEditReqDate').value = req.requestDate || '';
-            document.getElementById('adminEditReqReason').value = req.type === 'sick_leave' ? (req.title || '') : (req.reason || '');
-            document.getElementById('adminEditReqNote').value = req.adminNote || '';
-            const saveBtn = document.getElementById('saveAdminEditRequestBtn');
-            saveBtn.setAttribute('data-req-id', reqId);
-            saveBtn.onclick = function() { saveAdminEditedRequest(reqId); };
-            document.getElementById('adminEditRequestModal').style.display = 'flex';
+        document.getElementById("profileLightboxImg").src = src;
+        document.getElementById("profileLightbox").style.display = 'flex';
+    }
+    function openProfileGalleryLightbox(index) {
+        _profileGalleryIndex = index;
+        if (!document.getElementById("profileLightbox")) {
+            document.body.insertAdjacentHTML('beforeend', `<div id="profileLightbox" class="lightbox" style="display:none; z-index:5000;" onclick="this.style.display='none'"><span class="lightbox-close">&times;</span><img id="profileLightboxImg" src=""><div style="display:flex; gap:20px; margin-top:15px;"><button class="btn btn-sm" onclick="event.stopPropagation(); profileGalleryPrev()">السابق</button><button class="btn btn-sm" onclick="event.stopPropagation(); profileGalleryNext()">التالي</button></div></div>`);
+        }
+        document.getElementById("profileLightboxImg").src = _profileGallery[index].src;
+        document.getElementById("profileLightbox").style.display = 'flex';
+    }
+    function profileGalleryPrev() {
+        if (_profileGallery.length === 0) return;
+        _profileGalleryIndex = (_profileGalleryIndex - 1 + _profileGallery.length) % _profileGallery.length;
+        document.getElementById("profileLightboxImg").src = _profileGallery[_profileGalleryIndex].src;
+    }
+    function profileGalleryNext() {
+        if (_profileGallery.length === 0) return;
+        _profileGalleryIndex = (_profileGalleryIndex + 1) % _profileGallery.length;
+        document.getElementById("profileLightboxImg").src = _profileGallery[_profileGalleryIndex].src;
+    }
+    function changeProfilePhoto() { document.getElementById("profilePhotoInput").click(); }
+    async function uploadProfilePhoto() {
+        const file = document.getElementById("profilePhotoInput").files[0]; if (!file) return;
+        const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", "zahrani_private");
+        const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/image/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (data.secure_url) {
+            const userSnap = await db.collection("users").where("empID", "==", currentUser.empID).get();
+            if (!userSnap.empty) await db.collection("users").doc(userSnap.docs[0].id).update({ profilePhoto: data.secure_url });
+            document.querySelector('.profile-avatar-large').src = data.secure_url;
+            _profileCache.photo = data.secure_url;
+            showToast("تم تحديث الصورة");
+        } else { showToast("فشل رفع الصورة", false); }
+    }
+
+    function groupAttendanceByDate(records) {
+        const map = new Map();
+        records.forEach(r => {
+            if (!r.dateOnly) return;
+            const key = r.dateOnly;
+            if (!map.has(key)) map.set(key, { date: key, inTime: null, outTime: null });
+            const e = map.get(key);
+            if (r.type === 'in' && r.timestamp) e.inTime = r.timestamp.toDate();
+            if (r.type === 'out' && r.timestamp) e.outTime = r.timestamp.toDate();
         });
+        return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date));
     }
 
-    function closeAdminEditRequestModal() { document.getElementById('adminEditRequestModal').style.display = 'none'; }
-
-    async function saveAdminEditedRequest(reqId) {
-        const type = document.getElementById('adminEditReqType').value;
-        const status = document.getElementById('adminEditReqStatus').value;
-        const requestDate = document.getElementById('adminEditReqDate').value;
-        const reason = document.getElementById('adminEditReqReason').value.trim();
-        const note = document.getElementById('adminEditReqNote').value.trim();
-        const updateData = { type, status, requestDate, adminNote: note };
-        if (type === 'sick_leave') updateData.title = reason; else updateData.reason = reason;
-        try {
-            await db.collection('employee_requests').doc(reqId).update(updateData);
-            showToast('تم التحديث');
-            closeAdminEditRequestModal();
-            renderEmployeeRequests();
-        } catch (e) { showToast('فشل التحديث', false); }
-    }
-
-    async function deleteAdminRequest(reqId) {
-        if (!confirm('حذف الطلب نهائياً؟')) return;
-        try {
-            await db.collection('employee_requests').doc(reqId).delete();
-            showToast('تم الحذف');
-            renderEmployeeRequests();
-        } catch (e) { showToast('فشل الحذف', false); }
-    }
-
-    // تحسين عرض طلبات المدير لإضافة أزرار التعديل والحذف
-    function enhanceAdminRequestsDisplay() {
-        setTimeout(() => {
-            const container = document.getElementById("requestsList");
-            if (!container) return;
-            const cards = container.querySelectorAll('.glass');
-            cards.forEach(card => {
-                // تجنب إضافة الأزرار مرتين
-                if (card.querySelector('.admin-edit-btn')) return;
-                // استخراج reqId من أزرار الموافقة/الرفض
-                const approveBtn = card.querySelector('button[onclick*="approveRequest"]');
-                const rejectBtn = card.querySelector('button[onclick*="rejectRequest"]');
-                let reqId = null;
-                if (approveBtn) {
-                    const match = approveBtn.getAttribute('onclick').match(/'([^']+)'/);
-                    if (match) reqId = match[1];
-                } else if (rejectBtn) {
-                    const match = rejectBtn.getAttribute('onclick').match(/'([^']+)'/);
-                    if (match) reqId = match[1];
-                }
-                if (!reqId) return;
-                const actionsDiv = card.querySelector('div[style*="margin-top:10px"]');
-                if (!actionsDiv) return;
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn btn-sm admin-edit-btn';
-                editBtn.style.cssText = 'background:var(--info); margin-right:5px;';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
-                editBtn.onclick = function() { openAdminEditRequestModal(reqId); };
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-sm admin-delete-btn';
-                deleteBtn.style.cssText = 'background:var(--danger); margin-right:5px;';
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> حذف';
-                deleteBtn.onclick = function() { deleteAdminRequest(reqId); };
-                actionsDiv.appendChild(editBtn);
-                actionsDiv.appendChild(deleteBtn);
-            });
-        }, 600);
-    }
-
-    // ربط الدوال الجديدة
-    window.openEditRequestModal = openEditRequestModal;
-    window.closeEditRequestModal = closeEditRequestModal;
-    window.deleteEmployeeRequest = deleteEmployeeRequest;
-    window.openAdminEditRequestModal = openAdminEditRequestModal;
-    window.closeAdminEditRequestModal = closeAdminEditRequestModal;
-    window.deleteAdminRequest = deleteAdminRequest;
+    // ربط جميع الدوال الجديدة
+    window.addProfileButton = addProfileButton;
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    window.loadProfileTabContent = loadProfileTabContent;
+    window.changeProfileCalendarMonth = changeProfileCalendarMonth;
+    window.showProfileCalendarDayDetail = showProfileCalendarDayDetail;
+    window.loadAttendanceTabContent = loadAttendanceTabContent;
+    window.openProfileLightbox = openProfileLightbox;
+    window.openProfileGalleryLightbox = openProfileGalleryLightbox;
+    window.profileGalleryPrev = profileGalleryPrev;
+    window.profileGalleryNext = profileGalleryNext;
+    window.changeProfilePhoto = changeProfilePhoto;
+    window.uploadProfilePhoto = uploadProfilePhoto;
     window.submitSickLeaveFromProfile = submitSickLeaveFromProfile;
     window.submitRemoteWorkFromProfile = submitRemoteWorkFromProfile;
+    window.loadMyRequests = loadMyRequests;
+    window.viewMyRequest = viewMyRequest;
+    window.editMyRequest = editMyRequest;
+    window.saveMyRequestEdit = saveMyRequestEdit;
+    window.deleteMyRequest = deleteMyRequest;
+    window.viewRequestAsAdmin = viewRequestAsAdmin;
+    window.openAdminEditRequest = openAdminEditRequest;
+    window.saveAdminEdit = saveAdminEdit;
+    window.deleteAdminRequest = deleteAdminRequest;
 </script>
 
 </body>

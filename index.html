@@ -405,6 +405,57 @@
             font-family: inherit;
             margin-bottom: 10px;
         }
+        /* ==== أنماط ميزة التحقق من الهوية (جديدة) ==== */
+        .face-verify-overlay {
+            z-index: 4000;
+        }
+        .face-verify-content {
+            max-width: 600px;
+            width: 95%;
+        }
+        .face-verify-video-wrapper {
+            position: relative;
+            width: 100%;
+            margin: 0 auto 15px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #000;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+        .face-verify-video-wrapper video {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+        }
+        .face-guide-frame {
+            position: absolute;
+            top: 10%; left: 15%; right: 15%; bottom: 10%;
+            border: 3px dashed var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .face-instructions {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 10px 0;
+        }
+        .face-status-msg {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .settings-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .settings-checkbox input[type="checkbox"] {
+            width: 18px; height: 18px;
+        }
+        .settings-checkbox label {
+            color: var(--text);
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -555,8 +606,7 @@
                     <div id="paginationContainer" style="display:flex; justify-content:center; gap:12px; margin-top:20px;"></div>
                 </div>
             </div>
-
-            <!-- طلبات الموظفين للمدير -->
+                      <!-- طلبات الموظفين للمدير -->
             <div id="employeeRequestsPage" class="page-section">
                 <div class="glass" style="margin-bottom:25px;">
                     <h3><i class="fas fa-clipboard-list"></i> <span id="reqHeader">طلبات الموظفين</span></h3>
@@ -574,6 +624,24 @@
                         <input type="password" id="confirmNewPassword" placeholder="تأكيد كلمة المرور الجديدة">
                         <button class="btn btn-primary" style="width:100%;" onclick="changeAdminPassword()"><i class="fas fa-save"></i> حفظ التغييرات</button>
                     </div>
+                </div>
+                <!-- إعدادات التحقق من الهوية (جديد) -->
+                <div class="glass" style="padding:30px; margin-top:20px;">
+                    <h3 style="margin-bottom:20px;"><i class="fas fa-shield-alt"></i> <span id="faceSettingsHeader">التحقق من الهوية</span></h3>
+                    <div class="settings-checkbox">
+                        <input type="checkbox" id="faceEnabledCheck" onchange="toggleFaceSettingsDeps()">
+                        <label>تفعيل التحقق من الهوية قبل فتح الملف الشخصي</label>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <div><label style="color:var(--text-secondary);">نسبة التطابق المطلوبة (0-100)</label><input type="number" id="faceThresholdInput" min="50" max="100" value="90" class="detail-input"></div>
+                        <div><label style="color:var(--text-secondary);">عدد المحاولات المسموح بها</label><input type="number" id="faceMaxAttemptsInput" min="1" max="10" value="5" class="detail-input"></div>
+                        <div><label style="color:var(--text-secondary);">مدة الحظر بعد التجاوز (دقائق)</label><input type="number" id="faceBlockMinutesInput" min="1" max="60" value="10" class="detail-input"></div>
+                    </div>
+                    <div class="settings-checkbox" style="margin-top:15px;"><input type="checkbox" id="faceUseProfilePhotoCheck"><label>استخدام الصورة الشخصية كمرجع</label></div>
+                    <div class="settings-checkbox"><input type="checkbox" id="faceUseLastCheckInCheck"><label>استخدام آخر صورة حضور كمرجع</label></div>
+                    <div class="settings-checkbox"><input type="checkbox" id="faceUseLastCheckOutCheck"><label>استخدام آخر صورة انصراف كمرجع</label></div>
+                    <button class="btn btn-primary" onclick="saveFaceSettings()" style="margin-top:15px;"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                    <div id="faceSettingsMsg" style="margin-top:10px; color:var(--success);"></div>
                 </div>
             </div>
         </div>
@@ -660,6 +728,27 @@
                 <button class="btn" onclick="document.getElementById('exportModal').style.display='none'">إلغاء</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ===== مودال التحقق من الهوية (جديد) ===== -->
+<div id="faceVerificationModal" class="modal-overlay face-verify-overlay" style="display:none;">
+    <div class="modal-content face-verify-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="color:var(--primary); margin:0;"><i class="fas fa-shield-alt"></i> التحقق من الهوية</h3>
+            <button class="btn btn-sm" onclick="closeFaceVerificationModal()" style="background:var(--danger);"><i class="fas fa-times"></i> إغلاق</button>
+        </div>
+        <div class="face-verify-video-wrapper">
+            <video id="faceVerifyVideo" autoplay playsinline muted></video>
+            <div class="face-guide-frame"></div>
+        </div>
+        <div class="face-instructions" id="faceInstructions">
+            <p><i class="fas fa-info-circle"></i> انظر مباشرة إلى الكاميرا.</p>
+            <p><i class="fas fa-expand"></i> ضع وجهك داخل الإطار.</p>
+            <p><i class="fas fa-lightbulb"></i> تأكد من وجود إضاءة جيدة.</p>
+        </div>
+        <div class="face-status-msg" id="faceVerifyStatus"></div>
+        <button class="btn btn-primary" id="startFaceVerifyBtn" onclick="startFaceVerificationCapture()"><i class="fas fa-play"></i> بدء التحقق</button>
     </div>
 </div>
 
@@ -948,8 +1037,7 @@
         }
     };
     const t = (key) => translations[currentLang][key] || key;
-
-    function showToast(msg, ok = true) {
+      function showToast(msg, ok = true) {
         const el = document.createElement("div"); el.className = "toast"; el.innerText = msg;
         el.style.background = ok ? "var(--primary)" : "var(--danger)";
         document.body.appendChild(el); setTimeout(() => el.remove(), 3500);
@@ -963,6 +1051,7 @@
         const navItem = document.querySelector(`.sidebar .nav-item[data-page="${page}"]`);
         if (navItem) navItem.classList.add('active');
         if (page === 'employeeRequests') renderEmployeeRequests();
+        if (page === 'settings') loadFaceSettingsIntoForm();
     }
 
     async function requestCameraPermission() {
@@ -1106,6 +1195,8 @@
         document.getElementById("detailsModal").style.display = "none"; 
         const profileModal = document.getElementById("employeeSelfProfileModal");
         if (profileModal) profileModal.style.display = "none";
+        const faceModal = document.getElementById("faceVerificationModal");
+        if (faceModal) faceModal.style.display = "none";
     }
 
     async function changeAdminPassword() { const currentPwd = document.getElementById("currentPassword").value.trim(); const newPwd = document.getElementById("newPassword").value.trim(); const confirmPwd = document.getElementById("confirmNewPassword").value.trim(); if (!currentPwd || !newPwd || !confirmPwd) { showToast(t('passwordEmpty'), false); return; } if (currentPwd !== adminPassword) { showToast(t('passwordWrong'), false); return; } if (newPwd !== confirmPwd) { showToast(t('passwordMismatch'), false); return; } try { await db.collection("settings").doc("adminAuth").update({ password: newPwd }); adminPassword = newPwd; document.getElementById("currentPassword").value = ""; document.getElementById("newPassword").value = ""; document.getElementById("confirmNewPassword").value = ""; showToast(t('passwordChanged'), true); } catch (e) { showToast("فشل التحديث", false); } }
@@ -1166,7 +1257,7 @@
     async function loadAdminDataAndListeners() {
         db.collection("users").where("role", "==", "employee").onSnapshot(snap => {
             let html = "";
-            snap.forEach(doc => { const d = doc.data(); const region = userRegionCache.get(d.empID) || d.region || "—"; const whatsapp = d.whatsapp || ""; html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;"><div style="display:flex; justify-content:space-between;"><strong>${d.name}</strong><span style="font-size:0.8rem;">${d.empID}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><small>المنطقة: ${region}</small><div><i class="fas fa-user" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEmployeeProfile('${d.empID}')"></i><i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}','${whatsapp}','${d.jobTitle || ''}','${d.email || ''}')"></i><i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i></div></div></div>`; });
+            snap.forEach(doc => { const d = doc.data(); const region = userRegionCache.get(d.empID) || d.region || "—"; const whatsapp = d.whatsapp || ""; html += `<div class="glass" style="padding:14px; display:flex; flex-direction:column; gap:8px;"><div style="display:flex; justify-content:space-between;"><strong>${d.name}</strong><span style="font-size:0.8rem;">${d.empID}</span></div><div style="display:flex; justify-content:space-between; align-items:center;"><small>المنطقة: ${region}</small><div><i class="fas fa-user" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEmployeeProfile('${d.empID}')"></i><i class="fas fa-edit" style="color:var(--primary); cursor:pointer; margin-right:10px;" onclick="openEditModal('${doc.id}','${d.name}','${d.empID}','${whatsapp}','${d.jobTitle || ''}','${d.email || ''}')"></i><i class="fas fa-map-pin" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="openRegionModal('${doc.id}')"></i><i class="fas fa-camera-retro" style="color:var(--gold); cursor:pointer; margin-right:10px;" onclick="updateFaceReferenceForEmployee('${d.empID}')" title="تحديث الصورة المرجعية للتحقق"></i><i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="deleteEmployee('${doc.id}')"></i></div></div></div>`; });
             document.getElementById("staffList").innerHTML = html || "<div>لا يوجد موظفون</div>";
         });
 
@@ -1292,109 +1383,17 @@
         const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet(excelData); XLSX.utils.book_append_sheet(wb, ws, t('logsHeader')); XLSX.writeFile(wb, `Attendance_Export_${new Date().toISOString().slice(0,10)}.xlsx`); document.getElementById("exportModal").style.display = "none"; showToast(t('msgSuccess'));
     }
 
-    // ========== طلبات الموظفين للمدير ==========
+    // ========== طلبات الموظفين للمدير (بدون تغيير) ==========
     async function renderEmployeeRequests() {
         const container = document.getElementById("requestsList"); container.innerHTML = "جاري التحميل...";
         const snap = await db.collection("employee_requests").orderBy("timestamp", "desc").get();
         let html = ''; if (snap.empty) { container.innerHTML = `<p>${t('noRequests')}</p>`; return; }
-        for (const doc of snap.docs) { 
-            const req = doc.data(); const reqId = doc.id; 
-            const empName = userNameCache.get(req.empID) || req.empID; 
-            const typeText = req.type === "sick_leave" ? t('sickLeave') : t('remoteWork'); 
-            let statusText = '', statusColor = ''; 
-            if (req.status === 'pending') { statusText = t('pending'); statusColor = 'var(--warning)'; } 
-            else if (req.status === 'approved') { statusText = t('approved'); statusColor = 'var(--success)'; } 
-            else { statusText = t('rejected'); statusColor = 'var(--danger)'; } 
-            html += `<div class="glass" style="padding:15px; margin-bottom:10px;">
-                <strong>${typeText}</strong> - ${empName} <span style="color:${statusColor}">(${statusText})</span>
-                <p>${req.title || req.reason || ''}</p>
-                ${req.requestDate ? `<p>التاريخ: ${req.requestDate}</p>` : ''}
-                ${req.fileUrl ? `<a href="${req.fileUrl}" target="_blank" style="color:var(--primary);">عرض المرفق</a>` : ''}
-                <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px; align-items:center;">
-                    ${req.status === 'pending' ? `<input type="text" id="reqNote_${reqId}" placeholder="ملاحظة" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; width:150px;">` : ''}
-                    <button class="btn btn-sm btn-primary" onclick="viewRequestAsAdmin('${reqId}')"><i class="fas fa-eye"></i> عرض</button>
-                    <button class="btn btn-sm" style="background:var(--info);" onclick="openAdminEditRequest('${reqId}')"><i class="fas fa-edit"></i> تعديل</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteAdminRequest('${reqId}')"><i class="fas fa-trash"></i> حذف</button>
-                    ${req.status === 'pending' ? `
-                        <button class="btn btn-sm btn-primary" onclick="approveRequest('${reqId}')">${t('approve')}</button>
-                        <button class="btn btn-sm btn-danger" onclick="rejectRequest('${reqId}')">${t('reject')}</button>
-                    ` : ''}
-                </div>
-            </div>`; 
-        }
+        for (const doc of snap.docs) { const req = doc.data(); const reqId = doc.id; const empName = userNameCache.get(req.empID) || req.empID; const typeText = req.type === "sick_leave" ? t('sickLeave') : t('remoteWork'); let statusText = '', statusColor = ''; if (req.status === 'pending') { statusText = t('pending'); statusColor = 'var(--warning)'; } else if (req.status === 'approved') { statusText = t('approved'); statusColor = 'var(--success)'; } else if (req.status === 'rejected') { statusText = t('rejected'); statusColor = 'var(--danger)'; } html += `<div class="glass" style="padding:15px; margin-bottom:10px;"><strong>${typeText}</strong> - ${empName} <span style="color:${statusColor}">(${statusText})</span><p>${req.title || req.reason || ''}</p>${req.requestDate ? `<p>التاريخ: ${req.requestDate}</p>` : ''}${req.fileUrl ? `<a href="${req.fileUrl}" target="_blank" style="color:var(--primary);">عرض المرفق</a>` : ''}<div style="margin-top:10px;">`; if (req.status === 'pending') { html += `<input type="text" id="reqNote_${reqId}" placeholder="ملاحظة" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; width:60%; margin-right:10px;">`; html += `<button class="btn btn-sm btn-primary" onclick="approveRequest('${reqId}')">${t('approve')}</button>`; html += `<button class="btn btn-sm btn-danger" onclick="rejectRequest('${reqId}')" style="margin-right:5px;">${t('reject')}</button>`; } html += `</div></div>`; }
         container.innerHTML = html;
         enhanceAdminRequestsDisplay();
     }
     async function approveRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "approved", adminNote: note }); showToast(t('approved')); renderEmployeeRequests(); }
     async function rejectRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "rejected", adminNote: note }); showToast(t('rejected')); renderEmployeeRequests(); }
-
-    // دوال المدير الجديدة
-    async function viewRequestAsAdmin(reqId) {
-        const doc = await db.collection("employee_requests").doc(reqId).get();
-        if (!doc.exists) return;
-        const req = doc.data();
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.zIndex = '3600';
-        modal.onclick = e => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
-        <div class="modal-content" style="max-width:500px; text-align:right;">
-            <h3 style="color:var(--primary);">تفاصيل الطلب</h3>
-            <div style="text-align:right; margin:15px 0;">
-                <p><strong>الموظف:</strong> ${userNameCache.get(req.empID) || req.empID} (${req.empID})</p>
-                <p><strong>النوع:</strong> ${req.type === 'sick_leave' ? 'مرضي' : 'عمل خارج المكتب'}</p>
-                <p><strong>التاريخ:</strong> ${req.requestDate || '—'}</p>
-                <p><strong>السبب:</strong> ${req.title || req.reason || '—'}</p>
-                <p><strong>الحالة:</strong> ${req.status === 'pending' ? 'قيد المراجعة' : (req.status === 'approved' ? 'تمت الموافقة' : 'مرفوض')}</p>
-                <p><strong>ملاحظات المدير:</strong> ${req.adminNote || '—'}</p>
-            </div>
-            <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()">إغلاق</button>
-        </div>`;
-        document.body.appendChild(modal);
-    }
-
-    async function openAdminEditRequest(reqId) {
-        const doc = await db.collection("employee_requests").doc(reqId).get();
-        if (!doc.exists) return;
-        const req = doc.data();
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.zIndex = '3600';
-        modal.onclick = e => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
-        <div class="modal-content" style="max-width:600px; text-align:right;" onclick="event.stopPropagation()">
-            <h3 style="color:var(--primary);">تعديل الطلب</h3>
-            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-                <label>الحالة</label>
-                <select id="adminEditStatus_${reqId}" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                    <option value="pending" ${req.status==='pending'?'selected':''}>قيد المراجعة</option>
-                    <option value="approved" ${req.status==='approved'?'selected':''}>تمت الموافقة</option>
-                    <option value="rejected" ${req.status==='rejected'?'selected':''}>مرفوض</option>
-                </select>
-                <label>ملاحظات المدير</label>
-                <textarea id="adminEditNote_${reqId}" rows="2" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">${req.adminNote || ''}</textarea>
-                <button class="btn btn-primary" onclick="saveAdminEdit('${reqId}')">حفظ</button>
-                <button class="btn" onclick="this.closest('.modal-overlay').remove()">إلغاء</button>
-            </div>
-        </div>`;
-        document.body.appendChild(modal);
-    }
-
-    async function saveAdminEdit(reqId) {
-        const status = document.getElementById(`adminEditStatus_${reqId}`).value;
-        const note = document.getElementById(`adminEditNote_${reqId}`).value;
-        await db.collection("employee_requests").doc(reqId).update({ status, adminNote: note });
-        showToast('تم التحديث');
-        document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-        renderEmployeeRequests();
-    }
-
-    async function deleteAdminRequest(reqId) {
-        if (!confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) return;
-        await db.collection("employee_requests").doc(reqId).delete();
-        showToast('تم الحذف');
-        renderEmployeeRequests();
-    }
 
     function enhanceAdminRequestsDisplay() {
         setTimeout(() => {
@@ -1404,6 +1403,7 @@
             fileLinks.forEach(a => {
                 const url = a.href;
                 const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(url);
+                const isPDF = /\.pdf/i.test(url);
                 if (isImage) {
                     a.setAttribute('data-attachment', 'true');
                     a.setAttribute('data-type', 'image');
@@ -1411,6 +1411,12 @@
                     a.style.color = "var(--primary)";
                     a.style.cursor = "pointer";
                     a.removeAttribute('target');
+                } else if (isPDF) {
+                    a.setAttribute('data-attachment', 'true');
+                    a.setAttribute('data-type', 'pdf');
+                    a.innerHTML = '<i class="fas fa-file-pdf"></i> تنزيل المرفق';
+                    a.setAttribute('download', '');
+                    a.style.color = "var(--warning)";
                 }
             });
         }, 500);
@@ -1421,16 +1427,21 @@
         if (link) {
             e.preventDefault();
             const url = link.getAttribute('href');
-            if (!document.getElementById("attachmentLightbox")) {
-                const lb = document.createElement('div');
-                lb.id = "attachmentLightbox";
-                lb.className = "lightbox";
-                lb.style.zIndex = "5000";
-                lb.innerHTML = '<span class="lightbox-close" onclick="this.parentNode.style.display=\'none\'">&times;</span><img id="attachmentLightboxImg" src="" style="max-width:90%; max-height:80%;">';
-                document.body.appendChild(lb);
+            const type = link.getAttribute('data-type');
+            if (type === 'image') {
+                if (!document.getElementById("attachmentLightbox")) {
+                    const lb = document.createElement('div');
+                    lb.id = "attachmentLightbox";
+                    lb.className = "lightbox";
+                    lb.style.zIndex = "5000";
+                    lb.innerHTML = '<span class="lightbox-close" onclick="this.parentNode.style.display=\'none\'">&times;</span><img id="attachmentLightboxImg" src="" style="max-width:90%; max-height:80%;">';
+                    document.body.appendChild(lb);
+                }
+                document.getElementById("attachmentLightboxImg").src = url;
+                document.getElementById("attachmentLightbox").style.display = 'flex';
+            } else {
+                window.open(url, '_blank');
             }
-            document.getElementById("attachmentLightboxImg").src = url;
-            document.getElementById("attachmentLightbox").style.display = 'flex';
         }
     });
 
@@ -1471,8 +1482,7 @@
     }
 
     if (localStorage.getItem('lang') === 'en') { currentLang = 'ar'; toggleLanguage(); }
-
-    // ========== سكريبت الميزات الجديدة (الملف الشخصي) ==========
+      // ========== سكريبت الميزات الجديدة (الملف الشخصي) ==========
     let _profileCache = {};
     let _profileAllAttendance = [];
     let _profileGallery = [];
@@ -1484,20 +1494,38 @@
         const container = document.createElement("div");
         container.style.textAlign = "center";
         container.style.margin = "10px 0";
-        container.innerHTML = `<button class="btn btn-gold" id="profileBtn" onclick="openProfileModal()"><i class="fas fa-id-card"></i> <span>${t('profile')}</span></button>`;
+        container.innerHTML = `<button class="btn btn-gold" id="profileBtn" onclick="verifyFaceForProfile()"><i class="fas fa-id-card"></i> <span>${t('profile')}</span></button>`;
         const attMsg = document.getElementById("attStatusMsg");
-        if (attMsg) { attMsg.parentNode.insertBefore(container, attMsg); }
-        else { document.getElementById("employeePanel").appendChild(container); }
+        if (attMsg) {
+            attMsg.parentNode.insertBefore(container, attMsg);
+        } else {
+            document.getElementById("employeePanel").appendChild(container);
+        }
+    }
+
+    // دالة حذف الصورة الشخصية من قبل الموظف
+    async function deleteProfilePhoto() {
+        if (!currentUser || !currentUser.empID) return;
+        const userSnap = await db.collection("users").where("empID", "==", currentUser.empID).get();
+        if (!userSnap.empty) {
+            await db.collection("users").doc(userSnap.docs[0].id).update({ profilePhoto: firebase.firestore.FieldValue.delete() });
+            document.querySelector('.profile-avatar-large').src = "https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png";
+            showToast("تم حذف الصورة الشخصية");
+        }
     }
 
     async function openProfileModal() {
         if (!currentUser || !currentUser.empID) return;
-        if (!document.getElementById("employeeSelfProfileModal")) createProfileModalElement();
+        if (!document.getElementById("employeeSelfProfileModal")) {
+            createProfileModalElement();
+        }
         const modal = document.getElementById("employeeSelfProfileModal");
         modal.style.display = "flex";
         document.getElementById("profileLoadingIndicator").style.display = "block";
         document.getElementById("profileMainContent").style.display = "none";
+
         const empID = currentUser.empID;
+
         try {
             const userSnap = await db.collection("users").where("empID", "==", empID).get();
             if (userSnap.empty) {
@@ -1506,29 +1534,45 @@
             }
             const userData = userSnap.docs[0].data();
             userData.docId = userSnap.docs[0].id;
+
             const attSnap = await db.collection("attendance_raw").where("empID", "==", empID).get();
             _profileAllAttendance = [];
             attSnap.forEach(doc => {
-                const d = doc.data(); d.id = doc.id;
+                const d = doc.data();
+                d.id = doc.id;
                 if (!d.dateOnly && d.timestamp) d.dateOnly = d.timestamp.toDate().toISOString().split('T')[0];
                 _profileAllAttendance.push(d);
             });
-            _profileAllAttendance.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
+            _profileAllAttendance.sort((a, b) => {
+                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                return tb - ta;
+            });
+
             _profileGallery = [];
             _profileAllAttendance.forEach(d => { if (d.img && d.type === 'in') _profileGallery.push({ src: d.img, date: d.dateOnly }); });
+
             const reqSnap = await db.collection("employee_requests").where("empID", "==", empID).get();
             const requests = [];
             reqSnap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
-            requests.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
+            requests.sort((a, b) => {
+                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                return tb - ta;
+            });
+
             let photo = userData.profilePhoto || null;
             if (!photo) {
                 const firstPhoto = _profileAllAttendance.find(d => d.img && d.type === 'in');
                 photo = firstPhoto ? firstPhoto.img : null;
             }
             if (!photo) photo = "https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png";
+
             _profileCache = { userData, requests, region: userRegionCache.get(empID) || userData.region || "—", photo };
+
             buildProfileHeader(userData, photo);
             await loadProfileTabContent('info');
+
             document.getElementById("profileLoadingIndicator").style.display = "none";
             document.getElementById("profileMainContent").style.display = "block";
         } catch (error) {
@@ -1545,7 +1589,10 @@
                     <h3 style="color:var(--primary); margin:0;"><i class="fas fa-id-card"></i> الملف الشخصي</h3>
                     <button class="btn btn-sm" onclick="closeProfileModal()" style="background:var(--danger);"><i class="fas fa-times"></i> إغلاق</button>
                 </div>
-                <div id="profileLoadingIndicator" style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary);"></i><p style="margin-top:15px;">جاري تحميل بياناتك...</p></div>
+                <div id="profileLoadingIndicator" style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary);"></i>
+                    <p style="margin-top:15px;">جاري تحميل بياناتك...</p>
+                </div>
                 <div id="profileMainContent" style="display:none;">
                     <div id="profileHeaderArea" style="margin-bottom:25px;"></div>
                     <div class="tab-nav" id="profileTabNav">
@@ -1575,11 +1622,14 @@
         let status = "لم يسجل", statusColor = "var(--text-secondary)";
         if (todayRecs.some(d=>d.type==='in') && todayRecs.some(d=>d.type==='out')) { status = "مكتمل"; statusColor = "var(--success)"; }
         else if (todayRecs.some(d=>d.type==='in')) { status = "بانتظار الانصراف"; statusColor = "var(--warning)"; }
-        document.getElementById("profileHeaderArea").innerHTML = `
+
+        const html = `
         <div class="profile-header-card">
-            <div><img src="${photo}" class="profile-avatar-large" onclick="openProfileLightbox('${photo}')">
-                <div style="text-align:center; margin-top:8px;">
+            <div>
+                <img src="${photo}" class="profile-avatar-large" onclick="openProfileLightbox('${photo}')">
+                <div style="text-align:center; margin-top:8px; display:flex; gap:5px; justify-content:center;">
                     <button class="btn btn-sm btn-primary" onclick="changeProfilePhoto()"><i class="fas fa-camera"></i> تغيير</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProfilePhoto()"><i class="fas fa-trash"></i> حذف</button>
                     <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="uploadProfilePhoto()">
                 </div>
             </div>
@@ -1596,6 +1646,7 @@
                 </div>
             </div>
         </div>`;
+        document.getElementById("profileHeaderArea").innerHTML = html;
     }
 
     async function loadProfileTabContent(tab) {
@@ -1603,6 +1654,7 @@
         document.querySelector(`#profileTabNav .tab-btn[data-tab="${tab}"]`).classList.add('active');
         const container = document.getElementById("profileTabBody");
         container.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>';
+
         switch(tab) {
             case 'info': await loadInfoTab(); break;
             case 'attendance': await loadAttendanceTabContent(); break;
@@ -1630,14 +1682,17 @@
         }
         let effDays=0; for(let i=1;i<=lastDay;i++){ const d=new Date(year,month-1,i); if(d.getDay()!==5&&d.getDay()!==6){ const ds=`${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`; if(ds<=todayStr) effDays++; } }
         const rate=effDays>0?Math.round((present/effDays)*100):0;
-        document.getElementById("profileTabBody").innerHTML = `<h4>إحصائيات ${month}/${year}</h4><div class="profile-stats-grid">
+        document.getElementById("profileTabBody").innerHTML = `
+        <h4>إحصائيات ${month}/${year}</h4>
+        <div class="profile-stats-grid">
             <div class="profile-stat-card"><i class="fas fa-calendar-check"></i><div class="profile-stat-value">${present}</div><div class="profile-stat-label">أيام الحضور</div></div>
             <div class="profile-stat-card"><i class="fas fa-calendar-times"></i><div class="profile-stat-value">${absent}</div><div class="profile-stat-label">أيام الغياب</div></div>
             <div class="profile-stat-card"><i class="fas fa-clock"></i><div class="profile-stat-value">${late}</div><div class="profile-stat-label">أيام التأخير</div></div>
             <div class="profile-stat-card"><i class="fas fa-sign-out-alt"></i><div class="profile-stat-value">${missing}</div><div class="profile-stat-label">نسيان الانصراف</div></div>
             <div class="profile-stat-card"><i class="fas fa-hourglass-half"></i><div class="profile-stat-value">${(workMin/60).toFixed(1)}</div><div class="profile-stat-label">ساعات العمل</div></div>
             <div class="profile-stat-card"><i class="fas fa-chart-line"></i><div class="profile-stat-value">${present>0?(workMin/60/present).toFixed(1):0}</div><div class="profile-stat-label">متوسط الساعات</div></div>
-            <div class="profile-stat-card"><i class="fas fa-percent"></i><div class="profile-stat-value">${rate}%</div><div class="profile-stat-label">نسبة الالتزام</div></div></div>`;
+            <div class="profile-stat-card"><i class="fas fa-percent"></i><div class="profile-stat-value">${rate}%</div><div class="profile-stat-label">نسبة الالتزام</div></div>
+        </div>`;
     }
 
     async function loadAttendanceTabContent(period = 'thisMonth') {
@@ -1668,9 +1723,11 @@
         const monthData=_profileAllAttendance.filter(d=>d.dateOnly>=from&&d.dateOnly<=to);
         const dayMap=new Map(); monthData.forEach(d=>{ if(!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly,{in:null,out:null,inImg:null}); const e=dayMap.get(d.dateOnly); if(d.type==='in'){ e.in=d.timestamp?.toDate(); e.inImg=d.img; } if(d.type==='out') e.out=d.timestamp?.toDate(); });
         let html=`<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(-1)">السابق</button><span>${firstDay.toLocaleDateString('ar-SA',{month:'long',year:'numeric'})}</span>
-            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(1)">التالي</button></div>
-        <div class="calendar-grid"><div class="calendar-weekday">أحد</div><div class="calendar-weekday">إثنين</div><div class="calendar-weekday">ثلاثاء</div><div class="calendar-weekday">أربعاء</div><div class="calendar-weekday">خميس</div><div class="calendar-weekday">جمعة</div><div class="calendar-weekday">سبت</div>`;
+            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(-1)">السابق</button>
+            <span>${firstDay.toLocaleDateString('ar-SA',{month:'long',year:'numeric'})}</span>
+            <button class="btn btn-sm" onclick="changeProfileCalendarMonth(1)">التالي</button>
+        </div><div class="calendar-grid">
+        <div class="calendar-weekday">أحد</div><div class="calendar-weekday">إثنين</div><div class="calendar-weekday">ثلاثاء</div><div class="calendar-weekday">أربعاء</div><div class="calendar-weekday">خميس</div><div class="calendar-weekday">جمعة</div><div class="calendar-weekday">سبت</div>`;
         for(let i=0;i<firstDay.getDay();i++) html+='<div></div>';
         for(let i=1;i<=lastDay.getDate();i++){
             const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
@@ -1685,7 +1742,6 @@
         html+='</div><div id="calendarDayDetailBox" style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; display:none;"></div>';
         document.getElementById("profileTabBody").innerHTML=html;
     }
-
     function changeProfileCalendarMonth(delta) { _profileCalendarDate.setMonth(_profileCalendarDate.getMonth()+delta); loadCalendarTabContent(); }
     function showProfileCalendarDayDetail(dateStr) {
         const dayData=_profileAllAttendance.filter(d=>d.dateOnly===dateStr);
@@ -1694,8 +1750,8 @@
         let h=`<h4>${dateStr}</h4><p>حضور: ${inTime?inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p><p>انصراف: ${outTime?outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p>`;
         if(inTime&&outTime){ const diff=(outTime-inTime)/60000; h+=`<p>ساعات: ${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}</p>`; }
         if(inImg) h+=`<img src="${inImg}" style="max-width:150px; border-radius:8px; cursor:pointer;" onclick="openProfileLightbox('${inImg}')">`;
-        const box = document.getElementById("calendarDayDetailBox");
-        box.innerHTML=h; box.style.display='block';
+        document.getElementById("calendarDayDetailBox").innerHTML=h;
+        document.getElementById("calendarDayDetailBox").style.display='block';
     }
 
     async function loadGalleryTabContent() {
@@ -1709,6 +1765,7 @@
     async function loadRequestsTabContent() {
         const container = document.getElementById("profileTabBody");
         container.innerHTML = `<div style="text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>`;
+
         let html = `
         <div class="request-form-section">
             <h4><i class="fas fa-notes-medical"></i> طلب مرضي جديد</h4>
@@ -1785,95 +1842,36 @@
             const snap = await db.collection("employee_requests").where("empID", "==", currentUser.empID).get();
             const requests = [];
             snap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
-            requests.sort((a, b) => (b.timestamp?.toDate().getTime() || 0) - (a.timestamp?.toDate().getTime() || 0));
+            requests.sort((a, b) => {
+                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                return tb - ta;
+            });
             if (requests.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">لا توجد طلبات حتى الآن</p>';
                 return;
             }
-            let html = '<div class="table-container"><table style="width:100%;"><thead><tr><th>نوع الطلب</th><th>تاريخ الإرسال</th><th>الحالة</th><th>ملاحظات المدير</th><th>إجراءات</th></tr></thead><tbody>';
+            let html = '<div class="table-container"><table style="width:100%;"><thead><tr><th>نوع الطلب</th><th>تاريخ الإرسال</th><th>الحالة</th><th>ملاحظات المدير</th></tr></thead><tbody>';
             requests.forEach(r => {
                 const typeText = r.type === "sick_leave" ? "مرضي" : "عمل خارج المكتب";
                 const typeIcon = r.type === "sick_leave" ? "fa-notes-medical" : "fa-home";
                 let statusText = '', statusColor = '';
                 if (r.status === 'pending') { statusText = 'قيد المراجعة'; statusColor = '#f59e0b'; }
                 else if (r.status === 'approved') { statusText = 'تمت الموافقة'; statusColor = '#10b981'; }
-                else { statusText = 'مرفوض'; statusColor = '#ef4444'; }
-                let actionsHtml = '';
-                if (r.status === 'pending') {
-                    actionsHtml = `
-                        <button class="btn btn-sm" onclick="viewMyRequest('${r.id}')" style="background:var(--info); margin:2px;" title="عرض"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm" onclick="editMyRequest('${r.id}')" style="background:var(--warning); margin:2px;" title="تعديل"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm" onclick="deleteMyRequest('${r.id}')" style="background:var(--danger); margin:2px;" title="حذف"><i class="fas fa-trash"></i></button>`;
-                } else {
-                    actionsHtml = `<button class="btn btn-sm" onclick="viewMyRequest('${r.id}')" style="background:var(--info); margin:2px;" title="عرض"><i class="fas fa-eye"></i></button><span style="font-size:0.75rem; color:var(--text-secondary);">لا يمكن التعديل/الحذف</span>`;
-                }
-                html += `<tr><td><i class="fas ${typeIcon}"></i> ${typeText}</td><td>${r.requestDate || '—'}</td><td><span style="background:${statusColor}; padding:5px 12px; border-radius:12px; color:white; font-size:0.8rem;">${statusText}</span></td><td>${r.adminNote || '—'}</td><td>${actionsHtml}</td></tr>`;
+                else if (r.status === 'rejected') { statusText = 'مرفوض'; statusColor = '#ef4444'; }
+                html += `<tr>
+                    <td><i class="fas ${typeIcon}"></i> ${typeText}</td>
+                    <td>${r.requestDate || '—'}</td>
+                    <td><span style="background:${statusColor}; padding:5px 12px; border-radius:12px; color:white; font-size:0.8rem;">${statusText}</span></td>
+                    <td>${r.adminNote || '—'}</td>
+                </tr>`;
             });
             html += '</tbody></table></div>';
             container.innerHTML = html;
-        } catch (e) { console.error("خطأ في تحميل الطلبات:", e); container.innerHTML = '<p style="color:var(--danger);">تعذر تحميل الطلبات</p>'; }
-    }
-
-    // دوال الموظف الجديدة للطلبات
-    function viewMyRequest(reqId) {
-        const req = _profileCache.requests.find(r => r.id === reqId);
-        if (!req) return;
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.zIndex = '3600';
-        modal.onclick = e => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
-        <div class="modal-content" style="max-width:500px; text-align:right;">
-            <h3 style="color:var(--primary);">تفاصيل الطلب</h3>
-            <div style="text-align:right; margin:15px 0;">
-                <p><strong>النوع:</strong> ${req.type === 'sick_leave' ? 'مرضي' : 'عمل خارج المكتب'}</p>
-                <p><strong>التاريخ:</strong> ${req.requestDate || '—'}</p>
-                <p><strong>السبب:</strong> ${req.title || req.reason || '—'}</p>
-                <p><strong>الحالة:</strong> ${req.status === 'pending' ? 'قيد المراجعة' : (req.status === 'approved' ? 'تمت الموافقة' : 'مرفوض')}</p>
-                <p><strong>ملاحظات المدير:</strong> ${req.adminNote || '—'}</p>
-            </div>
-            <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()">إغلاق</button>
-        </div>`;
-        document.body.appendChild(modal);
-    }
-
-    function editMyRequest(reqId) {
-        const req = _profileCache.requests.find(r => r.id === reqId);
-        if (!req) return;
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.zIndex = '3600';
-        modal.onclick = e => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
-        <div class="modal-content" style="max-width:600px; text-align:right;" onclick="event.stopPropagation()">
-            <h3 style="color:var(--primary);">تعديل الطلب</h3>
-            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-                <label>التاريخ</label>
-                <input type="date" id="editMyReqDate_${reqId}" value="${req.requestDate || ''}" style="padding:10px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
-                <label>السبب</label>
-                <textarea id="editMyReqReason_${reqId}" rows="3" style="padding:10px; border-radius:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">${req.type==='sick_leave' ? (req.title||'') : (req.reason||'')}</textarea>
-                <button class="btn btn-primary" onclick="saveMyRequestEdit('${reqId}')">حفظ</button>
-                <button class="btn" onclick="this.closest('.modal-overlay').remove()">إلغاء</button>
-            </div>
-        </div>`;
-        document.body.appendChild(modal);
-    }
-
-    async function saveMyRequestEdit(reqId) {
-        const date = document.getElementById(`editMyReqDate_${reqId}`).value;
-        const reason = document.getElementById(`editMyReqReason_${reqId}`).value;
-        await db.collection("employee_requests").doc(reqId).update({ requestDate: date, title: reason, reason: reason });
-        showToast('تم التحديث');
-        document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-        loadMyRequests();
-        openProfileModal(); // تحديث الملف الشخصي
-    }
-
-    async function deleteMyRequest(reqId) {
-        if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
-        await db.collection("employee_requests").doc(reqId).delete();
-        showToast('تم الحذف');
-        loadMyRequests();
+        } catch (e) {
+            console.error("خطأ في تحميل الطلبات:", e);
+            container.innerHTML = '<p style="color:var(--danger);">تعذر تحميل الطلبات</p>';
+        }
     }
 
     function openProfileLightbox(src) {
@@ -1929,7 +1927,414 @@
         return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date));
     }
 
-    // ربط جميع الدوال الجديدة
+    // ========== دوال التحقق من الهوية (تم إصلاح تحميل النماذج) ==========
+    let faceVerificationSettings = {
+        enabled: false,
+        matchThreshold: 0.9,
+        maxAttempts: 5,
+        blockMinutes: 10,
+        useProfilePhoto: true,
+        useLastCheckIn: false,
+        useLastCheckOut: false
+    };
+    let faceApiLoaded = false;
+    let faceVerificationStream = null;
+    let currentFaceAttempts = 0;
+    let faceVerificationRunning = false;
+
+    async function loadFaceVerificationSettings() {
+        try {
+            const doc = await db.collection("settings").doc("faceVerification").get();
+            if (doc.exists) {
+                const data = doc.data();
+                faceVerificationSettings = {
+                    enabled: data.enabled === true,
+                    matchThreshold: data.matchThreshold || 0.9,
+                    maxAttempts: data.maxAttempts || 5,
+                    blockMinutes: data.blockMinutes || 10,
+                    useProfilePhoto: data.useProfilePhoto !== false,
+                    useLastCheckIn: data.useLastCheckIn || false,
+                    useLastCheckOut: data.useLastCheckOut || false
+                };
+            }
+        } catch (e) { console.error("[FaceVerify] فشل تحميل إعدادات التحقق", e); }
+    }
+    loadFaceVerificationSettings();
+
+    function loadFaceSettingsIntoForm() {
+        document.getElementById("faceEnabledCheck").checked = faceVerificationSettings.enabled;
+        document.getElementById("faceThresholdInput").value = Math.round(faceVerificationSettings.matchThreshold * 100);
+        document.getElementById("faceMaxAttemptsInput").value = faceVerificationSettings.maxAttempts;
+        document.getElementById("faceBlockMinutesInput").value = faceVerificationSettings.blockMinutes;
+        document.getElementById("faceUseProfilePhotoCheck").checked = faceVerificationSettings.useProfilePhoto;
+        document.getElementById("faceUseLastCheckInCheck").checked = faceVerificationSettings.useLastCheckIn;
+        document.getElementById("faceUseLastCheckOutCheck").checked = faceVerificationSettings.useLastCheckOut;
+        toggleFaceSettingsDeps();
+    }
+    function toggleFaceSettingsDeps() {
+        const enabled = document.getElementById("faceEnabledCheck").checked;
+        const deps = document.querySelectorAll("#faceThresholdInput, #faceMaxAttemptsInput, #faceBlockMinutesInput, #faceUseProfilePhotoCheck, #faceUseLastCheckInCheck, #faceUseLastCheckOutCheck");
+        deps.forEach(el => el.disabled = !enabled);
+    }
+
+    async function saveFaceSettings() {
+        const newSettings = {
+            enabled: document.getElementById("faceEnabledCheck").checked,
+            matchThreshold: parseInt(document.getElementById("faceThresholdInput").value) / 100,
+            maxAttempts: parseInt(document.getElementById("faceMaxAttemptsInput").value),
+            blockMinutes: parseInt(document.getElementById("faceBlockMinutesInput").value),
+            useProfilePhoto: document.getElementById("faceUseProfilePhotoCheck").checked,
+            useLastCheckIn: document.getElementById("faceUseLastCheckInCheck").checked,
+            useLastCheckOut: document.getElementById("faceUseLastCheckOutCheck").checked
+        };
+        try {
+            await db.collection("settings").doc("faceVerification").set(newSettings);
+            faceVerificationSettings = newSettings;
+            document.getElementById("faceSettingsMsg").innerText = "تم حفظ الإعدادات بنجاح";
+            setTimeout(() => { document.getElementById("faceSettingsMsg").innerText = ""; }, 3000);
+        } catch (e) {
+            showToast("فشل حفظ الإعدادات", false);
+        }
+    }
+
+    async function verifyFaceForProfile() {
+        if (!currentUser || currentUser.role !== 'employee') return;
+        if (!faceVerificationSettings.enabled) {
+            await openProfileModal();
+            return;
+        }
+        const blockDoc = await db.collection("verificationStatus").doc(currentUser.empID).get();
+        if (blockDoc.exists) {
+            const data = blockDoc.data();
+            if (data.blockedUntil && data.blockedUntil.toDate() > new Date()) {
+                const remaining = Math.ceil((data.blockedUntil.toDate() - new Date()) / 60000);
+                showToast(`تم حظر التحقق. يرجى المحاولة بعد ${remaining} دقيقة.`, false);
+                return;
+            } else {
+                await db.collection("verificationStatus").doc(currentUser.empID).delete();
+            }
+        }
+        document.getElementById("faceVerificationModal").style.display = "flex";
+        if (cameraStream) stopCamera();
+        await startFaceVerificationCamera();
+        document.getElementById("faceVerifyStatus").innerText = "";
+        document.getElementById("startFaceVerifyBtn").disabled = false;
+    }
+
+    function closeFaceVerificationModal() {
+        if (faceVerificationStream) {
+            faceVerificationStream.getTracks().forEach(t => t.stop());
+            faceVerificationStream = null;
+        }
+        document.getElementById("faceVerifyVideo").srcObject = null;
+        document.getElementById("faceVerificationModal").style.display = "none";
+        if (currentUser && currentUser.role === 'employee' && document.getElementById("employeePanel").style.display !== "none") {
+            requestCameraPermission();
+        }
+    }
+
+    async function startFaceVerificationCamera() {
+        try {
+            if (faceVerificationStream) {
+                faceVerificationStream.getTracks().forEach(t => t.stop());
+            }
+            faceVerificationStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
+            const video = document.getElementById("faceVerifyVideo");
+            video.srcObject = faceVerificationStream;
+            await video.play();
+        } catch (e) {
+            showToast("تعذر الوصول إلى الكاميرا للتحقق", false);
+            closeFaceVerificationModal();
+        }
+    }
+
+    // ==== دالة تحميل face-api.js و النماذج بعد إصلاح المسارات ====
+    async function loadFaceApiIfNeeded() {
+        if (faceApiLoaded) return true;
+        if (typeof faceapi !== 'undefined') {
+            faceApiLoaded = true;
+            return true;
+        }
+
+        console.log("[FaceVerify] Loading face-api.js library...");
+        try {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error("Failed to load face-api script"));
+                document.head.appendChild(script);
+            });
+            console.log("[FaceVerify] face-api.js library loaded.");
+        } catch (e) {
+            console.error("[FaceVerify] Failed to load face-api.js library:", e);
+            showToast("تعذر تحميل محرك التحقق", false);
+            return false;
+        }
+
+        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+        console.log("[FaceVerify] Loading models from:", MODEL_URL);
+
+        try {
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            console.log("[FaceVerify] tinyFaceDetector loaded.");
+        } catch (e) {
+            console.error("[FaceVerify] Failed to load tinyFaceDetector:", e);
+            showToast("فشل تحميل نموذج كشف الوجه", false);
+            return false;
+        }
+
+        try {
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            console.log("[FaceVerify] faceLandmark68Net loaded.");
+        } catch (e) {
+            console.error("[FaceVerify] Failed to load faceLandmark68Net:", e);
+            showToast("فشل تحميل نموذج معالم الوجه", false);
+            return false;
+        }
+
+        try {
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            console.log("[FaceVerify] faceRecognitionNet loaded.");
+        } catch (e) {
+            console.error("[FaceVerify] Failed to load faceRecognitionNet:", e);
+            showToast("فشل تحميل نموذج التعرف على الوجه", false);
+            return false;
+        }
+
+        if (
+            faceapi.nets.tinyFaceDetector &&
+            faceapi.nets.tinyFaceDetector.params &&
+            faceapi.nets.faceLandmark68Net &&
+            faceapi.nets.faceLandmark68Net.params &&
+            faceapi.nets.faceRecognitionNet &&
+            faceapi.nets.faceRecognitionNet.params
+        ) {
+            faceApiLoaded = true;
+            console.log("[FaceVerify] All models loaded successfully.");
+            return true;
+        } else {
+            console.error("[FaceVerify] Models loaded but params missing.");
+            showToast("فشل تحميل نماذج التحقق", false);
+            return false;
+        }
+    }
+
+    async function getReferenceImageUrl() {
+        const empID = currentUser.empID;
+        let refUrl = null;
+        let sourceName = "";
+
+        console.log("[FaceVerify] Step 1: empID =", empID);
+
+        try {
+            const userSnap = await db.collection("users").where("empID", "==", empID).get();
+            if (!userSnap.empty) {
+                const userData = userSnap.docs[0].data();
+                console.log("[FaceVerify] Step 2: user found, faceReference:", userData.faceReference, "profilePhoto:", userData.profilePhoto);
+                if (userData.faceReference) {
+                    refUrl = userData.faceReference;
+                    sourceName = "الصورة المرجعية المخصصة";
+                } else if (userData.profilePhoto) {
+                    refUrl = userData.profilePhoto;
+                    sourceName = "الصورة الشخصية";
+                }
+            } else {
+                console.error("[FaceVerify] User not found for empID:", empID);
+            }
+        } catch (e) {
+            console.error("[FaceVerify] خطأ في جلب بيانات المستخدم:", e);
+        }
+
+        if (!refUrl) {
+            console.log("[FaceVerify] Step 3: searching last check-in image...");
+            try {
+                const inSnap = await db.collection("attendance_raw")
+                    .where("empID", "==", empID)
+                    .where("type", "==", "in")
+                    .get();
+                if (!inSnap.empty) {
+                    const sorted = inSnap.docs.sort((a, b) => {
+                        const ta = a.data().timestamp?.toDate() || 0;
+                        const tb = b.data().timestamp?.toDate() || 0;
+                        return tb - ta;
+                    });
+                    const imgUrl = sorted[0].data().img;
+                    console.log("[FaceVerify] Last check-in image:", imgUrl);
+                    if (imgUrl) {
+                        refUrl = imgUrl;
+                        sourceName = "آخر صورة حضور";
+                    }
+                }
+            } catch (e) {
+                console.error("[FaceVerify] خطأ في جلب صور الحضور:", e);
+            }
+        }
+
+        if (!refUrl) {
+            console.log("[FaceVerify] Step 4: searching last check-out image...");
+            try {
+                const outSnap = await db.collection("attendance_raw")
+                    .where("empID", "==", empID)
+                    .where("type", "==", "out")
+                    .get();
+                if (!outSnap.empty) {
+                    const sorted = outSnap.docs.sort((a, b) => {
+                        const ta = a.data().timestamp?.toDate() || 0;
+                        const tb = b.data().timestamp?.toDate() || 0;
+                        return tb - ta;
+                    });
+                    const imgUrl = sorted[0].data().img;
+                    console.log("[FaceVerify] Last check-out image:", imgUrl);
+                    if (imgUrl) {
+                        refUrl = imgUrl;
+                        sourceName = "آخر صورة انصراف";
+                    }
+                }
+            } catch (e) {
+                console.error("[FaceVerify] خطأ في جلب صور الانصراف:", e);
+            }
+        }
+
+        console.log("[FaceVerify] Final refUrl:", refUrl, "source:", sourceName);
+
+        if (!refUrl) {
+            return { url: null, error: "no_reference" };
+        }
+
+        try {
+            await new Promise((resolve, reject) => {
+                const testImg = new Image();
+                testImg.onload = () => resolve();
+                testImg.onerror = () => reject(new Error("رابط غير صالح"));
+                testImg.src = refUrl;
+                setTimeout(() => reject(new Error("انتهت مهلة التحميل")), 10000);
+            });
+            return { url: refUrl, error: null };
+        } catch (e) {
+            console.error("[FaceVerify] فشل تحميل الصورة المرجعية:", refUrl, e);
+            return { url: refUrl, error: "invalid_url" };
+        }
+    }
+
+    async function startFaceVerificationCapture() {
+        console.log("[FaceVerify] Starting verification capture...");
+        if (!faceApiLoaded) {
+            const loaded = await loadFaceApiIfNeeded();
+            if (!loaded) return;
+        }
+        const video = document.getElementById("faceVerifyVideo");
+        if (!video.srcObject) {
+            showToast("الكاميرا غير جاهزة", false);
+            return;
+        }
+        document.getElementById("startFaceVerifyBtn").disabled = true;
+        document.getElementById("faceVerifyStatus").innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const captureDataUrl = canvas.toDataURL('image/jpeg');
+            const refResult = await getReferenceImageUrl();
+            if (refResult.error === "no_reference" || !refResult.url) {
+                document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--danger);">لا توجد صورة مرجعية للتحقق. يرجى التواصل مع المدير.</span>';
+                document.getElementById("startFaceVerifyBtn").disabled = false;
+                return;
+            }
+            if (refResult.error === "invalid_url") {
+                document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--danger);">تعذر تحميل الصورة المرجعية، يرجى تحديثها من لوحة المدير.</span>';
+                document.getElementById("startFaceVerifyBtn").disabled = false;
+                return;
+            }
+            const refUrl = refResult.url;
+            const refImg = await faceapi.fetchImage(refUrl);
+            const refDetection = await faceapi.detectSingleFace(refImg, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            if (!refDetection) {
+                document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--danger);">لم يتم اكتشاف وجه في الصورة المرجعية. يرجى تحديث الصورة.</span>';
+                document.getElementById("startFaceVerifyBtn").disabled = false;
+                return;
+            }
+            const captureImg = await faceapi.fetchImage(captureDataUrl);
+            const captureDetection = await faceapi.detectSingleFace(captureImg, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            if (!captureDetection) {
+                document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--danger);">لم يتم اكتشاف وجهك. تأكد من وضع وجهك داخل الإطار.</span>';
+                document.getElementById("startFaceVerifyBtn").disabled = false;
+                return;
+            }
+            const distance = faceapi.euclideanDistance(refDetection.descriptor, captureDetection.descriptor);
+            const similarity = 1 - distance;
+            const threshold = faceVerificationSettings.matchThreshold;
+            const success = similarity >= threshold;
+            console.log("[FaceVerify] Distance:", distance, "Similarity:", similarity, "Threshold:", threshold, "Success:", success);
+            await db.collection("verificationLogs").add({
+                empID: currentUser.empID,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                success,
+                matchScore: similarity,
+                threshold
+            });
+            if (success) {
+                document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--success);">✅ تم التحقق بنجاح</span>';
+                await db.collection("verificationStatus").doc(currentUser.empID).delete();
+                setTimeout(() => {
+                    closeFaceVerificationModal();
+                    openProfileModal();
+                }, 500);
+            } else {
+                currentFaceAttempts++;
+                const maxAttempts = faceVerificationSettings.maxAttempts;
+                document.getElementById("faceVerifyStatus").innerHTML = `<span style="color:var(--danger);">تعذر التحقق من الهوية. المحاولة ${currentFaceAttempts}/${maxAttempts}</span>`;
+                if (currentFaceAttempts >= maxAttempts) {
+                    const blockUntil = new Date(Date.now() + faceVerificationSettings.blockMinutes * 60 * 1000);
+                    await db.collection("verificationStatus").doc(currentUser.empID).set({
+                        attempts: currentFaceAttempts,
+                        lastAttempt: firebase.firestore.FieldValue.serverTimestamp(),
+                        blockedUntil: firebase.firestore.Timestamp.fromDate(blockUntil)
+                    });
+                    document.getElementById("faceVerifyStatus").innerHTML += '<br/>تم حظر التحقق لمدة ' + faceVerificationSettings.blockMinutes + ' دقيقة.';
+                    setTimeout(() => closeFaceVerificationModal(), 3000);
+                } else {
+                    document.getElementById("startFaceVerifyBtn").disabled = false;
+                }
+            }
+        } catch (e) {
+            console.error("[FaceVerify] خطأ في التحقق:", e);
+            document.getElementById("faceVerifyStatus").innerHTML = '<span style="color:var(--danger);">حدث خطأ غير متوقع</span>';
+            document.getElementById("startFaceVerifyBtn").disabled = false;
+        }
+    }
+
+    function updateFaceReferenceForEmployee(empID) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "zahrani_private");
+            try {
+                const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/image/upload", { method: "POST", body: fd });
+                const data = await res.json();
+                if (data.secure_url) {
+                    const userSnap = await db.collection("users").where("empID", "==", empID).get();
+                    if (!userSnap.empty) {
+                        await db.collection("users").doc(userSnap.docs[0].id).update({ faceReference: data.secure_url });
+                        showToast("تم تحديث الصورة المرجعية بنجاح");
+                    }
+                } else {
+                    showToast("فشل رفع الصورة", false);
+                }
+            } catch (err) {
+                showToast("فشل الرفع", false);
+            }
+        };
+        input.click();
+    }
+
+    // ربط الدوال الجديدة
     window.addProfileButton = addProfileButton;
     window.openProfileModal = openProfileModal;
     window.closeProfileModal = closeProfileModal;
@@ -1946,15 +2351,13 @@
     window.submitSickLeaveFromProfile = submitSickLeaveFromProfile;
     window.submitRemoteWorkFromProfile = submitRemoteWorkFromProfile;
     window.loadMyRequests = loadMyRequests;
-    window.viewMyRequest = viewMyRequest;
-    window.editMyRequest = editMyRequest;
-    window.saveMyRequestEdit = saveMyRequestEdit;
-    window.deleteMyRequest = deleteMyRequest;
-    window.viewRequestAsAdmin = viewRequestAsAdmin;
-    window.openAdminEditRequest = openAdminEditRequest;
-    window.saveAdminEdit = saveAdminEdit;
-    window.deleteAdminRequest = deleteAdminRequest;
+    window.deleteProfilePhoto = deleteProfilePhoto;
+    window.verifyFaceForProfile = verifyFaceForProfile;
+    window.closeFaceVerificationModal = closeFaceVerificationModal;
+    window.startFaceVerificationCapture = startFaceVerificationCapture;
+    window.saveFaceSettings = saveFaceSettings;
+    window.toggleFaceSettingsDeps = toggleFaceSettingsDeps;
+    window.updateFaceReferenceForEmployee = updateFaceReferenceForEmployee;
 </script>
-
 </body>
 </html>

@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>نظام الحضور والانصراف - Alzahrani ERP</title>
-    <!-- السكربتات والأنماط الأصلية (دون تغيير) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- الأنماط الأصلية كاملة -->
+
     <style>
+        /* ========== الأنماط الأصلية كاملة ========== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --primary: #14b8a6;
@@ -301,7 +301,7 @@
             font-size: 1.1rem;
             font-family: inherit;
         }
-        /* إضافات أنماط الميزات الجديدة فقط */
+        /* ========== أنماط الميزات الجديدة (الملف الشخصي) ========== */
         .profile-modal-content {
             max-width: 950px !important;
             width: 95% !important;
@@ -386,6 +386,25 @@
         }
         .lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 16px; }
         .lightbox-close { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: white; cursor: pointer; }
+        .request-form-section {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+        .request-form-section h4 { margin-bottom: 12px; color: var(--primary); }
+        .request-form-section input,
+        .request-form-section textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--glass-border);
+            color: white;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body dir="rtl">
@@ -437,7 +456,7 @@
             <button class="btn btn-danger" style="flex:1" id="checkOutBtn" onclick="takeAction('out')" disabled><i class="fas fa-door-open"></i> <span id="txtOut">تسجيل انصراف</span></button>
         </div>
         <div style="text-align:center; margin:10px 0;">
-            <!-- سيتم إدراج زر الملف الشخصي هنا ديناميكياً -->
+            <!-- زر الملف الشخصي يضاف ديناميكياً -->
         </div>
         <div id="attStatusMsg" style="text-align:center;"></div>
         <button class="btn" style="width:100%; margin-top:16px;" onclick="logoutToLogin()"><i class="fas fa-arrow-right"></i> <span id="btnBackText">خروج للرئيسية</span></button>
@@ -645,7 +664,7 @@
 </div>
 
 <script>
-    // كود المشروع الأصلي بالكامل (بدون أي تغيير)
+    // ========== كود المشروع الأصلي كاملاً بدون أي تغيير ==========
     firebase.initializeApp({
         apiKey: "AIzaSyARsbHocLobpRG-LV7HeURMAatcYCkdkmc",
         projectId: "zahrani-attendance",
@@ -1280,9 +1299,63 @@
         let html = ''; if (snap.empty) { container.innerHTML = `<p>${t('noRequests')}</p>`; return; }
         for (const doc of snap.docs) { const req = doc.data(); const reqId = doc.id; const empName = userNameCache.get(req.empID) || req.empID; const typeText = req.type === "sick_leave" ? t('sickLeave') : t('remoteWork'); let statusText = '', statusColor = ''; if (req.status === 'pending') { statusText = t('pending'); statusColor = 'var(--warning)'; } else if (req.status === 'approved') { statusText = t('approved'); statusColor = 'var(--success)'; } else if (req.status === 'rejected') { statusText = t('rejected'); statusColor = 'var(--danger)'; } html += `<div class="glass" style="padding:15px; margin-bottom:10px;"><strong>${typeText}</strong> - ${empName} <span style="color:${statusColor}">(${statusText})</span><p>${req.title || req.reason || ''}</p>${req.requestDate ? `<p>التاريخ: ${req.requestDate}</p>` : ''}${req.fileUrl ? `<a href="${req.fileUrl}" target="_blank" style="color:var(--primary);">عرض المرفق</a>` : ''}<div style="margin-top:10px;">`; if (req.status === 'pending') { html += `<input type="text" id="reqNote_${reqId}" placeholder="ملاحظة" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; width:60%; margin-right:10px;">`; html += `<button class="btn btn-sm btn-primary" onclick="approveRequest('${reqId}')">${t('approve')}</button>`; html += `<button class="btn btn-sm btn-danger" onclick="rejectRequest('${reqId}')" style="margin-right:5px;">${t('reject')}</button>`; } html += `</div></div>`; }
         container.innerHTML = html;
+        // تحسين عرض المرفقات بعد التحميل (بدون تعديل الدالة الأصلية)
+        enhanceAdminRequestsDisplay();
     }
     async function approveRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "approved", adminNote: note }); showToast(t('approved')); renderEmployeeRequests(); }
     async function rejectRequest(reqId) { const note = document.getElementById(`reqNote_${reqId}`)?.value || ''; await db.collection("employee_requests").doc(reqId).update({ status: "rejected", adminNote: note }); showToast(t('rejected')); renderEmployeeRequests(); }
+
+    // تحسين عرض مرفقات الطلبات في لوحة المدير
+    function enhanceAdminRequestsDisplay() {
+        setTimeout(() => {
+            const container = document.getElementById("requestsList");
+            if (!container) return;
+            const fileLinks = container.querySelectorAll('a[href*="cloudinary"]');
+            fileLinks.forEach(a => {
+                const url = a.href;
+                const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(url);
+                const isPDF = /\.pdf/i.test(url);
+                if (isImage) {
+                    a.setAttribute('data-attachment', 'true');
+                    a.setAttribute('data-type', 'image');
+                    a.innerHTML = '<i class="fas fa-image"></i> عرض المرفق';
+                    a.style.color = "var(--primary)";
+                    a.style.cursor = "pointer";
+                    a.removeAttribute('target');
+                } else if (isPDF) {
+                    a.setAttribute('data-attachment', 'true');
+                    a.setAttribute('data-type', 'pdf');
+                    a.innerHTML = '<i class="fas fa-file-pdf"></i> تنزيل المرفق';
+                    a.setAttribute('download', '');
+                    a.style.color = "var(--warning)";
+                }
+            });
+        }, 500);
+    }
+
+    // معالج النقر على المرفقات المحسنة
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[data-attachment]');
+        if (link) {
+            e.preventDefault();
+            const url = link.getAttribute('href');
+            const type = link.getAttribute('data-type');
+            if (type === 'image') {
+                if (!document.getElementById("attachmentLightbox")) {
+                    const lb = document.createElement('div');
+                    lb.id = "attachmentLightbox";
+                    lb.className = "lightbox";
+                    lb.style.zIndex = "5000";
+                    lb.innerHTML = '<span class="lightbox-close" onclick="this.parentNode.style.display=\'none\'">&times;</span><img id="attachmentLightboxImg" src="" style="max-width:90%; max-height:80%;">';
+                    document.body.appendChild(lb);
+                }
+                document.getElementById("attachmentLightboxImg").src = url;
+                document.getElementById("attachmentLightbox").style.display = 'flex';
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+    });
 
     function toggleLanguage() {
         currentLang = currentLang === 'ar' ? 'en' : 'ar';
@@ -1316,24 +1389,19 @@
         document.getElementById("detailsModal").style.display = "none";
         renderRegionsList(); renderRegionsFilterDropdown();
         if (currentUser?.role === "admin") { applyFiltersAndRenderLogs(paginationPage); updateAdminStats(); }
-        // تحديث نص زر الملف الشخصي
         const profileBtn = document.getElementById("profileBtn");
         if (profileBtn) profileBtn.innerHTML = `<i class="fas fa-id-card"></i> ${t('profile')}`;
     }
 
     if (localStorage.getItem('lang') === 'en') { currentLang = 'ar'; toggleLanguage(); }
-</script>
 
-<!-- ========== سكريبت الميزات الجديدة (الملف الشخصي) ========== -->
-<script>
-    // متغيرات خاصة بالملف الشخصي
-    let _profileCache = {}; // بيانات الموظف المخزنة مؤقتاً
-    let _profileAllAttendance = []; // جميع سجلات حضور الموظف
-    let _profileGallery = []; // صور الحضور للمعرض
-    let _profileCalendarDate = new Date(); // تاريخ التقويم الحالي
-    let _profileGalleryIndex = 0; // مؤشر معرض الصور
+    // ========== سكريبت الميزات الجديدة (الملف الشخصي) ==========
+    let _profileCache = {};
+    let _profileAllAttendance = [];
+    let _profileGallery = [];
+    let _profileCalendarDate = new Date();
+    let _profileGalleryIndex = 0;
 
-    // إضافة زر الملف الشخصي إلى لوحة الموظف
     function addProfileButton() {
         if (document.getElementById("profileBtn")) return;
         const container = document.createElement("div");
@@ -1348,23 +1416,19 @@
         }
     }
 
-    // فتح نافذة الملف الشخصي
     async function openProfileModal() {
         if (!currentUser || !currentUser.empID) return;
-        // إنشاء النافذة إذا لم تكن موجودة
         if (!document.getElementById("employeeSelfProfileModal")) {
             createProfileModalElement();
         }
         const modal = document.getElementById("employeeSelfProfileModal");
         modal.style.display = "flex";
-        // إظهار التحميل
         document.getElementById("profileLoadingIndicator").style.display = "block";
         document.getElementById("profileMainContent").style.display = "none";
 
         const empID = currentUser.empID;
 
         try {
-            // 1- جلب بيانات الموظف
             const userSnap = await db.collection("users").where("empID", "==", empID).get();
             if (userSnap.empty) {
                 document.getElementById("profileLoadingIndicator").innerHTML = "<p style='color:var(--danger);'>لم يتم العثور على بيانات الموظف.</p>";
@@ -1373,48 +1437,32 @@
             const userData = userSnap.docs[0].data();
             userData.docId = userSnap.docs[0].id;
 
-            // 2- جلب كل سجلات الحضور بدون orderBy (تجنب composite index)
             const attSnap = await db.collection("attendance_raw").where("empID", "==", empID).get();
             _profileAllAttendance = [];
             attSnap.forEach(doc => {
                 const d = doc.data();
                 d.id = doc.id;
-                if (!d.dateOnly && d.timestamp) {
-                    d.dateOnly = d.timestamp.toDate().toISOString().split('T')[0];
-                }
+                if (!d.dateOnly && d.timestamp) d.dateOnly = d.timestamp.toDate().toISOString().split('T')[0];
                 _profileAllAttendance.push(d);
             });
-            // ترتيب السجلات يدوياً حسب timestamp تنازلياً
             _profileAllAttendance.sort((a, b) => {
                 const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
                 const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
                 return tb - ta;
             });
 
-            // 3- معرض الصور (صور الحضور فقط)
             _profileGallery = [];
-            _profileAllAttendance.forEach(d => {
-                if (d.img && d.type === 'in') {
-                    _profileGallery.push({ src: d.img, date: d.dateOnly });
-                }
-            });
+            _profileAllAttendance.forEach(d => { if (d.img && d.type === 'in') _profileGallery.push({ src: d.img, date: d.dateOnly }); });
 
-            // 4- طلبات الموظف (بدون orderBy)
             const reqSnap = await db.collection("employee_requests").where("empID", "==", empID).get();
             const requests = [];
-            reqSnap.forEach(doc => {
-                const r = doc.data();
-                r.id = doc.id;
-                requests.push(r);
-            });
-            // ترتيب يدوي
+            reqSnap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
             requests.sort((a, b) => {
                 const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
                 const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
                 return tb - ta;
             });
 
-            // 5- الصورة الشخصية
             let photo = userData.profilePhoto || null;
             if (!photo) {
                 const firstPhoto = _profileAllAttendance.find(d => d.img && d.type === 'in');
@@ -1422,24 +1470,16 @@
             }
             if (!photo) photo = "https://res.cloudinary.com/dzukfybwr/image/upload/v1774965392/PQ%D8%AD%D8%B6%D9%88%D8%B1_mrfvvb.png";
 
-            // تخزين في الكاش
-            _profileCache = {
-                userData: userData,
-                requests: requests,
-                region: userRegionCache.get(empID) || userData.region || "—",
-                photo: photo
-            };
+            _profileCache = { userData, requests, region: userRegionCache.get(empID) || userData.region || "—", photo };
 
-            // بناء رأس الملف الشخصي
             buildProfileHeader(userData, photo);
-            // تحميل التبويب الافتراضي (المعلومات)
             await loadProfileTabContent('info');
 
             document.getElementById("profileLoadingIndicator").style.display = "none";
             document.getElementById("profileMainContent").style.display = "block";
         } catch (error) {
             console.error("خطأ في الملف الشخصي:", error);
-            document.getElementById("profileLoadingIndicator").innerHTML = "<p style='color:var(--danger);'>تعذر تحميل البيانات. يرجى المحاولة لاحقاً.</p>";
+            document.getElementById("profileLoadingIndicator").innerHTML = "<p style='color:var(--danger);'>تعذر تحميل البيانات.</p>";
         }
     }
 
@@ -1471,9 +1511,7 @@
         document.body.insertAdjacentHTML('beforeend', html);
     }
 
-    function closeProfileModal() {
-        document.getElementById("employeeSelfProfileModal").style.display = "none";
-    }
+    function closeProfileModal() { document.getElementById("employeeSelfProfileModal").style.display = "none"; }
 
     function buildProfileHeader(userData, photo) {
         const empID = userData.empID;
@@ -1513,7 +1551,6 @@
     }
 
     async function loadProfileTabContent(tab) {
-        // تنشيط الزر
         document.querySelectorAll('#profileTabNav .tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelector(`#profileTabNav .tab-btn[data-tab="${tab}"]`).classList.add('active');
         const container = document.getElementById("profileTabBody");
@@ -1528,49 +1565,24 @@
         }
     }
 
-    // تبويب المعلومات (الإحصائيات)
     async function loadInfoTab() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
-        const lastDay = new Date(year, month, 0).getDate();
-        const todayStr = now.toISOString().split('T')[0];
-        const monthRecords = _profileAllAttendance.filter(d => {
-            if (!d.dateOnly) return false;
-            return d.dateOnly >= `${year}-${String(month).padStart(2,'0')}-01` && d.dateOnly <= `${year}-${String(month).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
-        });
+        const now = new Date(); const year = now.getFullYear(); const month = now.getMonth() + 1;
+        const lastDay = new Date(year, month, 0).getDate(); const todayStr = now.toISOString().split('T')[0];
+        const monthRecords = _profileAllAttendance.filter(d => d.dateOnly && d.dateOnly >= `${year}-${String(month).padStart(2,'0')}-01` && d.dateOnly <= `${year}-${String(month).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`);
         const dayMap = new Map();
-        monthRecords.forEach(d => {
-            if (!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly, { in: null, out: null });
-            const day = dayMap.get(d.dateOnly);
-            if (d.type === 'in') day.in = d.timestamp?.toDate();
-            if (d.type === 'out') day.out = d.timestamp?.toDate();
-        });
+        monthRecords.forEach(d => { if(!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly, {in:null,out:null}); const day=dayMap.get(d.dateOnly); if(d.type==='in') day.in=d.timestamp?.toDate(); if(d.type==='out') day.out=d.timestamp?.toDate(); });
         let present=0, absent=0, late=0, missing=0, workMin=0;
-        for (let i=1; i<=lastDay; i++) {
-            const ds = `${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-            const date = new Date(year, month-1, i);
-            if (date.getDay()===5 || date.getDay()===6) continue;
-            if (ds > todayStr) continue;
-            const day = dayMap.get(ds);
-            if (day && day.in) {
-                present++;
-                if (day.in.getHours()>10 || (day.in.getHours()===10 && day.in.getMinutes()>0)) late++;
-                if (!day.out) missing++;
-                if (day.in && day.out) workMin += (day.out - day.in) / 60000;
-            } else {
-                absent++;
-            }
+        for(let i=1;i<=lastDay;i++){
+            const ds=`${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const date=new Date(year,month-1,i);
+            if(date.getDay()===5||date.getDay()===6) continue;
+            if(ds>todayStr) continue;
+            const day=dayMap.get(ds);
+            if(day&&day.in){ present++; if(day.in.getHours()>10||(day.in.getHours()===10&&day.in.getMinutes()>0)) late++; if(!day.out) missing++; if(day.in&&day.out) workMin+=(day.out-day.in)/60000; }
+            else { absent++; }
         }
-        let effDays = 0;
-        for (let i=1; i<=lastDay; i++) {
-            const d = new Date(year, month-1, i);
-            if (d.getDay()!==5 && d.getDay()!==6) {
-                const ds = `${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                if (ds <= todayStr) effDays++;
-            }
-        }
-        const rate = effDays>0 ? Math.round((present/effDays)*100) : 0;
+        let effDays=0; for(let i=1;i<=lastDay;i++){ const d=new Date(year,month-1,i); if(d.getDay()!==5&&d.getDay()!==6){ const ds=`${year}-${String(month).padStart(2,'0')}-${String(i).padStart(2,'0')}`; if(ds<=todayStr) effDays++; } }
+        const rate=effDays>0?Math.round((present/effDays)*100):0;
         document.getElementById("profileTabBody").innerHTML = `
         <h4>إحصائيات ${month}/${year}</h4>
         <div class="profile-stats-grid">
@@ -1584,132 +1596,185 @@
         </div>`;
     }
 
-    // تبويب سجل الحضور
     async function loadAttendanceTabContent(period = 'thisMonth') {
-        const now = new Date();
-        let from, to;
-        if (period === 'thisMonth') {
-            from = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-            to = now.toISOString().split('T')[0];
-        } else if (period === 'lastMonth') {
-            const d = new Date(now.getFullYear(), now.getMonth()-1, 1);
-            const last = new Date(d.getFullYear(), d.getMonth()+1, 0);
-            from = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
-            to = `${last.getFullYear()}-${String(last.getMonth()+1).padStart(2,'0')}-${String(last.getDate()).padStart(2,'0')}`;
-        } else {
-            from = document.getElementById('attFromInput')?.value;
-            to = document.getElementById('attToInput')?.value;
-            if (!from || !to) { alert('حدد الفترة'); return; }
-        }
-        const filtered = _profileAllAttendance.filter(d => d.dateOnly >= from && d.dateOnly <= to);
-        const grouped = groupAttendanceByDate(filtered);
-        const container = document.getElementById("profileTabBody");
-        let html = `<div style="display:flex; gap:10px; margin-bottom:15px;">
+        const now=new Date(); let from,to;
+        if(period==='thisMonth'){ from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`; to=now.toISOString().split('T')[0]; }
+        else if(period==='lastMonth'){ const d=new Date(now.getFullYear(),now.getMonth()-1,1); const ld=new Date(d.getFullYear(),d.getMonth()+1,0); from=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; to=`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}-${String(ld.getDate()).padStart(2,'0')}`; }
+        else { from=document.getElementById('attFromInput')?.value; to=document.getElementById('attToInput')?.value; if(!from||!to){ alert('حدد الفترة'); return; } }
+        const filtered=_profileAllAttendance.filter(d=>d.dateOnly>=from&&d.dateOnly<=to);
+        const grouped=groupAttendanceByDate(filtered);
+        const container=document.getElementById("profileTabBody");
+        let html=`<div style="display:flex; gap:10px; margin-bottom:15px;">
             <button class="btn btn-sm ${period==='thisMonth'?'btn-primary':''}" onclick="loadAttendanceTabContent('thisMonth')">هذا الشهر</button>
             <button class="btn btn-sm ${period==='lastMonth'?'btn-primary':''}" onclick="loadAttendanceTabContent('lastMonth')">الشهر الماضي</button>
             <input type="date" id="attFromInput" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
             <input type="date" id="attToInput" style="padding:8px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white;">
             <button class="btn btn-sm" onclick="loadAttendanceTabContent('custom')">مخصص</button>
         </div><table style="width:100%;"><thead><tr><th>التاريخ</th><th>حضور</th><th>انصراف</th><th>ساعات</th><th>حالة</th></tr></thead><tbody>`;
-        if (grouped.length === 0) html += '<tr><td colspan="5">لا توجد سجلات</td></tr>';
-        else {
-            grouped.forEach(g => {
-                const inStr = g.inTime ? g.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : '—';
-                const outStr = g.outTime ? g.outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : '—';
-                let dur = '—', st = 'غائب', cl = 'var(--danger)';
-                if (g.inTime && g.outTime) {
-                    const diff = (g.outTime - g.inTime) / 60000;
-                    dur = `${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}`;
-                    st = 'مكتمل'; cl = 'var(--success)';
-                    if (g.inTime.getHours()>10 || (g.inTime.getHours()===10 && g.inTime.getMinutes()>0)) { st = 'متأخر'; cl = 'var(--info)'; }
-                } else if (g.inTime) { st = 'بانتظار الانصراف'; cl = 'var(--warning)'; }
-                html += `<tr><td>${g.date}</td><td>${inStr}</td><td>${outStr}</td><td>${dur}</td><td><span style="background:${cl}; padding:5px 12px; border-radius:12px; color:black;">${st}</span></td></tr>`;
-            });
-        }
-        html += '</tbody></table>';
-        container.innerHTML = html;
+        if(grouped.length===0) html+='<tr><td colspan="5">لا توجد سجلات</td></tr>';
+        else grouped.forEach(g=>{ const inStr=g.inTime?g.inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'; const outStr=g.outTime?g.outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'; let dur='—',st='غائب',cl='var(--danger)'; if(g.inTime&&g.outTime){ const diff=(g.outTime-g.inTime)/60000; dur=`${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}`; st='مكتمل'; cl='var(--success)'; if(g.inTime.getHours()>10||(g.inTime.getHours()===10&&g.inTime.getMinutes()>0)){ st='متأخر'; cl='var(--info)'; } } else if(g.inTime){ st='بانتظار الانصراف'; cl='var(--warning)'; } html+=`<tr><td>${g.date}</td><td>${inStr}</td><td>${outStr}</td><td>${dur}</td><td><span style="background:${cl}; padding:5px 12px; border-radius:12px; color:black;">${st}</span></td></tr>`; });
+        html+='</tbody></table>';
+        container.innerHTML=html;
     }
 
-    // تبويب التقويم
     async function loadCalendarTabContent() {
-        const y = _profileCalendarDate.getFullYear(), m = _profileCalendarDate.getMonth();
-        const firstDay = new Date(y, m, 1), lastDay = new Date(y, m+1, 0), today = new Date(), todayStr = today.toISOString().split('T')[0];
-        const from = `${y}-${String(m+1).padStart(2,'0')}-01`, to = `${y}-${String(m+1).padStart(2,'0')}-${String(lastDay.getDate()).padStart(2,'0')}`;
-        const monthData = _profileAllAttendance.filter(d => d.dateOnly >= from && d.dateOnly <= to);
-        const dayMap = new Map();
-        monthData.forEach(d => {
-            if (!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly, { in: null, out: null, inImg: null });
-            const e = dayMap.get(d.dateOnly);
-            if (d.type === 'in') { e.in = d.timestamp?.toDate(); e.inImg = d.img; }
-            if (d.type === 'out') e.out = d.timestamp?.toDate();
-        });
-        let html = `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        const y=_profileCalendarDate.getFullYear(), m=_profileCalendarDate.getMonth();
+        const firstDay=new Date(y,m,1), lastDay=new Date(y,m+1,0), today=new Date(), todayStr=today.toISOString().split('T')[0];
+        const from=`${y}-${String(m+1).padStart(2,'0')}-01`, to=`${y}-${String(m+1).padStart(2,'0')}-${String(lastDay.getDate()).padStart(2,'0')}`;
+        const monthData=_profileAllAttendance.filter(d=>d.dateOnly>=from&&d.dateOnly<=to);
+        const dayMap=new Map(); monthData.forEach(d=>{ if(!dayMap.has(d.dateOnly)) dayMap.set(d.dateOnly,{in:null,out:null,inImg:null}); const e=dayMap.get(d.dateOnly); if(d.type==='in'){ e.in=d.timestamp?.toDate(); e.inImg=d.img; } if(d.type==='out') e.out=d.timestamp?.toDate(); });
+        let html=`<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
             <button class="btn btn-sm" onclick="changeProfileCalendarMonth(-1)">السابق</button>
             <span>${firstDay.toLocaleDateString('ar-SA',{month:'long',year:'numeric'})}</span>
             <button class="btn btn-sm" onclick="changeProfileCalendarMonth(1)">التالي</button>
         </div><div class="calendar-grid">
         <div class="calendar-weekday">أحد</div><div class="calendar-weekday">إثنين</div><div class="calendar-weekday">ثلاثاء</div><div class="calendar-weekday">أربعاء</div><div class="calendar-weekday">خميس</div><div class="calendar-weekday">جمعة</div><div class="calendar-weekday">سبت</div>`;
-        for (let i=0; i<firstDay.getDay(); i++) html += '<div></div>';
-        for (let i=1; i<=lastDay.getDate(); i++) {
-            const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-            const entry = dayMap.get(ds);
-            let cls = '';
-            if (entry && entry.in && entry.out) cls = 'present';
-            else if (entry && entry.in) cls = 'incomplete';
-            else {
-                const d = new Date(y, m, i);
-                if (d <= today && d.getDay()!==5 && d.getDay()!==6) cls = 'absent';
-            }
-            if (ds === todayStr) cls += ' today';
-            html += `<div class="calendar-day-cell ${cls}" onclick="showProfileCalendarDayDetail('${ds}')">${i}</div>`;
+        for(let i=0;i<firstDay.getDay();i++) html+='<div></div>';
+        for(let i=1;i<=lastDay.getDate();i++){
+            const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const entry=dayMap.get(ds);
+            let cls='';
+            if(entry&&entry.in&&entry.out) cls='present';
+            else if(entry&&entry.in) cls='incomplete';
+            else{ const d=new Date(y,m,i); if(d<=today&&d.getDay()!==5&&d.getDay()!==6) cls='absent'; }
+            if(ds===todayStr) cls+=' today';
+            html+=`<div class="calendar-day-cell ${cls}" onclick="showProfileCalendarDayDetail('${ds}')">${i}</div>`;
         }
-        html += '</div><div id="calendarDayDetailBox" style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; display:none;"></div>';
-        document.getElementById("profileTabBody").innerHTML = html;
+        html+='</div><div id="calendarDayDetailBox" style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; display:none;"></div>';
+        document.getElementById("profileTabBody").innerHTML=html;
     }
-
-    function changeProfileCalendarMonth(delta) {
-        _profileCalendarDate.setMonth(_profileCalendarDate.getMonth() + delta);
-        loadCalendarTabContent();
-    }
-
+    function changeProfileCalendarMonth(delta) { _profileCalendarDate.setMonth(_profileCalendarDate.getMonth()+delta); loadCalendarTabContent(); }
     function showProfileCalendarDayDetail(dateStr) {
-        const dayData = _profileAllAttendance.filter(d => d.dateOnly === dateStr);
+        const dayData=_profileAllAttendance.filter(d=>d.dateOnly===dateStr);
         let inTime=null, outTime=null, inImg=null;
-        dayData.forEach(d => { if(d.type==='in'){ inTime=d.timestamp?.toDate(); inImg=d.img; } if(d.type==='out') outTime=d.timestamp?.toDate(); });
-        let h = `<h4>${dateStr}</h4><p>حضور: ${inTime?inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p><p>انصراف: ${outTime?outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p>`;
-        if (inTime && outTime) { const diff=(outTime-inTime)/60000; h+=`<p>ساعات: ${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}</p>`; }
-        if (inImg) h += `<img src="${inImg}" style="max-width:150px; border-radius:8px; cursor:pointer;" onclick="openProfileLightbox('${inImg}')">`;
-        const box = document.getElementById("calendarDayDetailBox");
-        box.innerHTML = h;
-        box.style.display = 'block';
+        dayData.forEach(d=>{ if(d.type==='in'){ inTime=d.timestamp?.toDate(); inImg=d.img; } if(d.type==='out') outTime=d.timestamp?.toDate(); });
+        let h=`<h4>${dateStr}</h4><p>حضور: ${inTime?inTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p><p>انصراف: ${outTime?outTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'—'}</p>`;
+        if(inTime&&outTime){ const diff=(outTime-inTime)/60000; h+=`<p>ساعات: ${Math.floor(diff/60)}:${String(Math.floor(diff%60)).padStart(2,'0')}</p>`; }
+        if(inImg) h+=`<img src="${inImg}" style="max-width:150px; border-radius:8px; cursor:pointer;" onclick="openProfileLightbox('${inImg}')">`;
+        document.getElementById("calendarDayDetailBox").innerHTML=h;
+        document.getElementById("calendarDayDetailBox").style.display='block';
     }
 
-    // تبويب معرض الصور
     async function loadGalleryTabContent() {
-        let html = '<div class="gallery-grid">';
-        if (_profileGallery.length === 0) html += '<p>لا توجد صور حضور</p>';
-        else _profileGallery.forEach((img, i) => html += `<img src="${img.src}" class="gallery-item" loading="lazy" onclick="openProfileGalleryLightbox(${i})">`);
-        html += '</div>';
-        document.getElementById("profileTabBody").innerHTML = html;
+        let html='<div class="gallery-grid">';
+        if(_profileGallery.length===0) html+='<p>لا توجد صور حضور</p>';
+        else _profileGallery.forEach((img,i)=> html+=`<img src="${img.src}" class="gallery-item" loading="lazy" onclick="openProfileGalleryLightbox(${i})">`);
+        html+='</div>';
+        document.getElementById("profileTabBody").innerHTML=html;
     }
 
-    // تبويب الطلبات
     async function loadRequestsTabContent() {
-        const reqs = _profileCache.requests || [];
-        let html = '';
-        if (reqs.length === 0) html = '<p>لا توجد طلبات</p>';
-        else reqs.forEach(r => {
-            const type = r.type === 'sick_leave' ? 'مرضي' : 'عمل خارج المكتب';
-            let st = '', sc = '';
-            if (r.status === 'pending') { st = 'قيد المراجعة'; sc = '#f59e0b'; }
-            else if (r.status === 'approved') { st = 'تمت الموافقة'; sc = '#10b981'; }
-            else { st = 'مرفوض'; sc = '#ef4444'; }
-            html += `<div class="request-card"><div style="display:flex; justify-content:space-between;"><strong>${type}</strong><span style="background:${sc}; padding:5px 12px; border-radius:12px; color:white;">${st}</span></div><p>${r.title || r.reason || ''}</p>${r.requestDate?`<p>التاريخ: ${r.requestDate}</p>`:''}${r.adminNote?`<p>رد المدير: ${r.adminNote}</p>`:''}</div>`;
-        });
-        document.getElementById("profileTabBody").innerHTML = html;
+        const container = document.getElementById("profileTabBody");
+        container.innerHTML = `<div style="text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>`;
+
+        let html = `
+        <div class="request-form-section">
+            <h4><i class="fas fa-notes-medical"></i> طلب مرضي جديد</h4>
+            <input type="text" id="sickTitle" placeholder="عنوان الطلب (مطلوب)">
+            <textarea id="sickDesc" rows="3" placeholder="وصف الحالة"></textarea>
+            <input type="date" id="sickDate">
+            <label style="display:block; margin-bottom:8px; color:var(--text-secondary);"><i class="fas fa-paperclip"></i> إرفاق تقرير طبي (PDF, JPG, PNG)</label>
+            <input type="file" id="sickFile" accept=".pdf,.jpg,.jpeg,.png">
+            <button class="btn btn-primary btn-sm" onclick="submitSickLeaveFromProfile()"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+        </div>
+        <div class="request-form-section">
+            <h4><i class="fas fa-home"></i> طلب عمل خارج المكتب</h4>
+            <input type="date" id="remoteDate" placeholder="التاريخ (مطلوب)">
+            <textarea id="remoteReason" rows="2" placeholder="سبب العمل خارج المكتب (مطلوب)"></textarea>
+            <textarea id="remoteNotes" rows="2" placeholder="ملاحظات إضافية"></textarea>
+            <button class="btn btn-primary btn-sm" onclick="submitRemoteWorkFromProfile()"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+        </div>
+        <h4 style="margin-top:25px;"><i class="fas fa-list-ul"></i> طلباتي السابقة</h4>
+        <div id="myRequestsList"></div>`;
+        container.innerHTML = html;
+        loadMyRequests();
     }
 
-    // Lightbox بسيط
+    async function submitSickLeaveFromProfile() {
+        const title = document.getElementById("sickTitle").value.trim();
+        const desc = document.getElementById("sickDesc").value.trim();
+        const date = document.getElementById("sickDate").value;
+        const fileInput = document.getElementById("sickFile");
+        const file = fileInput.files[0];
+        if (!title) { showToast("يرجى إدخال عنوان الطلب", false); return; }
+        if (!date) { showToast("يرجى تحديد تاريخ الطلب", false); return; }
+        let fileUrl = null;
+        if (file) {
+            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", "zahrani_private");
+            try {
+                const res = await fetch("https://api.cloudinary.com/v1_1/dzukfybwr/upload", { method: "POST", body: fd });
+                const data = await res.json();
+                if (data.secure_url) fileUrl = data.secure_url;
+            } catch (e) { showToast("فشل رفع المرفق", false); return; }
+        }
+        await db.collection("employee_requests").add({
+            empID: currentUser.empID, type: "sick_leave", title, description: desc, requestDate: date,
+            fileUrl, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast("تم إرسال الطلب بنجاح");
+        document.getElementById("sickTitle").value = "";
+        document.getElementById("sickDesc").value = "";
+        document.getElementById("sickDate").value = "";
+        fileInput.value = "";
+        loadMyRequests();
+    }
+
+    async function submitRemoteWorkFromProfile() {
+        const reason = document.getElementById("remoteReason").value.trim();
+        const date = document.getElementById("remoteDate").value;
+        const notes = document.getElementById("remoteNotes").value.trim();
+        if (!reason || !date) { showToast("يرجى إدخال السبب والتاريخ", false); return; }
+        await db.collection("employee_requests").add({
+            empID: currentUser.empID, type: "remote_work", reason, requestDate: date, notes,
+            status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast("تم إرسال الطلب بنجاح");
+        document.getElementById("remoteReason").value = "";
+        document.getElementById("remoteDate").value = "";
+        document.getElementById("remoteNotes").value = "";
+        loadMyRequests();
+    }
+
+    async function loadMyRequests() {
+        const container = document.getElementById("myRequestsList");
+        if (!container) return;
+        container.innerHTML = '<div style="text-align:center; padding:15px;"><i class="fas fa-spinner fa-spin"></i></div>';
+        try {
+            const snap = await db.collection("employee_requests").where("empID", "==", currentUser.empID).get();
+            const requests = [];
+            snap.forEach(doc => { const r = doc.data(); r.id = doc.id; requests.push(r); });
+            requests.sort((a, b) => {
+                const ta = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                return tb - ta;
+            });
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">لا توجد طلبات حتى الآن</p>';
+                return;
+            }
+            let html = '<div class="table-container"><table style="width:100%;"><thead><tr><th>نوع الطلب</th><th>تاريخ الإرسال</th><th>الحالة</th><th>ملاحظات المدير</th></tr></thead><tbody>';
+            requests.forEach(r => {
+                const typeText = r.type === "sick_leave" ? "مرضي" : "عمل خارج المكتب";
+                const typeIcon = r.type === "sick_leave" ? "fa-notes-medical" : "fa-home";
+                let statusText = '', statusColor = '';
+                if (r.status === 'pending') { statusText = 'قيد المراجعة'; statusColor = '#f59e0b'; }
+                else if (r.status === 'approved') { statusText = 'تمت الموافقة'; statusColor = '#10b981'; }
+                else if (r.status === 'rejected') { statusText = 'مرفوض'; statusColor = '#ef4444'; }
+                html += `<tr>
+                    <td><i class="fas ${typeIcon}"></i> ${typeText}</td>
+                    <td>${r.requestDate || '—'}</td>
+                    <td><span style="background:${statusColor}; padding:5px 12px; border-radius:12px; color:white; font-size:0.8rem;">${statusText}</span></td>
+                    <td>${r.adminNote || '—'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        } catch (e) {
+            console.error("خطأ في تحميل الطلبات:", e);
+            container.innerHTML = '<p style="color:var(--danger);">تعذر تحميل الطلبات</p>';
+        }
+    }
+
     function openProfileLightbox(src) {
         if (!document.getElementById("profileLightbox")) {
             document.body.insertAdjacentHTML('beforeend', `<div id="profileLightbox" class="lightbox" style="display:none; z-index:5000;" onclick="this.style.display='none'"><span class="lightbox-close">&times;</span><img id="profileLightboxImg" src=""></div>`);
@@ -1717,7 +1782,6 @@
         document.getElementById("profileLightboxImg").src = src;
         document.getElementById("profileLightbox").style.display = 'flex';
     }
-
     function openProfileGalleryLightbox(index) {
         _profileGalleryIndex = index;
         if (!document.getElementById("profileLightbox")) {
@@ -1736,8 +1800,6 @@
         _profileGalleryIndex = (_profileGalleryIndex + 1) % _profileGallery.length;
         document.getElementById("profileLightboxImg").src = _profileGallery[_profileGalleryIndex].src;
     }
-
-    // تغيير الصورة الشخصية
     function changeProfilePhoto() { document.getElementById("profilePhotoInput").click(); }
     async function uploadProfilePhoto() {
         const file = document.getElementById("profilePhotoInput").files[0]; if (!file) return;
@@ -1750,12 +1812,9 @@
             document.querySelector('.profile-avatar-large').src = data.secure_url;
             _profileCache.photo = data.secure_url;
             showToast("تم تحديث الصورة");
-        } else {
-            showToast("فشل رفع الصورة", false);
-        }
+        } else { showToast("فشل رفع الصورة", false); }
     }
 
-    // تجميع السجلات حسب التاريخ
     function groupAttendanceByDate(records) {
         const map = new Map();
         records.forEach(r => {
@@ -1769,7 +1828,7 @@
         return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date));
     }
 
-    // ربط الدوال بالـ window للاستخدام في onclick
+    // ربط الدوال الجديدة
     window.addProfileButton = addProfileButton;
     window.openProfileModal = openProfileModal;
     window.closeProfileModal = closeProfileModal;
@@ -1783,6 +1842,10 @@
     window.profileGalleryNext = profileGalleryNext;
     window.changeProfilePhoto = changeProfilePhoto;
     window.uploadProfilePhoto = uploadProfilePhoto;
+    window.submitSickLeaveFromProfile = submitSickLeaveFromProfile;
+    window.submitRemoteWorkFromProfile = submitRemoteWorkFromProfile;
+    window.loadMyRequests = loadMyRequests;
 </script>
+
 </body>
 </html>
